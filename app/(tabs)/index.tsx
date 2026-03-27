@@ -7,10 +7,10 @@ import { DAILY_INSIGHTS, ModeKey } from '../../src/constants/data';
 import { useMemo } from 'react';
 
 const JOURNEY_STEPS = [
-  { mode: 'vent' as ModeKey, num: 'Step 1', name: 'Vent', emoji: '🌊', color: Colors.terracotta, paleBg: Colors.terracottaPale, border: Colors.terracottaLight, desc: 'Say what is on your heart without filters. Feel heard before trying to understand anything.', tag: 'Start here every time' },
+  { mode: 'vent' as ModeKey, num: 'Step 1', name: 'Vent', emoji: '🌊', color: Colors.terracotta, paleBg: Colors.terracottaPale, border: Colors.terracottaLight, desc: 'Speak or type freely in a completely private space. Your partner will never see this. Just let it out.', tag: 'Start here every time' },
   { mode: 'understand' as ModeKey, num: 'Step 2', name: 'Understand', emoji: '🔍', color: Colors.gold, paleBg: Colors.goldPale, border: '#D4B46A', desc: 'Gently explore what is really happening. What pattern is at play? What are you actually needing?', tag: 'When you are ready to reflect' },
   { mode: 'prepare' as ModeKey, num: 'Step 3', name: 'Prepare', emoji: '🌿', color: Colors.sage, paleBg: Colors.sagePale, border: Colors.sageLight, desc: 'Build a script, craft a bridge message, or plan your next conversation. Turn insight into action.', tag: 'When you are ready to communicate' },
-  { mode: 'nurture' as ModeKey, num: 'Ongoing', name: 'Nurture', emoji: '💛', color: Colors.blush, paleBg: Colors.blushPale, border: Colors.blush, desc: 'When things are relatively good — invest in your bond. Small daily acts build a resilient relationship.', tag: 'Use when things are okay' },
+  { mode: 'bridge' as ModeKey, num: 'Step 4', name: 'Nurture', emoji: '💛', color: Colors.sage, paleBg: Colors.sagePale, border: Colors.sageLight, desc: 'Compose and send a calm, considered NVC message to your partner. Close the loop with care.', tag: 'When you are ready to repair' },
 ];
 
 export default function HomeTab() {
@@ -21,9 +21,13 @@ export default function HomeTab() {
   const timeGreeting = h < 12 ? 'Good morning' : h < 17 ? 'Good afternoon' : 'Good evening';
   const name = state.profile.name || 'friend';
 
-  const goToMode = (mode: ModeKey) => {
-    dispatch({ type: 'SET_MODE', mode });
-    router.push('/(tabs)/chat');
+  const activeSession = state.sessions.find((s) => s.id === state.activeSessionId);
+
+  const startSession = () => {
+    if (!activeSession) {
+      dispatch({ type: 'CREATE_SESSION' });
+    }
+    router.push('/(tabs)/sessions');
   };
 
   return (
@@ -36,20 +40,20 @@ export default function HomeTab() {
           <Text style={styles.greetingSub}>Your feelings are welcome here.</Text>
         </View>
 
-        <TouchableOpacity style={styles.startCard} onPress={() => goToMode('vent')} activeOpacity={0.88}>
+        <TouchableOpacity style={styles.startCard} onPress={startSession} activeOpacity={0.88}>
           <View style={styles.startCardBlob} />
-          <Text style={styles.startTag}>Start here</Text>
-          <Text style={styles.startTitle}>Begin by venting</Text>
-          <Text style={styles.startBody}>Whatever is happening — say it out loud. This is a private, judgment-free space. You do not need to find the right words. Just begin.</Text>
+          <Text style={styles.startTag}>{activeSession ? 'CONTINUE SESSION' : 'START HERE'}</Text>
+          <Text style={styles.startTitle}>{activeSession ? 'Continue your session' : 'Start a new session'}</Text>
+          <Text style={styles.startBody}>{activeSession ? 'You have an active session. Pick up where you left off.' : 'Whatever is happening — begin here. Tether will guide you from venting to resolution, step by step.'}</Text>
           <View style={styles.startBtn}>
-            <Text style={styles.startBtnText}>Open Vent space →</Text>
+            <Text style={styles.startBtnText}>{activeSession ? 'Continue →' : 'Begin →'}</Text>
           </View>
         </TouchableOpacity>
 
         <View style={styles.section}>
           <Text style={styles.sectionLabel}>YOUR JOURNEY — FOLLOW THESE STEPS</Text>
           {JOURNEY_STEPS.map((step, i) => (
-            <TouchableOpacity key={step.mode} onPress={() => goToMode(step.mode)} activeOpacity={0.8} style={styles.journeyRow}>
+            <TouchableOpacity key={step.mode} onPress={startSession} activeOpacity={0.8} style={styles.journeyRow}>
               <View style={styles.journeyLeft}>
                 <View style={[styles.journeyOrb, { backgroundColor: step.paleBg, borderColor: step.border }]}>
                   <Text style={{ fontSize: 18 }}>{step.emoji}</Text>

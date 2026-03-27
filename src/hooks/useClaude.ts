@@ -88,5 +88,8 @@ function getFallback(systemPrompt: string): string {
   if (systemPrompt.includes('PREPARE')) {
     return "A powerful shift: separate the observation from the interpretation. Not 'you ignored me' but 'when you didn't respond for three hours'. Want to try building this into a message?";
   }
-  return "Every moment of genuine connection builds what Gottman calls the emotional bank account. What feels most alive for you two right now?";
+  if (systemPrompt.includes('BRIDGE')) {
+    return "Let's compose your message together. Start with a specific observation — what happened, without judgment — then we'll add how it made you feel and what you need.";
+  }
+  return "I'm here with you. Can you tell me more about what you're experiencing?";
 }

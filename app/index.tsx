@@ -21,7 +21,7 @@ export default function Landing() {
     { icon: '🕊️', title: 'Feel heard', desc: 'Express without judgment' },
     { icon: '🔍', title: 'Understand patterns', desc: 'Discover what is beneath conflict' },
     { icon: '🌿', title: 'Communicate better', desc: 'Build bridges, not walls' },
-    { icon: '💛', title: 'Nurture your bond', desc: 'Proactive tools for thriving' },
+    { icon: '🛠️', title: 'Tools for tough moments', desc: 'Breathing, grounding, repair' },
   ];
 
   return (

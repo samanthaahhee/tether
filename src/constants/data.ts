@@ -128,10 +128,10 @@ export const MODE_CONFIG = {
     color: '#C17F5A',
     paleBg: '#F2DDD0',
     borderColor: '#E8A882',
-    context: "You are safe here. Express whatever you're feeling — no judgment, no fixing.",
+    context: "This is completely private — your partner will never see this. Speak or type freely.",
     stepLabel: 'Step 1 of your journey',
     stepTitle: 'Vent — just let it out',
-    stepDesc: "No advice, no fixing. Say exactly what you're feeling. When you're ready, move to Understand.",
+    stepDesc: "This space is yours alone. Say exactly what you are feeling — type it or use the mic. No one else will ever hear this.",
     nextMode: 'understand' as const,
     nextLabel: 'Ready to reflect? Try Understand',
     quickActions: ['I feel unheard', 'I feel invisible', 'I am so frustrated', 'I feel scared about us'],
@@ -174,8 +174,8 @@ RULES:
     stepLabel: 'Step 3 of your journey',
     stepTitle: 'Prepare — turn insight into action',
     stepDesc: 'Build your message, plan the conversation, find a repair attempt.',
-    nextMode: null,
-    nextLabel: null,
+    nextMode: 'bridge' as const,
+    nextLabel: 'Ready to send? Move to Bridge',
     quickActions: ['Help me write a message', 'What is a repair attempt?', 'How do I start this conversation?'],
     systemPrompt: `You are Tether's communication coach in PREPARE mode.
 RULES:
@@ -184,25 +184,26 @@ RULES:
 - Suggest repair attempts matched to love language
 - 3-5 sentences with structured examples.`,
   },
-  nurture: {
+  bridge: {
     label: 'Nurture',
     emoji: '💛',
-    color: '#D4917A',
-    paleBg: '#F5E4DC',
-    borderColor: '#D4917A',
-    context: "Things are okay — let's invest in your bond proactively.",
-    stepLabel: 'Use when things are okay',
-    stepTitle: 'Nurture — invest in your bond',
-    stepDesc: 'Small daily acts of connection keep your relationship strong.',
+    color: '#7E9E8C',
+    paleBg: '#D8EAE2',
+    borderColor: '#A8C4B4',
+    context: "Compose and send a calm, considered message to your partner.",
+    stepLabel: 'Step 4 of your journey',
+    stepTitle: 'Nurture — send a repair message',
+    stepDesc: 'Use what you have learned to compose an NVC message and close the loop.',
     nextMode: null,
     nextLabel: null,
-    quickActions: ['Give me a connection ritual', 'How do I show appreciation?', 'How do we build trust?'],
-    systemPrompt: `You are Tether's nurture coach in NURTURE mode.
+    quickActions: ['Help me refine my message', 'Suggest a repair attempt', 'Am I being fair?'],
+    systemPrompt: `You are Tether's bridge coach in BRIDGE mode.
 RULES:
-- Offer Gottman-inspired bids for connection
-- Suggest love language specific activities
-- Share insights about the 5:1 ratio
-- Specific weekly challenge in every response. 3-5 sentences.`,
+- Help the user compose or refine their NVC message (Observation, Feeling, Need, Request)
+- Reference what they explored in earlier steps
+- Keep the message compassionate and specific
+- Suggest the tone and words that match their partner's likely reception
+- 2-4 sentences. Supportive, action-oriented.`,
   },
 };
 
@@ -221,3 +222,77 @@ export const DAILY_INSIGHTS = [
 
 export const FLOODING_WORDS = ['always', 'never', 'hate ', "can't stand", 'every single time'];
 export const CRISIS_WORDS = ['suicide', 'kill myself', 'end my life', "don't want to live", 'hurt myself'];
+
+export const SESSION_STEPS: ModeKey[] = ['vent', 'understand', 'prepare', 'bridge'];
+
+export const REPAIR_ATTEMPTS = [
+  { icon: '💛', name: 'Olive branch', msg: 'I know we are in a difficult moment. I do not want to be disconnected from you. Can we try again?' },
+  { icon: '🤝', name: 'Accountability', msg: 'I said some things that were not fair. I am sorry for that part of it. You did not deserve that.' },
+  { icon: '⏸️', name: 'Pause request', msg: 'I am feeling overwhelmed and I need 20 minutes. I am not going anywhere — I just need to come back to this calmer.' },
+  { icon: '🌿', name: 'Soft start', msg: 'Can we try talking about this again? I want to understand your side better. I am listening.' },
+  { icon: '💬', name: 'I hear you', msg: 'I can see this really hurt you. Your feelings make sense to me, even if I did not intend to cause them.' },
+  { icon: '🫂', name: 'Be together', msg: 'I do not want us to go to sleep like this. Can I just sit with you, even if we do not talk yet?' },
+];
+
+export const TOOLS_CONTENT = {
+  breathing: [
+    {
+      id: 'box',
+      name: 'Box Breathing',
+      emoji: '⬜',
+      desc: 'Equal counts of inhale, hold, exhale, hold. Used by Navy SEALs to calm under pressure.',
+      steps: ['Breathe in for 4 seconds', 'Hold for 4 seconds', 'Breathe out for 4 seconds', 'Hold for 4 seconds'],
+      durations: [4, 4, 4, 4],
+    },
+    {
+      id: '478',
+      name: '4-7-8 Breathing',
+      emoji: '🌙',
+      desc: 'Activates your parasympathetic nervous system. Particularly effective before a difficult conversation.',
+      steps: ['Breathe in for 4 seconds', 'Hold for 7 seconds', 'Breathe out for 8 seconds'],
+      durations: [4, 7, 8],
+    },
+  ],
+  grounding: [
+    {
+      id: '54321',
+      name: '5-4-3-2-1 Sensory Grounding',
+      emoji: '🖐️',
+      desc: 'Brings you back to the present moment using your senses.',
+      steps: [
+        '5 things you can see',
+        '4 things you can touch',
+        '3 things you can hear',
+        '2 things you can smell',
+        '1 thing you can taste',
+      ],
+    },
+    {
+      id: 'bodyscan',
+      name: 'Quick Body Scan',
+      emoji: '🧘',
+      desc: 'Notice where tension lives in your body without trying to change it.',
+      steps: [
+        'Close your eyes and take three slow breaths',
+        'Notice your jaw — is it clenched? Let it soften.',
+        'Notice your shoulders — are they lifted? Let them drop.',
+        'Notice your stomach — is it tight? Let it release.',
+        'Notice your hands — are they fists? Open them gently.',
+      ],
+    },
+  ],
+  phrases: {
+    softStartups: [
+      { bad: 'You never listen to me.', good: 'I feel unheard when I share something important and it seems like it does not land.' },
+      { bad: 'You always put work first.', good: 'I have been missing quality time with you. Could we plan an evening together?' },
+      { bad: 'You do not care about my feelings.', good: 'When my feelings are not acknowledged, I feel invisible. I need to know they matter to you.' },
+      { bad: 'Why are you so selfish?', good: 'I am feeling like my needs are not being considered right now. Can we talk about what we both need?' },
+    ],
+    wordsToAvoid: [
+      { word: 'Always / Never', why: 'Absolutes trigger defensiveness. Replace with "Sometimes I notice..." or "Lately it feels like..."' },
+      { word: 'You make me feel...', why: 'Implies blame. Replace with "I feel... when..." to own your experience.' },
+      { word: 'Whatever / Fine', why: 'Signals withdrawal and contempt. Say what you actually feel instead.' },
+      { word: 'You should...', why: 'Sounds parental. Replace with "What if we tried..." or "I would love it if..."' },
+    ],
+  },
+};

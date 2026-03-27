@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useEffect, useReducer } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { ModeKey } from '../constants/data';
+import { ModeKey, SESSION_STEPS } from '../constants/data';
 
 export interface Message {
   role: 'ai' | 'user';
@@ -20,11 +20,33 @@ export interface UserProfile {
   streak: number;
 }
 
+export interface Session {
+  id: string;
+  name: string;
+  status: 'active' | 'resolved';
+  currentStep: ModeKey;
+  unlockedSteps: ModeKey[];
+  messages: Record<ModeKey, Message[]>;
+  nvcDraft?: { obs: string; feel: string; need: string; request: string };
+  reflection?: string;
+  startDate: string;
+  resolvedDate?: string;
+}
+
+export interface Learnings {
+  reflections: { sessionId: string; text: string; date: string }[];
+  partnerObservations: string[];
+  relationshipPatterns: string[];
+}
+
 interface AppState {
   profile: UserProfile;
-  messages: Record<ModeKey, Message[]>;
+  messages: Record<string, Message[]>;
   sessionLog: { mode: ModeKey; text: string; date: string }[];
   currentMode: ModeKey;
+  sessions: Session[];
+  activeSessionId: string | null;
+  learnings: Learnings;
   loaded: boolean;
 }
 
@@ -33,8 +55,18 @@ type Action =
   | { type: 'ADD_MESSAGE'; mode: ModeKey; message: Message }
   | { type: 'SET_MODE'; mode: ModeKey }
   | { type: 'LOG_SESSION'; entry: { mode: ModeKey; text: string; date: string } }
-  | { type: 'HYDRATE'; state: AppState }
-  | { type: 'SET_LOADED' };
+  | { type: 'HYDRATE'; state: Partial<AppState> }
+  | { type: 'SET_LOADED' }
+  | { type: 'CREATE_SESSION' }
+  | { type: 'SET_ACTIVE_SESSION'; sessionId: string | null }
+  | { type: 'ADVANCE_STEP'; sessionId: string }
+  | { type: 'ADD_SESSION_MESSAGE'; sessionId: string; step: ModeKey; message: Message }
+  | { type: 'SET_NVC_DRAFT'; sessionId: string; draft: { obs: string; feel: string; need: string; request: string } }
+  | { type: 'RESOLVE_SESSION'; sessionId: string; reflection: string }
+  | { type: 'ADD_REFLECTION'; reflection: { sessionId: string; text: string; date: string } }
+  | { type: 'ADD_PARTNER_OBSERVATION'; observation: string }
+  | { type: 'ADD_RELATIONSHIP_PATTERN'; pattern: string }
+  | { type: 'RENAME_SESSION'; sessionId: string; name: string };
 
 const defaultProfile: UserProfile = {
   name: '',
@@ -50,11 +82,18 @@ const defaultProfile: UserProfile = {
 
 const initialState: AppState = {
   profile: defaultProfile,
-  messages: { vent: [], understand: [], prepare: [], nurture: [] },
+  messages: { vent: [], understand: [], prepare: [], bridge: [] },
   sessionLog: [],
   currentMode: 'vent',
+  sessions: [],
+  activeSessionId: null,
+  learnings: { reflections: [], partnerObservations: [], relationshipPatterns: [] },
   loaded: false,
 };
+
+function updateSession(sessions: Session[], sessionId: string, updater: (s: Session) => Session): Session[] {
+  return sessions.map((s) => (s.id === sessionId ? updater(s) : s));
+}
 
 function reducer(state: AppState, action: Action): AppState {
   switch (action.type) {
@@ -72,10 +111,127 @@ function reducer(state: AppState, action: Action): AppState {
       return { ...state, currentMode: action.mode };
     case 'LOG_SESSION':
       return { ...state, sessionLog: [action.entry, ...state.sessionLog].slice(0, 50) };
-    case 'HYDRATE':
-      return { ...action.state, loaded: true };
+    case 'HYDRATE': {
+      const saved = action.state as any;
+      return {
+        ...initialState,
+        ...saved,
+        sessions: saved.sessions || [],
+        activeSessionId: saved.activeSessionId || null,
+        learnings: saved.learnings || { reflections: [], partnerObservations: [], relationshipPatterns: [] },
+        loaded: true,
+      };
+    }
     case 'SET_LOADED':
       return { ...state, loaded: true };
+
+    case 'CREATE_SESSION': {
+      const newSession: Session = {
+        id: Date.now().toString(),
+        name: '',
+        status: 'active',
+        currentStep: 'vent',
+        unlockedSteps: ['vent'],
+        messages: { vent: [], understand: [], prepare: [], bridge: [] },
+        startDate: new Date().toISOString(),
+      };
+      return {
+        ...state,
+        sessions: [newSession, ...state.sessions],
+        activeSessionId: newSession.id,
+      };
+    }
+
+    case 'SET_ACTIVE_SESSION':
+      return { ...state, activeSessionId: action.sessionId };
+
+    case 'ADVANCE_STEP': {
+      return {
+        ...state,
+        sessions: updateSession(state.sessions, action.sessionId, (s) => {
+          const idx = SESSION_STEPS.indexOf(s.currentStep);
+          if (idx < 0 || idx >= SESSION_STEPS.length - 1) return s;
+          const nextStep = SESSION_STEPS[idx + 1];
+          return {
+            ...s,
+            currentStep: nextStep,
+            unlockedSteps: s.unlockedSteps.includes(nextStep)
+              ? s.unlockedSteps
+              : [...s.unlockedSteps, nextStep],
+          };
+        }),
+      };
+    }
+
+    case 'ADD_SESSION_MESSAGE':
+      return {
+        ...state,
+        sessions: updateSession(state.sessions, action.sessionId, (s) => ({
+          ...s,
+          messages: {
+            ...s.messages,
+            [action.step]: [...(s.messages[action.step] || []), action.message],
+          },
+        })),
+      };
+
+    case 'SET_NVC_DRAFT':
+      return {
+        ...state,
+        sessions: updateSession(state.sessions, action.sessionId, (s) => ({
+          ...s,
+          nvcDraft: action.draft,
+        })),
+      };
+
+    case 'RESOLVE_SESSION':
+      return {
+        ...state,
+        sessions: updateSession(state.sessions, action.sessionId, (s) => ({
+          ...s,
+          status: 'resolved' as const,
+          reflection: action.reflection,
+          resolvedDate: new Date().toISOString(),
+        })),
+        activeSessionId: null,
+      };
+
+    case 'ADD_REFLECTION':
+      return {
+        ...state,
+        learnings: {
+          ...state.learnings,
+          reflections: [action.reflection, ...state.learnings.reflections],
+        },
+      };
+
+    case 'ADD_PARTNER_OBSERVATION':
+      return {
+        ...state,
+        learnings: {
+          ...state.learnings,
+          partnerObservations: [action.observation, ...state.learnings.partnerObservations].slice(0, 20),
+        },
+      };
+
+    case 'ADD_RELATIONSHIP_PATTERN':
+      return {
+        ...state,
+        learnings: {
+          ...state.learnings,
+          relationshipPatterns: [action.pattern, ...state.learnings.relationshipPatterns].slice(0, 20),
+        },
+      };
+
+    case 'RENAME_SESSION':
+      return {
+        ...state,
+        sessions: updateSession(state.sessions, action.sessionId, (s) => ({
+          ...s,
+          name: action.name,
+        })),
+      };
+
     default:
       return state;
   }

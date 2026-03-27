@@ -65,7 +65,7 @@ export default function SettingsTab() {
 
         <Section title="Notifications">
           <SettingsRow icon="🌅" label="Daily check-in reminder" sub="9:00 AM" right={<Switch value={notifDaily} onValueChange={setNotifDaily} trackColor={{ false: Colors.sand, true: Colors.sage }} />} />
-          <SettingsRow icon="🌉" label="Bridge message alerts" sub="When partner sends a message" right={<Switch value={notifBridge} onValueChange={setNotifBridge} trackColor={{ false: Colors.sand, true: Colors.sage }} />} />
+          <SettingsRow icon="💬" label="Session alerts" sub="When a session is completed" right={<Switch value={notifBridge} onValueChange={setNotifBridge} trackColor={{ false: Colors.sand, true: Colors.sage }} />} />
         </Section>
 
         <Section title="Privacy and safety">
