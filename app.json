@@ -1,0 +1,28 @@
+{
+  "expo": {
+    "name": "Tether",
+    "slug": "tether",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#F7F3ED"
+    },
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.tether.app"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "backgroundColor": "#F7F3ED"
+      },
+      "package": "com.tether.app"
+    },
+    "plugins": ["expo-router", "expo-font"],
+    "scheme": "tether"
+  }
+}
