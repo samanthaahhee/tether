@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect, useMemo } from 'react';
 import {
   View, Text, TextInput, TouchableOpacity, FlatList, ScrollView,
-  StyleSheet, KeyboardAvoidingView, Platform, ActivityIndicator, Alert,
+  StyleSheet, KeyboardAvoidingView, Platform, ActivityIndicator, Alert, Modal,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAppState, Message, Session } from '../../src/hooks/useAppState';
@@ -56,9 +56,9 @@ const ti = StyleSheet.create({
   dot: { width: 7, height: 7, borderRadius: 3.5, backgroundColor: Colors.sandDark },
 });
 
-function StepProgressBar({ session }: { session: Session }) {
+function StepProgressBar({ session, bgColor, borderColor }: { session: Session; bgColor: string; borderColor: string }) {
   return (
-    <View style={sp.container}>
+    <View style={[sp.container, { backgroundColor: bgColor, borderBottomColor: borderColor }]}>
       {SESSION_STEPS.map((step, i) => {
         const cfg = MODE_CONFIG[step];
         const isCompleted = session.unlockedSteps.includes(step) && step !== session.currentStep;
@@ -75,12 +75,16 @@ function StepProgressBar({ session }: { session: Session }) {
               <View style={[
                 sp.node,
                 isCompleted && { backgroundColor: color, borderColor: color },
-                isCurrent && { backgroundColor: cfg.paleBg, borderColor: color, borderWidth: 2.5 },
-                isLocked && { backgroundColor: Colors.creamDark, borderColor: Colors.sand },
+                isCurrent && { backgroundColor: 'transparent', borderColor: color, borderWidth: 2.5 },
+                isLocked && { backgroundColor: 'transparent', borderColor: Colors.sand },
               ]}>
-                <Text style={{ fontSize: 14, opacity: isLocked ? 0.35 : 1 }}>{cfg.emoji}</Text>
+                <Text style={[sp.nodeNum, {
+                  color: isCompleted ? Colors.white : isCurrent ? color : Colors.sandDark,
+                  opacity: isLocked ? 0.35 : 1,
+                  fontFamily: isCurrent ? Fonts.bodyMedium : Fonts.body,
+                }]}>{i + 1}</Text>
               </View>
-              <Text style={[sp.label, isCurrent && { color, fontFamily: Fonts.bodyMedium }, isLocked && { opacity: 0.4 }]}>
+              <Text style={[sp.label, isCurrent && { color, fontFamily: Fonts.bodyMedium }, isLocked && { opacity: 0.35 }]}>
                 {cfg.label}
               </Text>
             </View>
@@ -92,8 +96,9 @@ function StepProgressBar({ session }: { session: Session }) {
 }
 
 const sp = StyleSheet.create({
-  container: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', paddingVertical: 12, paddingHorizontal: 16, backgroundColor: Colors.warmWhite, borderBottomWidth: 1, borderBottomColor: Colors.sand },
+  container: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', paddingTop: 8, paddingBottom: 14, paddingHorizontal: 16 },
   node: { width: 36, height: 36, borderRadius: 18, borderWidth: 1.5, borderColor: Colors.sand, alignItems: 'center', justifyContent: 'center' },
+  nodeNum: { fontSize: 14 },
   line: { flex: 1, height: 2, marginHorizontal: 2, borderRadius: 1, marginBottom: 18 },
   label: { fontFamily: Fonts.body, fontSize: 9, color: Colors.midBrown, textTransform: 'uppercase', letterSpacing: 0.4 },
 });
@@ -157,7 +162,10 @@ const nvc = StyleSheet.create({
   fieldInput: { backgroundColor: Colors.cream, borderWidth: 1.5, borderColor: Colors.sand, borderRadius: Radius.md, paddingHorizontal: 12, paddingVertical: 10, fontFamily: Fonts.body, fontSize: 14, color: Colors.charcoal },
 });
 
+const PAST_SESSIONS_PREVIEW = 3;
+
 function SessionListView({ sessions, dispatch: d, onOpenSession, onStartNew }: { sessions: Session[]; dispatch: any; onOpenSession: (id: string) => void; onStartNew: () => void }) {
+  const [showAllPast, setShowAllPast] = useState(false);
 
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
@@ -218,45 +226,60 @@ function SessionListView({ sessions, dispatch: d, onOpenSession, onStartNew }: {
           </View>
         )}
 
-        {sessions.filter((s) => s.status === 'resolved').length > 0 && (
-          <View style={{ paddingHorizontal: 20 }}>
-            <Text style={styles.sectionLabel}>PAST SESSIONS</Text>
-            {sessions.filter((s) => s.status === 'resolved').map((s) => {
-              const firstMsg = s.messages.vent?.[1]?.text?.slice(0, 80) || 'No messages recorded';
-              const stepsCompleted = s.unlockedSteps.length;
-              const date = new Date(s.startDate);
-              const dateStr = date.toLocaleDateString('en-ZA', { day: 'numeric', month: 'short' });
-              return (
-                <TouchableOpacity
-                  key={s.id}
-                  style={sl.sessionCard}
-                  onPress={() => onOpenSession(s.id)}
-                  activeOpacity={0.8}
-                >
-                  <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-                    <Text style={sl.sessionDate}>{dateStr}</Text>
-                    <View style={[sl.statusBadge, { backgroundColor: Colors.sagePale, borderColor: Colors.sageLight }]}>
-                      <Text style={[sl.statusText, { color: Colors.sage }]}>Resolved</Text>
+        {sessions.filter((s) => s.status === 'resolved').length > 0 && (() => {
+          const past = sessions.filter((s) => s.status === 'resolved');
+          const visible = showAllPast ? past : past.slice(0, PAST_SESSIONS_PREVIEW);
+          const hidden = past.length - PAST_SESSIONS_PREVIEW;
+          return (
+            <View style={{ paddingHorizontal: 20 }}>
+              <Text style={styles.sectionLabel}>PAST SESSIONS</Text>
+              {visible.map((s) => {
+                const firstMsg = s.messages.vent?.[1]?.text?.slice(0, 80) || 'No messages recorded';
+                const stepsCompleted = s.unlockedSteps.length;
+                const date = new Date(s.startDate);
+                const dateStr = date.toLocaleDateString('en-ZA', { day: 'numeric', month: 'short' });
+                return (
+                  <TouchableOpacity
+                    key={s.id}
+                    style={sl.sessionCard}
+                    onPress={() => onOpenSession(s.id)}
+                    activeOpacity={0.8}
+                  >
+                    <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+                      <Text style={sl.sessionDate}>{dateStr}</Text>
+                      <View style={[sl.statusBadge, { backgroundColor: Colors.sagePale, borderColor: Colors.sageLight }]}>
+                        <Text style={[sl.statusText, { color: Colors.sage }]}>Resolved</Text>
+                      </View>
                     </View>
-                  </View>
-                  {s.name ? <Text style={{ fontFamily: Fonts.display, fontSize: 16, color: Colors.charcoal, marginBottom: 4 }}>{s.name}</Text> : null}
-                  <Text style={sl.sessionPreview} numberOfLines={2}>{firstMsg}</Text>
-                  <View style={sl.stepDots}>
-                    {SESSION_STEPS.map((step) => (
-                      <View key={step} style={[sl.stepDot, s.unlockedSteps.includes(step) && { backgroundColor: STEP_COLORS[step] }]} />
-                    ))}
-                    <Text style={sl.stepCount}>{stepsCompleted}/{SESSION_STEPS.length} steps</Text>
-                  </View>
-                  {s.reflection && (
-                    <Text style={{ fontFamily: Fonts.body, fontSize: 12, color: Colors.sage, marginTop: 8, fontStyle: 'italic' }} numberOfLines={2}>
-                      {s.reflection}
-                    </Text>
-                  )}
+                    {s.name ? <Text style={{ fontFamily: Fonts.display, fontSize: 16, color: Colors.charcoal, marginBottom: 4 }}>{s.name}</Text> : null}
+                    <Text style={sl.sessionPreview} numberOfLines={2}>{firstMsg}</Text>
+                    <View style={sl.stepDots}>
+                      {SESSION_STEPS.map((step) => (
+                        <View key={step} style={[sl.stepDot, s.unlockedSteps.includes(step) && { backgroundColor: STEP_COLORS[step] }]} />
+                      ))}
+                      <Text style={sl.stepCount}>{stepsCompleted}/{SESSION_STEPS.length} steps</Text>
+                    </View>
+                    {s.reflection && (
+                      <Text style={{ fontFamily: Fonts.body, fontSize: 12, color: Colors.sage, marginTop: 8, fontStyle: 'italic' }} numberOfLines={2}>
+                        {s.reflection}
+                      </Text>
+                    )}
+                  </TouchableOpacity>
+                );
+              })}
+              {!showAllPast && hidden > 0 && (
+                <TouchableOpacity onPress={() => setShowAllPast(true)} style={sl.showMoreBtn} activeOpacity={0.7}>
+                  <Text style={sl.showMoreText}>Show {hidden} more past session{hidden !== 1 ? 's' : ''}</Text>
                 </TouchableOpacity>
-              );
-            })}
-          </View>
-        )}
+              )}
+              {showAllPast && past.length > PAST_SESSIONS_PREVIEW && (
+                <TouchableOpacity onPress={() => setShowAllPast(false)} style={sl.showMoreBtn} activeOpacity={0.7}>
+                  <Text style={sl.showMoreText}>Show less</Text>
+                </TouchableOpacity>
+              )}
+            </View>
+          );
+        })()}
       </ScrollView>
     </SafeAreaView>
   );
@@ -278,13 +301,59 @@ const sl = StyleSheet.create({
   stepDots: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   stepDot: { width: 8, height: 8, borderRadius: 4, backgroundColor: Colors.sand },
   stepCount: { fontFamily: Fonts.body, fontSize: 11, color: Colors.lightBrown, marginLeft: 4 },
+  showMoreBtn: { alignItems: 'center', paddingVertical: 14, marginTop: 4, marginBottom: 8 },
+  showMoreText: { fontFamily: Fonts.bodyMedium, fontSize: 13, color: Colors.midBrown },
 });
+
+const CAPTURE_CONFIG: Record<ModeKey, { question: string; options: { emoji: string; label: string; score: number }[] }> = {
+  vent: {
+    question: 'Before moving on — how intense is the emotion right now?',
+    options: [
+      { emoji: '😌', label: 'Calm', score: 1 },
+      { emoji: '😐', label: 'Unsettled', score: 2 },
+      { emoji: '😟', label: 'Heavy', score: 3 },
+      { emoji: '😰', label: 'Overwhelmed', score: 4 },
+      { emoji: '🔥', label: 'Flooded', score: 5 },
+    ],
+  },
+  understand: {
+    question: 'How much clarity have you found?',
+    options: [
+      { emoji: '🌫️', label: 'Still foggy', score: 1 },
+      { emoji: '🌥️', label: 'A little', score: 2 },
+      { emoji: '⛅', label: 'Getting there', score: 3 },
+      { emoji: '🌤️', label: 'Mostly clear', score: 4 },
+      { emoji: '☀️', label: 'Clear', score: 5 },
+    ],
+  },
+  prepare: {
+    question: 'How ready do you feel to reach out to your partner?',
+    options: [
+      { emoji: '😰', label: 'Not ready', score: 1 },
+      { emoji: '😟', label: 'Hesitant', score: 2 },
+      { emoji: '😐', label: 'Almost', score: 3 },
+      { emoji: '🙂', label: 'Ready', score: 4 },
+      { emoji: '😊', label: 'Grounded', score: 5 },
+    ],
+  },
+  bridge: {
+    question: 'How are you feeling as you close this session?',
+    options: [
+      { emoji: '😔', label: 'Still hard', score: 1 },
+      { emoji: '😐', label: 'Same', score: 2 },
+      { emoji: '🙂', label: 'A bit better', score: 3 },
+      { emoji: '😊', label: 'Better', score: 4 },
+      { emoji: '🌿', label: 'Settled', score: 5 },
+    ],
+  },
+};
 
 function ActiveSessionView({ session, state, dispatch: d, onBack }: { session: Session; state: any; dispatch: any; onBack: () => void }) {
   const [input, setInput] = useState('');
   const [showNvc, setShowNvc] = useState(false);
   const [editingName, setEditingName] = useState(false);
   const [nameInput, setNameInput] = useState(session.name);
+  const [showCapture, setShowCapture] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
   const recognitionRef = useRef<any>(null);
   const flatRef = useRef<FlatList>(null);
@@ -401,6 +470,23 @@ function ActiveSessionView({ session, state, dispatch: d, onBack }: { session: S
   };
 
   const advanceStep = () => {
+    setShowCapture(true);
+  };
+
+  const commitAdvance = (score?: number) => {
+    setShowCapture(false);
+    if (score !== undefined) {
+      d({
+        type: 'ADD_EMOTIONAL_CAPTURE',
+        capture: {
+          id: Date.now().toString(),
+          sessionId: session.id,
+          date: new Date().toISOString(),
+          fromStep: step,
+          score,
+        },
+      });
+    }
     d({ type: 'ADVANCE_STEP', sessionId: session.id });
   };
 
@@ -417,41 +503,43 @@ function ActiveSessionView({ session, state, dispatch: d, onBack }: { session: S
     <SafeAreaView style={styles.safe} edges={['top']}>
       <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'} keyboardVerticalOffset={0}>
 
-        <View style={{ flexDirection: 'row', alignItems: 'center', paddingHorizontal: 12, paddingTop: 4 }}>
-          <TouchableOpacity onPress={goBack} style={{ padding: 8 }}>
-            <Text style={{ fontFamily: Fonts.body, fontSize: 14, color: Colors.terracotta }}>← Back</Text>
-          </TouchableOpacity>
-          <View style={{ flex: 1, alignItems: 'center' }}>
-            {editingName ? (
-              <TextInput
-                value={nameInput}
-                onChangeText={setNameInput}
-                onBlur={() => { d({ type: 'RENAME_SESSION', sessionId: session.id, name: nameInput }); setEditingName(false); }}
-                onSubmitEditing={() => { d({ type: 'RENAME_SESSION', sessionId: session.id, name: nameInput }); setEditingName(false); }}
-                autoFocus
-                placeholder="Name this session..."
-                placeholderTextColor={Colors.lightBrown}
-                style={{ fontFamily: Fonts.display, fontSize: 15, color: Colors.charcoal, textAlign: 'center', paddingVertical: 4, minWidth: 150 }}
-              />
-            ) : (
-              <TouchableOpacity onPress={() => { setNameInput(session.name); setEditingName(true); }}>
-                <Text style={{ fontFamily: Fonts.display, fontSize: 15, color: session.name ? Colors.charcoal : Colors.lightBrown }}>
-                  {session.name || 'Tap to name session'}
-                </Text>
-              </TouchableOpacity>
-            )}
+        <View style={[styles.sessionHeader, { backgroundColor: cfg.paleBg, borderBottomColor: cfg.borderColor }]}>
+          {/* Nav row */}
+          <View style={styles.sessionHeaderNav}>
+            <TouchableOpacity onPress={goBack} style={styles.sessionBackBtn} activeOpacity={0.7}>
+              <Text style={styles.sessionBackText}>← Back</Text>
+            </TouchableOpacity>
+            <View style={{ flex: 1, alignItems: 'center' }}>
+              {editingName ? (
+                <TextInput
+                  value={nameInput}
+                  onChangeText={setNameInput}
+                  onBlur={() => { d({ type: 'RENAME_SESSION', sessionId: session.id, name: nameInput }); setEditingName(false); }}
+                  onSubmitEditing={() => { d({ type: 'RENAME_SESSION', sessionId: session.id, name: nameInput }); setEditingName(false); }}
+                  autoFocus
+                  placeholder="Name this session..."
+                  placeholderTextColor={Colors.lightBrown}
+                  style={styles.sessionNameInput}
+                />
+              ) : (
+                <TouchableOpacity onPress={() => { setNameInput(session.name); setEditingName(true); }} activeOpacity={0.7}>
+                  <Text style={styles.sessionNameText} numberOfLines={1}>
+                    {session.name || 'Tap to name'}
+                  </Text>
+                </TouchableOpacity>
+              )}
+            </View>
+            <View style={{ minWidth: 56 }} />
           </View>
-          <View style={{ width: 60 }} />
-        </View>
 
-        <StepProgressBar session={session} />
-
-        <View style={[styles.modeBanner, { backgroundColor: cfg.paleBg, borderBottomColor: cfg.borderColor }]}>
-          <View style={{ flex: 1 }}>
-            <Text style={[styles.bannerStep, { color: cfg.color }]}>{cfg.stepLabel}</Text>
-            <Text style={styles.bannerTitle}>{cfg.stepTitle}</Text>
-            <Text style={styles.bannerDesc}>{cfg.stepDesc}</Text>
+          {/* Step identity */}
+          <View style={styles.sessionStepIdentity}>
+            <Text style={styles.sessionStepEmoji}>{cfg.emoji}</Text>
+            <Text style={[styles.sessionStepName, { color: cfg.color }]}>{cfg.label}</Text>
           </View>
+
+          {/* Progress nodes */}
+          <StepProgressBar session={session} bgColor={cfg.paleBg} borderColor={cfg.borderColor + '40'} />
         </View>
 
         {floodingDetected && step === 'vent' && (
@@ -560,6 +648,26 @@ function ActiveSessionView({ session, state, dispatch: d, onBack }: { session: S
           </>
         )}
 
+      {/* Emotional capture modal */}
+      <Modal visible={showCapture} transparent animationType="slide" onRequestClose={() => commitAdvance()}>
+        <View style={cap.overlay}>
+          <View style={cap.sheet}>
+            <Text style={cap.question}>{CAPTURE_CONFIG[step]?.question}</Text>
+            <View style={cap.optionsRow}>
+              {CAPTURE_CONFIG[step]?.options.map((opt) => (
+                <TouchableOpacity key={opt.score} onPress={() => commitAdvance(opt.score)} style={cap.optBtn} activeOpacity={0.8}>
+                  <Text style={cap.optEmoji}>{opt.emoji}</Text>
+                  <Text style={cap.optLabel}>{opt.label}</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+            <TouchableOpacity onPress={() => commitAdvance()} style={cap.skipBtn} activeOpacity={0.7}>
+              <Text style={cap.skipText}>Skip</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+
       </KeyboardAvoidingView>
     </SafeAreaView>
   );
@@ -665,10 +773,16 @@ const styles = StyleSheet.create({
   headerTitle: { fontFamily: Fonts.display, fontSize: 26, color: Colors.charcoal, marginBottom: 6 },
   headerSub: { fontFamily: Fonts.body, fontSize: 14, color: Colors.midBrown },
   sectionLabel: { fontFamily: Fonts.bodyMedium, fontSize: 10, letterSpacing: 0.8, textTransform: 'uppercase', color: Colors.midBrown, marginBottom: 14 },
-  modeBanner: { paddingHorizontal: 16, paddingVertical: 10, borderBottomWidth: 1 },
-  bannerStep: { fontFamily: Fonts.bodyMedium, fontSize: 10, letterSpacing: 0.6, textTransform: 'uppercase', marginBottom: 2 },
-  bannerTitle: { fontFamily: Fonts.display, fontSize: 15, color: Colors.charcoal, marginBottom: 2 },
-  bannerDesc: { fontFamily: Fonts.body, fontSize: 12, color: Colors.warmBrown },
+  sessionHeader: { borderBottomWidth: 1 },
+  sessionHeaderNav: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingTop: 10, paddingBottom: 4 },
+  sessionBackBtn: { paddingVertical: 4, paddingRight: 8, minWidth: 56 },
+  sessionBackText: { fontFamily: Fonts.bodyMedium, fontSize: 14, color: Colors.midBrown },
+  sessionNameInput: { fontFamily: Fonts.body, fontSize: 12, color: Colors.charcoal, textAlign: 'center', paddingVertical: 2, minWidth: 120 },
+  sessionNameText: { fontFamily: Fonts.body, fontSize: 12, color: Colors.midBrown, textAlign: 'center' },
+  sessionStepCounter: { fontFamily: Fonts.bodyMedium, fontSize: 12, minWidth: 56, textAlign: 'right' },
+  sessionStepIdentity: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 16, paddingTop: 10, paddingBottom: 2 },
+  sessionStepEmoji: { fontSize: 26 },
+  sessionStepName: { fontFamily: Fonts.display, fontSize: 22 },
   floodBanner: { backgroundColor: Colors.terracottaPale, borderBottomWidth: 1, borderBottomColor: Colors.terracottaLight, padding: 10, paddingHorizontal: 16 },
   floodText: { fontFamily: Fonts.body, fontSize: 13, color: Colors.warmBrown },
   msgList: { paddingHorizontal: 16, paddingVertical: 14, gap: 12, flexGrow: 1 },
@@ -694,4 +808,16 @@ const styles = StyleSheet.create({
   advanceText: { fontFamily: Fonts.bodyMedium, fontSize: 13, color: Colors.sage },
   resolveBanner: { backgroundColor: Colors.sage, marginHorizontal: 12, marginVertical: 6, borderRadius: Radius.md, padding: 14, alignItems: 'center', ...Shadows.sm },
   resolveText: { fontFamily: Fonts.bodyMedium, fontSize: 14, color: Colors.white },
+});
+
+const cap = StyleSheet.create({
+  overlay: { flex: 1, justifyContent: 'flex-end', backgroundColor: 'rgba(0,0,0,0.35)' },
+  sheet: { backgroundColor: Colors.warmWhite, borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: 28, paddingBottom: 44 },
+  question: { fontFamily: Fonts.display, fontSize: 17, color: Colors.charcoal, textAlign: 'center', marginBottom: 24, lineHeight: 26 },
+  optionsRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 20 },
+  optBtn: { flex: 1, alignItems: 'center', gap: 6 },
+  optEmoji: { fontSize: 30 },
+  optLabel: { fontFamily: Fonts.body, fontSize: 10, color: Colors.midBrown, textAlign: 'center' },
+  skipBtn: { alignItems: 'center', paddingVertical: 8 },
+  skipText: { fontFamily: Fonts.body, fontSize: 13, color: Colors.lightBrown },
 });

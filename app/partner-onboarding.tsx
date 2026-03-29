@@ -6,16 +6,14 @@ import {
 import { router } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAppState } from '../src/hooks/useAppState';
-import { useAuth } from '../src/hooks/useAuth';
 import { Colors, Fonts, Radius } from '../src/constants/theme';
 import {
   ATTACH_REVEALS, CONFLICT_REVEALS, WINDOW_REVEALS, LOVE_REVEALS,
-  ATTACH_INSIGHTS, ATTACHMENT_LABELS, CONFLICT_LABELS, LOVE_LABELS,
-  WINDOW_LABELS, NEED_LABELS,
+  ATTACHMENT_LABELS, CONFLICT_LABELS, LOVE_LABELS, WINDOW_LABELS, NEED_LABELS,
 } from '../src/constants/data';
 import { Button, InsightReveal } from '../src/components/UI';
 
-const TOTAL_STEPS = 8;
+const TOTAL_STEPS = 8; // handoff + name + 5 questions + summary
 
 interface OptionData {
   value: string;
@@ -23,13 +21,6 @@ interface OptionData {
   title: string;
   desc: string;
 }
-
-const CONTEXT_OPTIONS: OptionData[] = [
-  { value: 'conflict', emoji: '🌊', title: 'We are going through a rough patch', desc: 'Arguments feel frequent or intense. Something feels stuck and we cannot break the cycle.' },
-  { value: 'disconnect', emoji: '🌫️', title: 'We have grown distant', desc: 'There is no big blow-up — just a quiet drift. We are more like housemates than partners.' },
-  { value: 'specific', emoji: '🔍', title: 'There is one specific issue', desc: 'Something happened — or keeps happening — that I need to work through and understand better.' },
-  { value: 'proactive', emoji: '🌱', title: 'Things are okay — I want to grow', desc: 'We are doing reasonably well but I want to build stronger communication before problems arise.' },
-];
 
 const ATTACH_OPTIONS: OptionData[] = [
   { value: 'secure', emoji: '😌', title: 'They are probably just busy', desc: 'I feel fine. I trust they will respond when they can. I do not feel unsettled.' },
@@ -72,7 +63,7 @@ function OptionCard({ option, selected, onPress }: { option: OptionData; selecte
     <TouchableOpacity onPress={onPress} activeOpacity={0.8} style={[styles.optCard, selected && styles.optCardSelected]}>
       <Text style={styles.optEmoji}>{option.emoji}</Text>
       <View style={{ flex: 1 }}>
-        <Text style={[styles.optTitle, selected && { color: Colors.terracotta }]}>{option.title}</Text>
+        <Text style={[styles.optTitle, selected && { color: Colors.blush }]}>{option.title}</Text>
         <Text style={styles.optDesc}>{option.desc}</Text>
       </View>
       {selected && (
@@ -84,10 +75,9 @@ function OptionCard({ option, selected, onPress }: { option: OptionData; selecte
   );
 }
 
-export default function Onboarding() {
+export default function PartnerOnboarding() {
   const { dispatch } = useAppState();
-  const { syncProfile } = useAuth();
-  const [step, setStep] = useState(1);
+  const [step, setStep] = useState(0); // 0 = handoff screen
   const [name, setName] = useState('');
   const [picks, setPicks] = useState<Record<string, string>>({});
   const scrollRef = useRef<ScrollView>(null);
@@ -99,32 +89,29 @@ export default function Onboarding() {
 
   const canProceed = () => {
     if (step === 1) return name.trim().length > 0;
-    if (step === 2) return !!picks.context;
-    if (step === 3) return !!picks.attach;
-    if (step === 4) return !!picks.conflict;
-    if (step === 5) return !!picks.window;
-    if (step === 6) return !!picks.love;
-    if (step === 7) return !!picks.need;
+    if (step === 2) return !!picks.attach;
+    if (step === 3) return !!picks.conflict;
+    if (step === 4) return !!picks.window;
+    if (step === 5) return !!picks.love;
+    if (step === 6) return !!picks.need;
     return true;
   };
 
-  const next = async () => {
-    if (!canProceed()) return;
-    if (step === 8) {
-      const profilePayload = {
-        name: name.trim(),
-        attachment: picks.attach || 'secure',
-        conflict: picks.conflict || 'defensive',
-        love: picks.love || 'words',
-        window: picks.window || 'regulated',
-        need: picks.need || 'seen',
-        context: picks.context || 'conflict',
-        onboarded: true,
-      };
-      dispatch({ type: 'SET_PROFILE', payload: profilePayload });
-      // Sync to Supabase
-      await syncProfile(profilePayload);
-      router.replace('/(tabs)');
+  const next = () => {
+    if (step > 0 && !canProceed()) return;
+    if (step === TOTAL_STEPS - 1) {
+      dispatch({
+        type: 'SET_PARTNER_PROFILE',
+        payload: {
+          name: name.trim(),
+          attachment: picks.attach,
+          conflict: picks.conflict,
+          love: picks.love,
+          window: picks.window,
+          need: picks.need,
+        },
+      });
+      router.back();
       return;
     }
     setStep((s) => s + 1);
@@ -141,101 +128,152 @@ export default function Onboarding() {
   return (
     <SafeAreaView style={styles.safe} edges={['top', 'bottom']}>
       <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
-        <View style={styles.header}>
-          <View style={styles.progressTrack}>
-            <View style={[styles.progressFill, { width: ((step / TOTAL_STEPS) * 100) + '%' }]} />
-          </View>
-          <TouchableOpacity onPress={() => router.replace('/(tabs)')}>
-            <Text style={styles.skipText}>Skip</Text>
-          </TouchableOpacity>
-        </View>
-        <ScrollView ref={scrollRef} style={{ flex: 1 }} contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
 
-          {step === 1 && (
-            <View style={styles.stepWrap}>
-              <Text style={styles.stepTag}>Step 1 of 8</Text>
-              <Text style={styles.stepH}>Let us start with you</Text>
-              <Text style={styles.stepSub}>This takes about 4 minutes. Your answers help Tether understand how you experience relationships so every session feels made for you.</Text>
-              <TextInput value={name} onChangeText={setName} placeholder="Your first name" placeholderTextColor={Colors.lightBrown} style={styles.nameInput} autoFocus returnKeyType="done" onSubmitEditing={next} />
-              <View style={styles.hintBox}>
+        {/* Header — hidden on handoff screen */}
+        {step > 0 && (
+          <View style={styles.header}>
+            <View style={styles.progressTrack}>
+              <View style={[styles.progressFill, { width: ((step / (TOTAL_STEPS - 1)) * 100) + '%' }]} />
+            </View>
+            <TouchableOpacity onPress={() => router.back()}>
+              <Text style={styles.skipText}>Cancel</Text>
+            </TouchableOpacity>
+          </View>
+        )}
+
+        <ScrollView
+          ref={scrollRef}
+          style={{ flex: 1 }}
+          contentContainerStyle={styles.scroll}
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+        >
+
+          {/* Step 0: Handoff screen */}
+          {step === 0 && (
+            <View style={styles.handoff}>
+              <Text style={{ fontSize: 56, textAlign: 'center', marginBottom: 20 }}>🤝</Text>
+              <Text style={styles.handoffTitle}>Hand the phone to your partner</Text>
+              <Text style={styles.handoffSub}>
+                This takes about 3 minutes. Your partner will answer a few questions about themselves — their honest instincts, not what they think they should say.
+              </Text>
+              <View style={styles.handoffHint}>
                 <Text style={styles.hintIcon}>🔒</Text>
-                <Text style={styles.hintText}>Everything you share here stays private. Tether never shows your answers to your partner.</Text>
+                <Text style={styles.hintText}>Their answers are saved only on this device and are never shared outside the app.</Text>
+              </View>
+              <View style={styles.handoffHint}>
+                <Text style={styles.hintIcon}>✏️</Text>
+                <Text style={styles.hintText}>You can update or redo this profile anytime from Settings.</Text>
+              </View>
+              <View style={styles.footer}>
+                <Button label="Start partner profile" onPress={next} />
+                <TouchableOpacity onPress={() => router.back()} style={styles.cancelBtn}>
+                  <Text style={styles.cancelText}>Cancel</Text>
+                </TouchableOpacity>
               </View>
             </View>
           )}
 
-          {step === 2 && (
+          {/* Step 1: Name */}
+          {step === 1 && (
             <View style={styles.stepWrap}>
-              <Text style={styles.stepTag}>Step 2 of 8 — Your situation</Text>
-              <Text style={styles.stepH}>What is bringing you here?</Text>
-              <Text style={styles.stepSub}>No right answer — just helps Tether understand where you are starting from.</Text>
-              {CONTEXT_OPTIONS.map((o) => <OptionCard key={o.value} option={o} selected={picks.context === o.value} onPress={() => pick('context', o.value)} />)}
+              <Text style={styles.stepTag}>Step 1 of 6</Text>
+              <Text style={styles.stepH}>Let us start with you</Text>
+              <Text style={styles.stepSub}>Your partner is filling this in — answer honestly. This helps your partner understand how you experience your relationship.</Text>
+              <TextInput
+                value={name}
+                onChangeText={setName}
+                placeholder="Your first name"
+                placeholderTextColor={Colors.lightBrown}
+                style={styles.nameInput}
+                autoFocus
+                returnKeyType="done"
+                onSubmitEditing={next}
+              />
             </View>
           )}
 
-          {step === 3 && (
+          {/* Step 2: Attachment */}
+          {step === 2 && (
             <View style={styles.stepWrap}>
-              <Text style={styles.stepTag}>Step 3 of 8 — How you connect</Text>
+              <Text style={styles.stepTag}>Step 2 of 6 — How you connect</Text>
               <Text style={styles.stepH}>Your partner has not replied to your messages for a few hours. What goes through your mind?</Text>
               <Text style={styles.stepSub}>Pick the response that feels most honestly true — even if you wish it were not.</Text>
-              {ATTACH_OPTIONS.map((o) => <OptionCard key={o.value} option={o} selected={picks.attach === o.value} onPress={() => pick('attach', o.value)} />)}
+              {ATTACH_OPTIONS.map((o) => (
+                <OptionCard key={o.value} option={o} selected={picks.attach === o.value} onPress={() => pick('attach', o.value)} />
+              ))}
               {picks.attach && ATTACH_REVEALS[picks.attach] && (
                 <InsightReveal label="What this means for you" title={ATTACH_REVEALS[picks.attach].title} body={ATTACH_REVEALS[picks.attach].body} bg={rc.attach.bg} borderColor={rc.attach.border} labelColor={rc.attach.label} />
               )}
             </View>
           )}
 
-          {step === 4 && (
+          {/* Step 3: Conflict style */}
+          {step === 3 && (
             <View style={styles.stepWrap}>
-              <Text style={styles.stepTag}>Step 4 of 8 — During conflict</Text>
+              <Text style={styles.stepTag}>Step 3 of 6 — During conflict</Text>
               <Text style={styles.stepH}>You and your partner are in the middle of a tense argument. What do you feel the strongest urge to do?</Text>
               <Text style={styles.stepSub}>Your gut instinct — not what you think you should do.</Text>
-              {CONFLICT_OPTIONS.map((o) => <OptionCard key={o.value} option={o} selected={picks.conflict === o.value} onPress={() => pick('conflict', o.value)} />)}
+              {CONFLICT_OPTIONS.map((o) => (
+                <OptionCard key={o.value} option={o} selected={picks.conflict === o.value} onPress={() => pick('conflict', o.value)} />
+              ))}
               {picks.conflict && CONFLICT_REVEALS[picks.conflict] && (
                 <InsightReveal label="What this means for you" title={CONFLICT_REVEALS[picks.conflict].title} body={CONFLICT_REVEALS[picks.conflict].body} bg={rc.conflict.bg} borderColor={rc.conflict.border} labelColor={rc.conflict.label} />
               )}
             </View>
           )}
 
-          {step === 5 && (
+          {/* Step 4: Window of tolerance */}
+          {step === 4 && (
             <View style={styles.stepWrap}>
-              <Text style={styles.stepTag}>Step 5 of 8 — Your body in conflict</Text>
+              <Text style={styles.stepTag}>Step 4 of 6 — Your body in conflict</Text>
               <Text style={styles.stepH}>When an argument escalates, what happens in your body first?</Text>
-              <Text style={styles.stepSub}>This helps Tether know when to suggest a pause and what kind of support you need.</Text>
-              {WINDOW_OPTIONS.map((o) => <OptionCard key={o.value} option={o} selected={picks.window === o.value} onPress={() => pick('window', o.value)} />)}
+              <Text style={styles.stepSub}>This helps your partner understand when you need a pause and what kind of support helps most.</Text>
+              {WINDOW_OPTIONS.map((o) => (
+                <OptionCard key={o.value} option={o} selected={picks.window === o.value} onPress={() => pick('window', o.value)} />
+              ))}
               {picks.window && WINDOW_REVEALS[picks.window] && (
                 <InsightReveal label="What this means for you" title={WINDOW_REVEALS[picks.window].title} body={WINDOW_REVEALS[picks.window].body} bg={rc.window.bg} borderColor={rc.window.border} labelColor={rc.window.label} />
               )}
             </View>
           )}
 
-          {step === 6 && (
+          {/* Step 5: Love language */}
+          {step === 5 && (
             <View style={styles.stepWrap}>
-              <Text style={styles.stepTag}>Step 6 of 8 — How you feel loved</Text>
+              <Text style={styles.stepTag}>Step 5 of 6 — How you feel loved</Text>
               <Text style={styles.stepH}>After a difficult few days, what would make you feel most reconnected to your partner?</Text>
               <Text style={styles.stepSub}>Imagine the thing that would genuinely shift how you feel.</Text>
-              {LOVE_OPTIONS.map((o) => <OptionCard key={o.value} option={o} selected={picks.love === o.value} onPress={() => pick('love', o.value)} />)}
+              {LOVE_OPTIONS.map((o) => (
+                <OptionCard key={o.value} option={o} selected={picks.love === o.value} onPress={() => pick('love', o.value)} />
+              ))}
               {picks.love && LOVE_REVEALS[picks.love] && (
                 <InsightReveal label="What this means for you" title={LOVE_REVEALS[picks.love].title} body={LOVE_REVEALS[picks.love].body} bg={rc.love.bg} borderColor={rc.love.border} labelColor={rc.love.label} />
               )}
             </View>
           )}
 
-          {step === 7 && (
+          {/* Step 6: Core need */}
+          {step === 6 && (
             <View style={styles.stepWrap}>
-              <Text style={styles.stepTag}>Step 7 of 8 — What you most need</Text>
+              <Text style={styles.stepTag}>Step 6 of 6 — What you most need</Text>
               <Text style={styles.stepH}>When you are hurting in a relationship, which feels most true?</Text>
-              <Text style={styles.stepSub}>This helps Tether understand what is beneath your conflicts — the need that is usually unspoken.</Text>
-              {NEED_OPTIONS.map((o) => <OptionCard key={o.value} option={o} selected={picks.need === o.value} onPress={() => pick('need', o.value)} />)}
+              <Text style={styles.stepSub}>The need that is usually unspoken — the thing beneath the conflict.</Text>
+              {NEED_OPTIONS.map((o) => (
+                <OptionCard key={o.value} option={o} selected={picks.need === o.value} onPress={() => pick('need', o.value)} />
+              ))}
             </View>
           )}
 
-          {step === 8 && (
+          {/* Step 7: Summary */}
+          {step === 7 && (
             <View style={styles.stepWrap}>
               <Text style={{ fontSize: 48, textAlign: 'center', marginBottom: 16 }}>🌿</Text>
-              <Text style={styles.stepTag}>Your profile is ready</Text>
-              <Text style={[styles.stepH, { textAlign: 'center' }]}>Welcome, {name}</Text>
-              <Text style={[styles.stepSub, { textAlign: 'center' }]}>Here is what Tether has learned about you.</Text>
+              <Text style={styles.stepTag}>Profile complete</Text>
+              <Text style={[styles.stepH, { textAlign: 'center' }]}>Thank you, {name}</Text>
+              <Text style={[styles.stepSub, { textAlign: 'center' }]}>
+                Your partner can now see your emotional patterns in the app — to understand you better, not to judge you.
+              </Text>
               <View style={styles.summaryGrid}>
                 {[
                   { label: 'Attachment', value: ATTACHMENT_LABELS[picks.attach] || '—' },
@@ -243,7 +281,6 @@ export default function Onboarding() {
                   { label: 'Love language', value: LOVE_LABELS[picks.love] || '—' },
                   { label: 'Body in conflict', value: WINDOW_LABELS[picks.window] || '—' },
                   { label: 'Core need', value: NEED_LABELS[picks.need] || '—' },
-                  { label: 'Here because', value: { conflict: 'Rough patch', disconnect: 'Reconnecting', specific: 'Specific issue', proactive: 'Growing' }[picks.context] || '—' },
                 ].map((item) => (
                   <View key={item.label} style={styles.summaryPill}>
                     <Text style={styles.pillLabel}>{item.label}</Text>
@@ -251,18 +288,15 @@ export default function Onboarding() {
                   </View>
                 ))}
               </View>
-              <View style={styles.finalInsight}>
-                <Text style={styles.finalInsightLabel}>Your personalised insight</Text>
-                <Text style={styles.finalInsightBody}>
-                  {ATTACH_INSIGHTS[picks.attach] || ''} Your core need — to feel {picks.need || 'seen'} — is the thread underneath most of your conflicts. Tether will help you name it and communicate it.
-                </Text>
-              </View>
             </View>
           )}
 
-          <View style={styles.footer}>
-            <Button label={step === 8 ? 'Enter Tether' : 'Continue'} onPress={next} disabled={!canProceed()} />
-          </View>
+          {step > 0 && (
+            <View style={styles.footer}>
+              <Button label={step === TOTAL_STEPS - 1 ? 'Save and hand back' : 'Continue'} onPress={next} disabled={step < 7 && !canProceed()} />
+            </View>
+          )}
+
         </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>
@@ -273,29 +307,31 @@ const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: Colors.warmWhite },
   header: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 20, paddingVertical: 16 },
   progressTrack: { flex: 1, height: 4, backgroundColor: Colors.sand, borderRadius: 2, overflow: 'hidden' },
-  progressFill: { height: '100%', backgroundColor: Colors.terracotta, borderRadius: 2 },
+  progressFill: { height: '100%', backgroundColor: Colors.blush, borderRadius: 2 },
   skipText: { fontFamily: Fonts.body, fontSize: 13, color: Colors.midBrown },
   scroll: { paddingBottom: 40 },
+  handoff: { flex: 1, paddingHorizontal: 20, paddingTop: 48, gap: 16 },
+  handoffTitle: { fontFamily: Fonts.display, fontSize: 26, color: Colors.charcoal, textAlign: 'center', lineHeight: 34 },
+  handoffSub: { fontFamily: Fonts.body, fontSize: 15, color: Colors.midBrown, lineHeight: 23, textAlign: 'center', marginBottom: 8 },
+  handoffHint: { backgroundColor: Colors.creamDark, borderWidth: 1, borderColor: Colors.sand, borderRadius: Radius.md, padding: 14, flexDirection: 'row', alignItems: 'flex-start', gap: 10 },
   stepWrap: { paddingHorizontal: 20, paddingTop: 12, gap: 10 },
-  stepTag: { fontFamily: Fonts.bodyMedium, fontSize: 11, letterSpacing: 0.8, textTransform: 'uppercase', color: Colors.terracotta },
+  stepTag: { fontFamily: Fonts.bodyMedium, fontSize: 11, letterSpacing: 0.8, textTransform: 'uppercase', color: Colors.blush },
   stepH: { fontFamily: Fonts.display, fontSize: 24, color: Colors.charcoal, lineHeight: 32, marginBottom: 2 },
   stepSub: { fontFamily: Fonts.body, fontSize: 14, color: Colors.midBrown, lineHeight: 21, marginBottom: 8 },
   nameInput: { width: '100%', padding: 16, borderRadius: Radius.md, borderWidth: 2, borderColor: Colors.sand, backgroundColor: Colors.cream, fontFamily: Fonts.body, fontSize: 16, color: Colors.charcoal, marginBottom: 4 },
-  hintBox: { backgroundColor: Colors.sagePale, borderWidth: 1, borderColor: Colors.sageLight, borderRadius: Radius.sm, padding: 12, flexDirection: 'row', alignItems: 'flex-start', gap: 10, marginTop: 8 },
   hintIcon: { fontSize: 16, marginTop: 1 },
   hintText: { flex: 1, fontFamily: Fonts.body, fontSize: 13, color: Colors.warmBrown, lineHeight: 19 },
   optCard: { flexDirection: 'row', alignItems: 'flex-start', gap: 12, backgroundColor: Colors.cream, borderWidth: 2, borderColor: Colors.sand, borderRadius: Radius.lg, padding: 14 },
-  optCardSelected: { borderColor: Colors.terracotta, backgroundColor: Colors.terracottaPale },
+  optCardSelected: { borderColor: Colors.blush, backgroundColor: Colors.blushPale },
   optEmoji: { fontSize: 22, marginTop: 2 },
   optTitle: { fontFamily: Fonts.bodyMedium, fontSize: 14, color: Colors.charcoal, marginBottom: 3 },
   optDesc: { fontFamily: Fonts.body, fontSize: 12, color: Colors.midBrown, lineHeight: 18 },
-  optCheck: { width: 20, height: 20, borderRadius: 10, backgroundColor: Colors.terracotta, alignItems: 'center', justifyContent: 'center', marginTop: 2, flexShrink: 0 },
+  optCheck: { width: 20, height: 20, borderRadius: 10, backgroundColor: Colors.blush, alignItems: 'center', justifyContent: 'center', marginTop: 2, flexShrink: 0 },
   summaryGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   summaryPill: { width: '47%', backgroundColor: Colors.creamDark, borderRadius: Radius.sm, padding: 12 },
   pillLabel: { fontFamily: Fonts.bodyMedium, fontSize: 10, letterSpacing: 0.6, textTransform: 'uppercase', color: Colors.midBrown, marginBottom: 3 },
   pillValue: { fontFamily: Fonts.bodyMedium, fontSize: 13, color: Colors.charcoal },
-  finalInsight: { backgroundColor: Colors.sagePale, borderWidth: 1, borderColor: Colors.sageLight, borderRadius: Radius.lg, padding: 16 },
-  finalInsightLabel: { fontFamily: Fonts.bodyMedium, fontSize: 10, letterSpacing: 0.7, textTransform: 'uppercase', color: Colors.sage, marginBottom: 6 },
-  finalInsightBody: { fontFamily: Fonts.body, fontSize: 13, color: Colors.warmBrown, lineHeight: 20 },
   footer: { paddingHorizontal: 20, paddingTop: 24, paddingBottom: 8 },
+  cancelBtn: { marginTop: 12, alignItems: 'center', paddingVertical: 12 },
+  cancelText: { fontFamily: Fonts.body, fontSize: 14, color: Colors.midBrown },
 });

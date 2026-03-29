@@ -20,6 +20,15 @@ export interface UserProfile {
   streak: number;
 }
 
+export interface PartnerProfile {
+  name: string;
+  attachment: string;
+  conflict: string;
+  love: string;
+  window: string;
+  need: string;
+}
+
 export interface Session {
   id: string;
   name: string;
@@ -33,14 +42,24 @@ export interface Session {
   resolvedDate?: string;
 }
 
+export interface EmotionalCapture {
+  id: string;
+  sessionId: string;
+  date: string;
+  fromStep: ModeKey;
+  score: number; // 1–5
+}
+
 export interface Learnings {
   reflections: { sessionId: string; text: string; date: string }[];
   partnerObservations: string[];
   relationshipPatterns: string[];
+  emotionalCaptures: EmotionalCapture[];
 }
 
 interface AppState {
   profile: UserProfile;
+  partnerProfile: PartnerProfile;
   messages: Record<string, Message[]>;
   sessionLog: { mode: ModeKey; text: string; date: string }[];
   currentMode: ModeKey;
@@ -52,6 +71,7 @@ interface AppState {
 
 type Action =
   | { type: 'SET_PROFILE'; payload: Partial<UserProfile> }
+  | { type: 'SET_PARTNER_PROFILE'; payload: Partial<PartnerProfile> }
   | { type: 'ADD_MESSAGE'; mode: ModeKey; message: Message }
   | { type: 'SET_MODE'; mode: ModeKey }
   | { type: 'LOG_SESSION'; entry: { mode: ModeKey; text: string; date: string } }
@@ -66,7 +86,8 @@ type Action =
   | { type: 'ADD_REFLECTION'; reflection: { sessionId: string; text: string; date: string } }
   | { type: 'ADD_PARTNER_OBSERVATION'; observation: string }
   | { type: 'ADD_RELATIONSHIP_PATTERN'; pattern: string }
-  | { type: 'RENAME_SESSION'; sessionId: string; name: string };
+  | { type: 'RENAME_SESSION'; sessionId: string; name: string }
+  | { type: 'ADD_EMOTIONAL_CAPTURE'; capture: EmotionalCapture };
 
 const defaultProfile: UserProfile = {
   name: '',
@@ -80,14 +101,24 @@ const defaultProfile: UserProfile = {
   streak: 0,
 };
 
+const defaultPartnerProfile: PartnerProfile = {
+  name: '',
+  attachment: '',
+  conflict: '',
+  love: '',
+  window: '',
+  need: '',
+};
+
 const initialState: AppState = {
   profile: defaultProfile,
+  partnerProfile: defaultPartnerProfile,
   messages: { vent: [], understand: [], prepare: [], bridge: [] },
   sessionLog: [],
   currentMode: 'vent',
   sessions: [],
   activeSessionId: null,
-  learnings: { reflections: [], partnerObservations: [], relationshipPatterns: [] },
+  learnings: { reflections: [], partnerObservations: [], relationshipPatterns: [], emotionalCaptures: [] },
   loaded: false,
 };
 
@@ -99,6 +130,8 @@ function reducer(state: AppState, action: Action): AppState {
   switch (action.type) {
     case 'SET_PROFILE':
       return { ...state, profile: { ...state.profile, ...action.payload } };
+    case 'SET_PARTNER_PROFILE':
+      return { ...state, partnerProfile: { ...state.partnerProfile, ...action.payload } };
     case 'ADD_MESSAGE':
       return {
         ...state,
@@ -118,7 +151,8 @@ function reducer(state: AppState, action: Action): AppState {
         ...saved,
         sessions: saved.sessions || [],
         activeSessionId: saved.activeSessionId || null,
-        learnings: saved.learnings || { reflections: [], partnerObservations: [], relationshipPatterns: [] },
+        learnings: { reflections: [], partnerObservations: [], relationshipPatterns: [], emotionalCaptures: [], ...(saved.learnings || {}) },
+        partnerProfile: saved.partnerProfile || defaultPartnerProfile,
         loaded: true,
       };
     }
@@ -230,6 +264,15 @@ function reducer(state: AppState, action: Action): AppState {
           ...s,
           name: action.name,
         })),
+      };
+
+    case 'ADD_EMOTIONAL_CAPTURE':
+      return {
+        ...state,
+        learnings: {
+          ...state.learnings,
+          emotionalCaptures: [action.capture, ...state.learnings.emotionalCaptures].slice(0, 100),
+        },
       };
 
     default:

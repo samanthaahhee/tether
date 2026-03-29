@@ -35,9 +35,16 @@ export default function HomeTab() {
       <ScrollView style={styles.scroll} contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
 
         <View style={styles.greeting}>
-          <Text style={styles.greetingTime}>{timeGreeting}</Text>
-          <Text style={styles.greetingTitle}>{timeGreeting}, {name}</Text>
-          <Text style={styles.greetingSub}>Your feelings are welcome here.</Text>
+          <View style={styles.greetingRow}>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.greetingTime}>{timeGreeting}</Text>
+              <Text style={styles.greetingTitle}>{timeGreeting}, {name}</Text>
+              <Text style={styles.greetingSub}>Your feelings are welcome here.</Text>
+            </View>
+            <TouchableOpacity onPress={() => router.push('/(tabs)/settings')} style={styles.settingsBtn} activeOpacity={0.7}>
+              <Text style={{ fontSize: 22 }}>⚙️</Text>
+            </TouchableOpacity>
+          </View>
         </View>
 
         <TouchableOpacity style={styles.startCard} onPress={startSession} activeOpacity={0.88}>
@@ -92,6 +99,8 @@ const styles = StyleSheet.create({
   scroll: { flex: 1 },
   content: { paddingBottom: 32 },
   greeting: { paddingHorizontal: 20, paddingTop: 24, marginBottom: 20 },
+  greetingRow: { flexDirection: 'row', alignItems: 'flex-start' },
+  settingsBtn: { padding: 4, marginTop: 2 },
   greetingTime: { fontFamily: Fonts.bodyMedium, fontSize: 11, letterSpacing: 0.8, textTransform: 'uppercase', color: Colors.terracotta, marginBottom: 4 },
   greetingTitle: { fontFamily: Fonts.display, fontSize: 26, color: Colors.charcoal, lineHeight: 32, marginBottom: 4 },
   greetingSub: { fontFamily: Fonts.body, fontSize: 14, color: Colors.midBrown },

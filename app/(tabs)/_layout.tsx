@@ -33,7 +33,7 @@ export default function TabLayout() {
       <Tabs.Screen name="sessions" options={{ title: 'Sessions', tabBarIcon: ({ focused }) => <TabIcon emoji="💬" focused={focused} /> }} />
       <Tabs.Screen name="learnings" options={{ title: 'Learnings', tabBarIcon: ({ focused }) => <TabIcon emoji="📖" focused={focused} /> }} />
       <Tabs.Screen name="tools" options={{ title: 'Tools', tabBarIcon: ({ focused }) => <TabIcon emoji="🛠️" focused={focused} /> }} />
-      <Tabs.Screen name="settings" options={{ title: 'Settings', tabBarIcon: ({ focused }) => <TabIcon emoji="⚙️" focused={focused} /> }} />
+      <Tabs.Screen name="settings" options={{ href: null }} />
     </Tabs>
   );
 }

@@ -1,29 +1,17 @@
-import { useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
 import { router } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useAppState } from '../src/hooks/useAppState';
 import { Colors, Fonts, Radius, Shadows } from '../src/constants/theme';
 import { Button } from '../src/components/UI';
 
+const features = [
+  { icon: '🕊️', title: 'Feel heard', desc: 'Express without judgment' },
+  { icon: '🔍', title: 'Understand patterns', desc: 'Discover what is beneath conflict' },
+  { icon: '🌿', title: 'Communicate better', desc: 'Build bridges, not walls' },
+  { icon: '🛠️', title: 'Tools for tough moments', desc: 'Breathing, grounding, repair' },
+];
+
 export default function Landing() {
-  const { state } = useAppState();
-
-  useEffect(() => {
-    if (state.loaded && state.profile.onboarded) {
-      router.replace('/(tabs)');
-    }
-  }, [state.loaded, state.profile.onboarded]);
-
-  if (!state.loaded) return null;
-
-  const features = [
-    { icon: '🕊️', title: 'Feel heard', desc: 'Express without judgment' },
-    { icon: '🔍', title: 'Understand patterns', desc: 'Discover what is beneath conflict' },
-    { icon: '🌿', title: 'Communicate better', desc: 'Build bridges, not walls' },
-    { icon: '🛠️', title: 'Tools for tough moments', desc: 'Breathing, grounding, repair' },
-  ];
-
   return (
     <SafeAreaView style={styles.safe} edges={['top', 'bottom']}>
       <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
@@ -44,9 +32,9 @@ export default function Landing() {
               </View>
             ))}
           </View>
-          <Button label="Begin your journey" onPress={() => router.push('/onboarding')} />
-          <TouchableOpacity onPress={() => router.replace('/(tabs)')} style={{ marginTop: 12 }}>
-            <Text style={styles.alreadyHave}>I already have an account</Text>
+          <Button label="Create account" onPress={() => router.push('/auth/sign-up')} />
+          <TouchableOpacity onPress={() => router.push('/auth/sign-in')} style={{ marginTop: 12 }}>
+            <Text style={styles.alreadyHave}>Already have an account? <Text style={{ fontFamily: Fonts.bodyMedium, color: Colors.terracotta }}>Sign in</Text></Text>
           </TouchableOpacity>
           <Text style={styles.safeNote}>
             Tether supports but does not replace professional therapy.

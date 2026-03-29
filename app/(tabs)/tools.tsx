@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, StyleSheet, Animated } from 'react-native';
+import { View, Text, ScrollView, FlatList, TouchableOpacity, StyleSheet, Animated, useWindowDimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Colors, Fonts, Radius, Shadows } from '../../src/constants/theme';
 import { TOOLS_CONTENT, REPAIR_ATTEMPTS } from '../../src/constants/data';
@@ -122,7 +122,19 @@ const ex = StyleSheet.create({
   body: { paddingHorizontal: 16, paddingBottom: 16, borderTopWidth: 1, borderTopColor: Colors.creamDark, paddingTop: 12 },
 });
 
+const CAROUSEL_GAP = 12;
+const CAROUSEL_PEEK = 28;
+const CAROUSEL_LEFT = 20;
+
 export default function ToolsTab() {
+  const { width: windowWidth } = useWindowDimensions();
+  const cardWidth = windowWidth - CAROUSEL_LEFT - CAROUSEL_GAP - CAROUSEL_PEEK;
+  const snapInterval = cardWidth + CAROUSEL_GAP;
+  const [groundingIdx, setGroundingIdx] = useState(0);
+  const [expandedGrounding, setExpandedGrounding] = useState<Record<string, boolean>>({});
+  const toggleGrounding = (id: string) =>
+    setExpandedGrounding(prev => ({ ...prev, [id]: !prev[id] }));
+
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
       <ScrollView style={styles.scroll} contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
@@ -140,20 +152,50 @@ export default function ToolsTab() {
           ))}
         </View>
 
-        {/* Grounding Techniques */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Grounding techniques</Text>
-          {TOOLS_CONTENT.grounding.map((g) => (
-            <ExpandableCard key={g.id} icon={g.emoji} title={g.name}>
-              <Text style={gt.desc}>{g.desc}</Text>
-              {g.steps.map((step, i) => (
-                <View key={i} style={gt.stepRow}>
-                  <View style={gt.stepDot} />
-                  <Text style={gt.stepText}>{step}</Text>
+        {/* Grounding Techniques - Carousel */}
+        <View style={{ marginBottom: 24 }}>
+          <Text style={[styles.sectionTitle, { paddingHorizontal: 20 }]}>Grounding techniques</Text>
+          <FlatList
+            data={TOOLS_CONTENT.grounding}
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            snapToInterval={snapInterval}
+            snapToAlignment="start"
+            decelerationRate="fast"
+            contentContainerStyle={{ paddingLeft: CAROUSEL_LEFT }}
+            ItemSeparatorComponent={() => <View style={{ width: CAROUSEL_GAP }} />}
+            keyExtractor={(g) => g.id}
+            onMomentumScrollEnd={(e) => {
+              const idx = Math.round(e.nativeEvent.contentOffset.x / snapInterval);
+              setGroundingIdx(idx);
+            }}
+            renderItem={({ item: g }) => {
+              const expanded = expandedGrounding[g.id] ?? false;
+              return (
+                <View style={[cr.card, { width: cardWidth }]}>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 8 }}>
+                    <Text style={{ fontSize: 22 }}>{g.emoji}</Text>
+                    <Text style={cr.name}>{g.name}</Text>
+                  </View>
+                  <Text style={gt.desc}>{g.desc}</Text>
+                  {expanded && g.steps.map((step, i) => (
+                    <View key={i} style={gt.stepRow}>
+                      <View style={gt.stepDot} />
+                      <Text style={gt.stepText}>{step}</Text>
+                    </View>
+                  ))}
+                  <TouchableOpacity onPress={() => toggleGrounding(g.id)} style={cr.showMoreBtn} activeOpacity={0.7}>
+                    <Text style={cr.showMoreText}>{expanded ? 'Show less' : 'Show steps'}</Text>
+                  </TouchableOpacity>
                 </View>
-              ))}
-            </ExpandableCard>
-          ))}
+              );
+            }}
+          />
+          <View style={cr.dots}>
+            {TOOLS_CONTENT.grounding.map((_, i) => (
+              <View key={i} style={[cr.dot, i === groundingIdx && cr.dotActive]} />
+            ))}
+          </View>
         </View>
 
         {/* Phrase Bank */}
@@ -219,6 +261,16 @@ const ra = StyleSheet.create({
   card: { width: '47%', backgroundColor: Colors.warmWhite, borderWidth: 1, borderColor: Colors.sand, borderRadius: Radius.lg, padding: 14, alignItems: 'center' },
   name: { fontFamily: Fonts.bodyMedium, fontSize: 12, color: Colors.charcoal, textAlign: 'center' },
   msg: { fontFamily: Fonts.body, fontSize: 12, color: Colors.warmBrown, lineHeight: 18, marginTop: 8, textAlign: 'center' },
+});
+
+const cr = StyleSheet.create({
+  card: { backgroundColor: Colors.warmWhite, borderWidth: 1, borderColor: Colors.sand, borderRadius: Radius.lg, padding: 16 },
+  name: { fontFamily: Fonts.display, fontSize: 16, color: Colors.charcoal, flex: 1 },
+  showMoreBtn: { marginTop: 12, alignSelf: 'flex-start', paddingVertical: 6, paddingHorizontal: 12, backgroundColor: Colors.creamDark, borderRadius: Radius.full },
+  showMoreText: { fontFamily: Fonts.bodyMedium, fontSize: 12, color: Colors.warmBrown },
+  dots: { flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: 6, marginTop: 14 },
+  dot: { width: 6, height: 6, borderRadius: 3, backgroundColor: Colors.sand },
+  dotActive: { width: 18, backgroundColor: Colors.sage },
 });
 
 const gt = StyleSheet.create({
