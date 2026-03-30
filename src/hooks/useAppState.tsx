@@ -32,13 +32,14 @@ export interface PartnerProfile {
 export interface Session {
   id: string;
   name: string;
-  status: 'active' | 'resolved';
+  status: 'active' | 'resolved' | 'archived';
   currentStep: ModeKey;
   unlockedSteps: ModeKey[];
   messages: Record<ModeKey, Message[]>;
   nvcDraft?: { obs: string; feel: string; need: string; request: string };
   reflection?: string;
   summary?: string;
+  previousStatus?: 'active' | 'resolved';
   startDate: string;
   resolvedDate?: string;
 }
@@ -100,6 +101,8 @@ type Action =
   | { type: 'ADD_RELATIONSHIP_PATTERN'; pattern: string }
   | { type: 'RENAME_SESSION'; sessionId: string; name: string }
   | { type: 'DELETE_SESSION'; sessionId: string }
+  | { type: 'ARCHIVE_SESSION'; sessionId: string }
+  | { type: 'UNARCHIVE_SESSION'; sessionId: string }
   | { type: 'ADD_EMOTIONAL_CAPTURE'; capture: EmotionalCapture }
   | { type: 'UPDATE_SESSION_SUMMARY'; sessionId: string; summary: string }
   | { type: 'SET_CRISIS_COUNTRY'; code: string }
@@ -306,6 +309,27 @@ function reducer(state: AppState, action: Action): AppState {
           reflections: state.learnings.reflections.filter((r) => r.sessionId !== action.sessionId),
           emotionalCaptures: state.learnings.emotionalCaptures.filter((c) => c.sessionId !== action.sessionId),
         },
+      };
+
+    case 'ARCHIVE_SESSION':
+      return {
+        ...state,
+        sessions: updateSession(state.sessions, action.sessionId, (s) => ({
+          ...s,
+          previousStatus: s.status === 'archived' ? s.previousStatus : (s.status as 'active' | 'resolved'),
+          status: 'archived',
+        })),
+        activeSessionId: state.activeSessionId === action.sessionId ? null : state.activeSessionId,
+      };
+
+    case 'UNARCHIVE_SESSION':
+      return {
+        ...state,
+        sessions: updateSession(state.sessions, action.sessionId, (s) => ({
+          ...s,
+          status: s.previousStatus || 'resolved',
+          previousStatus: undefined,
+        })),
       };
 
     case 'UPDATE_SESSION_SUMMARY':

@@ -46,8 +46,7 @@ export default function HomeTab() {
   const resolvedCount = state.sessions.filter((s) => s.status === 'resolved').length;
   const captures = state.learnings.emotionalCaptures;
   const reflections = state.learnings.reflections;
-  const growthMoments = state.userMemory?.growthMoments ?? [];
-  const hasJourneyData = state.sessions.length > 0 || captures.length > 0 || growthMoments.length > 0;
+  const hasJourneyData = state.sessions.length > 0 || captures.length > 0;
 
   const startSession = () => {
     if (!activeSession) {
@@ -148,10 +147,6 @@ export default function HomeTab() {
                 <Text style={st.num}>{captures.length}</Text>
                 <Text style={st.label}>Emotional{'\n'}check-ins</Text>
               </View>
-              <View style={st.card}>
-                <Text style={st.num}>{growthMoments.length}</Text>
-                <Text style={st.label}>Growth{'\n'}moments</Text>
-              </View>
             </View>
 
             {/* Emotional trajectory */}
@@ -178,20 +173,6 @@ export default function HomeTab() {
                   })}
                 </ScrollView>
               </>
-            )}
-
-            {/* Growth moments */}
-            {growthMoments.length > 0 && (
-              <View style={gm.card}>
-                <Text style={gm.title}>Growth moments</Text>
-                <Text style={gm.sub}>Noticed by Tether across your sessions</Text>
-                {growthMoments.slice(0, 5).map((moment: string, i: number) => (
-                  <View key={i} style={gm.item}>
-                    <View style={gm.dot} />
-                    <Text style={gm.text}>{moment}</Text>
-                  </View>
-                ))}
-              </View>
             )}
 
             {/* Latest session reflection */}
@@ -275,15 +256,6 @@ const et = StyleSheet.create({
 });
 
 // ── Growth moments ──
-const gm = StyleSheet.create({
-  card: { backgroundColor: Colors.sagePale, borderWidth: 1, borderColor: Colors.sageLight, borderRadius: Radius.lg, padding: 16, marginBottom: 20 },
-  title: { fontFamily: Fonts.display, fontSize: 16, color: Colors.charcoal, marginBottom: 2 },
-  sub: { fontFamily: Fonts.body, fontSize: 12, color: Colors.midBrown, marginBottom: 12 },
-  item: { flexDirection: 'row', alignItems: 'flex-start', gap: 10, marginBottom: 8 },
-  dot: { width: 6, height: 6, borderRadius: 3, backgroundColor: Colors.sage, marginTop: 6, flexShrink: 0 },
-  text: { fontFamily: Fonts.body, fontSize: 13, color: Colors.charcoal, lineHeight: 19, flex: 1 },
-});
-
 // ── Session reflections ──
 const rf = StyleSheet.create({
   headingRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 },

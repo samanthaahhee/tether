@@ -1,8 +1,7 @@
 import React, { useState, useRef, useEffect, useMemo, useCallback } from 'react';
 import {
   View, Text, TextInput, TouchableOpacity, FlatList, ScrollView,
-  StyleSheet, KeyboardAvoidingView, Platform, ActivityIndicator, Alert, Modal,
-  Animated, PanResponder,
+  StyleSheet, KeyboardAvoidingView, Platform, ActivityIndicator, Alert, Modal, Animated,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -19,7 +18,7 @@ import { Colors, Fonts, Radius, Shadows } from '../../src/constants/theme';
 import { MODE_CONFIG, ModeKey, SESSION_STEPS, CRISIS_WORDS, REPAIR_ATTEMPTS } from '../../src/constants/data';
 import { Button } from '../../src/components/UI';
 import { ChevronLeft } from '../../src/components/Icon';
-import { IconLeaf, IconWind, IconSearch, IconHeart, IconX, IconMoodLow, IconMoodOkay, IconMoodGood, IconMoodGreat, IconMoodAmazing } from '../../src/components/Icons';
+import { IconLeaf, IconWind, IconSearch, IconHeart, IconX, IconBookmark, IconMoodLow, IconMoodOkay, IconMoodGood, IconMoodGreat, IconMoodAmazing } from '../../src/components/Icons';
 
 const STEP_ICON_MAP: Record<string, React.ComponentType<{ size?: number; color?: string }>> = {
   wind: IconWind,
@@ -300,64 +299,64 @@ const nr = StyleSheet.create({
 
 const PAST_SESSIONS_PREVIEW = 3;
 
-function SwipeableCard({ children, onDelete }: { children: React.ReactNode; onDelete: () => void }) {
-  const translateX = useRef(new Animated.Value(0)).current;
-  const openRef = useRef(false);
-  const ACTION_WIDTH = 80;
-
-  const panResponder = useRef(
-    PanResponder.create({
-      onMoveShouldSetPanResponder: (_, g) => Math.abs(g.dx) > 10 && Math.abs(g.dx) > Math.abs(g.dy),
-      onPanResponderMove: (_, g) => {
-        const base = openRef.current ? -ACTION_WIDTH : 0;
-        const newVal = Math.min(0, Math.max(base + g.dx, -ACTION_WIDTH));
-        translateX.setValue(newVal);
-      },
-      onPanResponderRelease: (_, g) => {
-        const base = openRef.current ? -ACTION_WIDTH : 0;
-        const final = base + g.dx;
-        if (final < -ACTION_WIDTH / 2) {
-          Animated.spring(translateX, { toValue: -ACTION_WIDTH, useNativeDriver: true, friction: 8 }).start();
-          openRef.current = true;
-        } else {
-          Animated.spring(translateX, { toValue: 0, useNativeDriver: true, friction: 8 }).start();
-          openRef.current = false;
-        }
-      },
-    })
-  ).current;
+function SessionMenu({ sessionId, status, dispatch: d }: { sessionId: string; status: string; dispatch: any }) {
+  const [open, setOpen] = useState(false);
 
   return (
-    <View style={{ marginBottom: 12 }}>
-      {/* Delete action behind */}
-      <View style={sw.actionRow}>
-        <TouchableOpacity
-          style={sw.deleteBtn}
-          onPress={() => {
-            Animated.timing(translateX, { toValue: -400, duration: 200, useNativeDriver: true }).start(() => onDelete());
-          }}
-          activeOpacity={0.8}
-        >
-          <IconX size={20} color={Colors.white} />
-          <Text style={sw.deleteText}>Delete</Text>
-        </TouchableOpacity>
-      </View>
-      {/* Card on top */}
-      <Animated.View {...panResponder.panHandlers} style={{ transform: [{ translateX }] }}>
-        {children}
-      </Animated.View>
+    <View>
+      <TouchableOpacity onPress={() => setOpen(!open)} style={sm.trigger} activeOpacity={0.6} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
+        <View style={sm.dot} />
+        <View style={sm.dot} />
+        <View style={sm.dot} />
+      </TouchableOpacity>
+      {open && (
+        <View style={sm.menu}>
+          {status !== 'archived' && (
+            <TouchableOpacity style={sm.menuItem} onPress={() => { setOpen(false); d({ type: 'ARCHIVE_SESSION', sessionId }); }} activeOpacity={0.7}>
+              <IconBookmark size={14} color={Colors.midBrown} />
+              <Text style={sm.menuText}>Archive</Text>
+            </TouchableOpacity>
+          )}
+          {status === 'archived' && (
+            <TouchableOpacity style={sm.menuItem} onPress={() => { setOpen(false); d({ type: 'UNARCHIVE_SESSION', sessionId }); }} activeOpacity={0.7}>
+              <IconBookmark size={14} color={Colors.midBrown} />
+              <Text style={sm.menuText}>Unarchive</Text>
+            </TouchableOpacity>
+          )}
+          <TouchableOpacity style={sm.menuItem} onPress={() => {
+            setOpen(false);
+            Alert.alert('Delete session', 'This will permanently remove this session and its data.', [
+              { text: 'Cancel', style: 'cancel' },
+              { text: 'Delete', style: 'destructive', onPress: () => d({ type: 'DELETE_SESSION', sessionId }) },
+            ]);
+          }} activeOpacity={0.7}>
+            <IconX size={14} color={Colors.errorText} />
+            <Text style={[sm.menuText, { color: Colors.errorText }]}>Delete</Text>
+          </TouchableOpacity>
+        </View>
+      )}
     </View>
   );
 }
 
-const sw = StyleSheet.create({
-  actionRow: { position: 'absolute', top: 0, bottom: 0, right: 0, width: 80, justifyContent: 'center', alignItems: 'center', backgroundColor: '#6F3327', borderRadius: Radius.lg },
-  deleteBtn: { flex: 1, justifyContent: 'center', alignItems: 'center', width: '100%' },
-  deleteText: { fontFamily: Fonts.bodyMedium, fontSize: 11, color: Colors.white, marginTop: 4 },
+const sm = StyleSheet.create({
+  trigger: { flexDirection: 'row', gap: 3, padding: 6 },
+  dot: { width: 4, height: 4, borderRadius: 2, backgroundColor: Colors.lightBrown },
+  menu: { position: 'absolute', top: 32, right: 0, backgroundColor: Colors.warmWhite, borderWidth: 1, borderColor: Colors.sand, borderRadius: Radius.md, paddingVertical: 4, minWidth: 140, zIndex: 100, ...Shadows.sm },
+  menuItem: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 14, paddingVertical: 10 },
+  menuText: { fontFamily: Fonts.body, fontSize: 14, color: Colors.charcoal },
 });
+
+type SessionFilter = 'active' | 'resolved' | 'archived';
 
 function SessionListView({ sessions, dispatch: d, onOpenSession, onStartNew }: { sessions: Session[]; dispatch: any; onOpenSession: (id: string) => void; onStartNew: () => void }) {
   const [showAllPast, setShowAllPast] = useState(false);
+  const [filter, setFilter] = useState<SessionFilter>('active');
+
+  const activeSessions = sessions.filter((s) => s.status === 'active');
+  const resolvedSessions = sessions.filter((s) => s.status === 'resolved');
+  const archivedSessions = sessions.filter((s) => s.status === 'archived');
+  const hasSessions = sessions.length > 0;
 
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
@@ -379,10 +378,23 @@ function SessionListView({ sessions, dispatch: d, onOpenSession, onStartNew }: {
           </TouchableOpacity>
         </View>
 
-        {sessions.filter((s) => s.status === 'active').length > 0 && (
+        {/* Filter toggles */}
+        {hasSessions && (
+          <View style={sf.bar}>
+            {([['active', 'Active', activeSessions.length], ['resolved', 'Resolved', resolvedSessions.length], ['archived', 'Archived', archivedSessions.length]] as const).map(([key, label, count]) => (
+              count > 0 && (
+                <TouchableOpacity key={key} style={[sf.tab, filter === key && sf.tabActive]} onPress={() => setFilter(key)} activeOpacity={0.7}>
+                  <Text style={[sf.tabText, filter === key && sf.tabTextActive]}>{label} ({count})</Text>
+                </TouchableOpacity>
+              )
+            ))}
+          </View>
+        )}
+
+        {/* Active sessions */}
+        {filter === 'active' && activeSessions.length > 0 && (
           <View style={{ paddingHorizontal: 20, marginBottom: 8 }}>
-            <Text style={styles.sectionLabel}>ACTIVE SESSIONS</Text>
-            {sessions.filter((s) => s.status === 'active').map((s) => {
+            {activeSessions.map((s) => {
               const firstMsg = s.messages.vent?.[1]?.text?.slice(0, 80) || 'Session in progress...';
               const stepsCompleted = s.unlockedSteps.length;
               const date = new Date(s.startDate);
@@ -390,16 +402,62 @@ function SessionListView({ sessions, dispatch: d, onOpenSession, onStartNew }: {
               const currentStepCfg = MODE_CONFIG[s.currentStep];
               const stepTheme = STEP_THEME[s.currentStep];
               return (
-                <SwipeableCard key={s.id} onDelete={() => d({ type: 'DELETE_SESSION', sessionId: s.id })}>
+                <TouchableOpacity
+                  key={s.id}
+                  style={[sl.sessionCard, { borderColor: Colors.sand, borderWidth: 1 }]}
+                  onPress={() => onOpenSession(s.id)}
+                  activeOpacity={0.8}
+                >
+                  <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+                    <Text style={sl.sessionDate}>{dateStr}</Text>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                      <View style={[sl.statusBadge, { backgroundColor: stepTheme.pale, borderColor: stepTheme.light }]}>
+                        <Text style={[sl.statusText, { color: stepTheme.color }]}>Active: {currentStepCfg.label}</Text>
+                      </View>
+                      <SessionMenu sessionId={s.id} status={s.status} dispatch={d} />
+                    </View>
+                  </View>
+                  {s.name ? <Text style={{ fontFamily: Fonts.display, fontSize: 16, color: Colors.charcoal, marginBottom: 4 }}>{s.name}</Text> : null}
+                  <Text style={sl.sessionPreview} numberOfLines={2}>{firstMsg}</Text>
+                  <View style={sl.stepDots}>
+                    {SESSION_STEPS.map((step) => (
+                      <View key={step} style={[sl.stepDot, s.unlockedSteps.includes(step) && { backgroundColor: STEP_COLORS[step] }]} />
+                    ))}
+                    <Text style={sl.stepCount}>{stepsCompleted}/{SESSION_STEPS.length} steps</Text>
+                  </View>
+                  <View style={{ marginTop: 10, backgroundColor: Colors.creamDark, borderRadius: Radius.full, paddingVertical: 8, alignItems: 'center' }}>
+                    <Text style={{ fontFamily: Fonts.bodyMedium, fontSize: 13, color: Colors.midBrown }}>Continue session →</Text>
+                  </View>
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+        )}
+
+        {filter === 'resolved' && resolvedSessions.length > 0 && (() => {
+          const visible = showAllPast ? resolvedSessions : resolvedSessions.slice(0, PAST_SESSIONS_PREVIEW);
+          const hidden = resolvedSessions.length - PAST_SESSIONS_PREVIEW;
+          return (
+            <View style={{ paddingHorizontal: 20 }}>
+              {visible.map((s) => {
+                const firstMsg = s.messages.vent?.[1]?.text?.slice(0, 80) || 'No messages recorded';
+                const stepsCompleted = s.unlockedSteps.length;
+                const date = new Date(s.startDate);
+                const dateStr = date.toLocaleDateString('en-ZA', { day: 'numeric', month: 'short' });
+                return (
                   <TouchableOpacity
-                    style={[sl.sessionCard, { borderColor: Colors.sand, borderWidth: 1, marginBottom: 0 }]}
+                    key={s.id}
+                    style={sl.sessionCard}
                     onPress={() => onOpenSession(s.id)}
                     activeOpacity={0.8}
                   >
                     <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
                       <Text style={sl.sessionDate}>{dateStr}</Text>
-                      <View style={[sl.statusBadge, { backgroundColor: stepTheme.pale, borderColor: stepTheme.light }]}>
-                        <Text style={[sl.statusText, { color: stepTheme.color }]}>Active: {currentStepCfg.label}</Text>
+                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                        <View style={[sl.statusBadge, { backgroundColor: Colors.sagePale, borderColor: Colors.sageLight }]}>
+                          <Text style={[sl.statusText, { color: Colors.sage }]}>Resolved</Text>
+                        </View>
+                        <SessionMenu sessionId={s.id} status={s.status} dispatch={d} />
                       </View>
                     </View>
                     {s.name ? <Text style={{ fontFamily: Fonts.display, fontSize: 16, color: Colors.charcoal, marginBottom: 4 }}>{s.name}</Text> : null}
@@ -410,56 +468,12 @@ function SessionListView({ sessions, dispatch: d, onOpenSession, onStartNew }: {
                       ))}
                       <Text style={sl.stepCount}>{stepsCompleted}/{SESSION_STEPS.length} steps</Text>
                     </View>
-                    <View style={{ marginTop: 10, backgroundColor: Colors.creamDark, borderRadius: Radius.full, paddingVertical: 8, alignItems: 'center' }}>
-                      <Text style={{ fontFamily: Fonts.bodyMedium, fontSize: 13, color: Colors.midBrown }}>Continue session →</Text>
-                    </View>
+                    {s.reflection && (
+                      <Text style={{ fontFamily: Fonts.body, fontSize: 12, color: Colors.sage, marginTop: 8, fontStyle: 'italic' }} numberOfLines={2}>
+                        {s.reflection}
+                      </Text>
+                    )}
                   </TouchableOpacity>
-                </SwipeableCard>
-              );
-            })}
-          </View>
-        )}
-
-        {sessions.filter((s) => s.status === 'resolved').length > 0 && (() => {
-          const past = sessions.filter((s) => s.status === 'resolved');
-          const visible = showAllPast ? past : past.slice(0, PAST_SESSIONS_PREVIEW);
-          const hidden = past.length - PAST_SESSIONS_PREVIEW;
-          return (
-            <View style={{ paddingHorizontal: 20 }}>
-              <Text style={styles.sectionLabel}>PAST SESSIONS</Text>
-              {visible.map((s) => {
-                const firstMsg = s.messages.vent?.[1]?.text?.slice(0, 80) || 'No messages recorded';
-                const stepsCompleted = s.unlockedSteps.length;
-                const date = new Date(s.startDate);
-                const dateStr = date.toLocaleDateString('en-ZA', { day: 'numeric', month: 'short' });
-                return (
-                  <SwipeableCard key={s.id} onDelete={() => d({ type: 'DELETE_SESSION', sessionId: s.id })}>
-                    <TouchableOpacity
-                      style={[sl.sessionCard, { marginBottom: 0 }]}
-                      onPress={() => onOpenSession(s.id)}
-                      activeOpacity={0.8}
-                    >
-                      <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-                        <Text style={sl.sessionDate}>{dateStr}</Text>
-                        <View style={[sl.statusBadge, { backgroundColor: Colors.sagePale, borderColor: Colors.sageLight }]}>
-                          <Text style={[sl.statusText, { color: Colors.sage }]}>Resolved</Text>
-                        </View>
-                      </View>
-                      {s.name ? <Text style={{ fontFamily: Fonts.display, fontSize: 16, color: Colors.charcoal, marginBottom: 4 }}>{s.name}</Text> : null}
-                      <Text style={sl.sessionPreview} numberOfLines={2}>{firstMsg}</Text>
-                      <View style={sl.stepDots}>
-                        {SESSION_STEPS.map((step) => (
-                          <View key={step} style={[sl.stepDot, s.unlockedSteps.includes(step) && { backgroundColor: STEP_COLORS[step] }]} />
-                        ))}
-                        <Text style={sl.stepCount}>{stepsCompleted}/{SESSION_STEPS.length} steps</Text>
-                      </View>
-                      {s.reflection && (
-                        <Text style={{ fontFamily: Fonts.body, fontSize: 12, color: Colors.sage, marginTop: 8, fontStyle: 'italic' }} numberOfLines={2}>
-                          {s.reflection}
-                        </Text>
-                      )}
-                    </TouchableOpacity>
-                  </SwipeableCard>
                 );
               })}
               {!showAllPast && hidden > 0 && (
@@ -467,7 +481,7 @@ function SessionListView({ sessions, dispatch: d, onOpenSession, onStartNew }: {
                   <Text style={sl.showMoreText}>Show {hidden} more past session{hidden !== 1 ? 's' : ''}</Text>
                 </TouchableOpacity>
               )}
-              {showAllPast && past.length > PAST_SESSIONS_PREVIEW && (
+              {showAllPast && resolvedSessions.length > PAST_SESSIONS_PREVIEW && (
                 <TouchableOpacity onPress={() => setShowAllPast(false)} style={sl.showMoreBtn} activeOpacity={0.7}>
                   <Text style={sl.showMoreText}>Show less</Text>
                 </TouchableOpacity>
@@ -475,10 +489,49 @@ function SessionListView({ sessions, dispatch: d, onOpenSession, onStartNew }: {
             </View>
           );
         })()}
+
+        {/* Archived sessions */}
+        {filter === 'archived' && archivedSessions.length > 0 && (
+          <View style={{ paddingHorizontal: 20 }}>
+            {archivedSessions.map((s) => {
+              const firstMsg = s.messages.vent?.[1]?.text?.slice(0, 80) || 'No messages recorded';
+              const date = new Date(s.startDate);
+              const dateStr = date.toLocaleDateString('en-ZA', { day: 'numeric', month: 'short' });
+              return (
+                <TouchableOpacity
+                  key={s.id}
+                  style={[sl.sessionCard, { opacity: 0.7 }]}
+                  onPress={() => onOpenSession(s.id)}
+                  activeOpacity={0.8}
+                >
+                  <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+                    <Text style={sl.sessionDate}>{dateStr}</Text>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                      <View style={[sl.statusBadge, { backgroundColor: Colors.stone50, borderColor: Colors.stone200 }]}>
+                        <Text style={[sl.statusText, { color: Colors.lightBrown }]}>Archived</Text>
+                      </View>
+                      <SessionMenu sessionId={s.id} status={s.status} dispatch={d} />
+                    </View>
+                  </View>
+                  {s.name ? <Text style={{ fontFamily: Fonts.display, fontSize: 16, color: Colors.charcoal, marginBottom: 4 }}>{s.name}</Text> : null}
+                  <Text style={sl.sessionPreview} numberOfLines={2}>{firstMsg}</Text>
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+        )}
       </ScrollView>
     </SafeAreaView>
   );
 }
+
+const sf = StyleSheet.create({
+  bar: { flexDirection: 'row', paddingHorizontal: 20, marginBottom: 16, gap: 8 },
+  tab: { paddingHorizontal: 14, paddingVertical: 7, borderRadius: Radius.full, backgroundColor: Colors.warmWhite, borderWidth: 1.5, borderColor: Colors.sand },
+  tabActive: { backgroundColor: Colors.sagePale, borderColor: Colors.sageLight },
+  tabText: { fontFamily: Fonts.bodyMedium, fontSize: 12, color: Colors.lightBrown },
+  tabTextActive: { color: Colors.sageDark },
+});
 
 const sl = StyleSheet.create({
   startBtn: { backgroundColor: Colors.terracotta, borderRadius: Radius.lg, padding: 20, overflow: 'hidden', ...Shadows.terracotta },
@@ -514,7 +567,7 @@ const SESSION_CAPTURE = {
 function ActiveSessionView({ session, state, dispatch: d, onBack }: { session: Session; state: any; dispatch: any; onBack: () => void }) {
   const [input, setInput] = useState('');
   const [editingName, setEditingName] = useState(false);
-  const [nameInput, setNameInput] = useState(session.name);
+  const [nameInput, setNameInput] = useState(session?.name || '');
   const [showCapture, setShowCapture] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
   const [speechAvailable, setSpeechAvailable] = useState(false);
@@ -924,9 +977,11 @@ export default function SessionsTab() {
     prevLatestRef.current = latestSessionId;
   }, [latestSessionId]);
 
-  // Clear viewingId if the session was deleted
+  // Clear viewingId if the session was deleted or archived
   useEffect(() => {
-    if (viewingId && !state.sessions.find((s) => s.id === viewingId)) {
+    if (!viewingId) return;
+    const s = state.sessions.find((s) => s.id === viewingId);
+    if (!s || s.status === 'archived') {
       setViewingId(null);
     }
   }, [state.sessions, viewingId]);
@@ -970,7 +1025,7 @@ export default function SessionsTab() {
     );
   }
 
-  if (viewingSession) {
+  if (viewingId && viewingSession && viewingSession.status !== 'archived') {
     return <ActiveSessionView session={viewingSession} state={state} dispatch={dispatch} onBack={closeSession} />;
   }
 
