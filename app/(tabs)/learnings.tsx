@@ -3,6 +3,7 @@ import { View, Text, ScrollView, TouchableOpacity, StyleSheet, Share, ActivityIn
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Colors, Fonts, Radius } from '../../src/constants/theme';
 import { ChevronRight } from '../../src/components/Icon';
+import { IconHeart, IconUser, IconCompass } from '../../src/components/Icons';
 import { useAppState } from '../../src/hooks/useAppState';
 import { useAuth } from '../../src/hooks/useAuth';
 import { router } from 'expo-router';
@@ -44,10 +45,10 @@ const pc = StyleSheet.create({
   deepenLink: { fontFamily: Fonts.bodyMedium, fontSize: 12 },
 });
 
-function PlaceholderCard({ icon, title, body }: { icon: string; title: string; body: string }) {
+function PlaceholderCard({ icon, title, body }: { icon: React.ReactNode; title: string; body: string }) {
   return (
     <View style={ph.card}>
-      <Text style={{ fontSize: 22, marginBottom: 8 }}>{icon}</Text>
+      <View style={{ marginBottom: 8 }}>{icon}</View>
       <Text style={ph.title}>{title}</Text>
       <Text style={ph.body}>{body}</Text>
     </View>
@@ -72,7 +73,7 @@ export default function GrowthTab() {
   const { state } = useAppState();
   const { partnerProfile: pp, generateInvite } = useAuth();
   const { attachment, love, conflict, window: win, need } = state.profile;
-  const { reflections, partnerObservations, relationshipPatterns } = state.learnings;
+  const { partnerObservations, relationshipPatterns } = state.learnings;
   const [activeTab, setActiveTab] = useState<Tab>('you');
   const [inviting, setInviting] = useState(false);
 
@@ -176,96 +177,6 @@ export default function GrowthTab() {
               )}
             </View>
 
-            {/* ── SECTION B: Your journey ── */}
-            <View style={styles.sectionHeader}>
-              <Text style={styles.sectionHeaderTitle}>Your journey</Text>
-              <Text style={styles.sectionHeaderSub}>How you've been feeling and growing across sessions.</Text>
-            </View>
-
-            <View style={styles.section}>
-              {/* Stats row */}
-              {(state.sessions.length > 0 || state.userMemory) && (
-                <View style={jn.statsRow}>
-                  <View style={jn.statCard}>
-                    <Text style={jn.statNum}>{state.sessions.filter(s => s.status === 'resolved').length}</Text>
-                    <Text style={jn.statLabel}>Sessions{'\n'}completed</Text>
-                  </View>
-                  <View style={jn.statCard}>
-                    <Text style={jn.statNum}>{state.learnings.emotionalCaptures.length}</Text>
-                    <Text style={jn.statLabel}>Emotional{'\n'}check-ins</Text>
-                  </View>
-                  <View style={jn.statCard}>
-                    <Text style={jn.statNum}>{state.userMemory?.growthMoments?.length ?? 0}</Text>
-                    <Text style={jn.statLabel}>Growth{'\n'}moments</Text>
-                  </View>
-                </View>
-              )}
-
-              {/* Growth moments from AI memory */}
-              {state.userMemory?.growthMoments && state.userMemory.growthMoments.length > 0 && (
-                <View style={jn.growthCard}>
-                  <Text style={jn.growthTitle}>✨ Growth moments</Text>
-                  <Text style={jn.growthSub}>Noticed by Tether across your sessions</Text>
-                  {state.userMemory.growthMoments.slice(0, 5).map((moment, i) => (
-                    <View key={i} style={jn.growthItem}>
-                      <View style={jn.growthDot} />
-                      <Text style={jn.growthText}>{moment}</Text>
-                    </View>
-                  ))}
-                </View>
-              )}
-
-              {/* Emotional captures timeline */}
-              {state.learnings.emotionalCaptures.length > 0 ? (
-                <>
-                  <Text style={styles.sectionIntro}>Emotional check-ins across your steps</Text>
-                  <View style={ej.track}>
-                    {state.learnings.emotionalCaptures.slice(0, 12).map((c) => {
-                      const STEP_EMOJIS: Record<string, string[]> = {
-                        vent: ['😌','😐','😟','😰','🔥'],
-                        understand: ['🌫️','🌥️','⛅','🌤️','☀️'],
-                        prepare: ['😰','😟','😐','🙂','😊'],
-                        bridge: ['😔','😐','🙂','😊','🌿'],
-                      };
-                      const emoji = (STEP_EMOJIS[c.fromStep] ?? [])[c.score - 1] ?? '😐';
-                      const dateStr = new Date(c.date).toLocaleDateString('en-ZA', { day: 'numeric', month: 'short' });
-                      const STEP_COLORS_MAP: Record<string, string> = { vent: Colors.terracotta, understand: Colors.gold, prepare: Colors.sage, bridge: Colors.sage };
-                      const color = STEP_COLORS_MAP[c.fromStep] || Colors.midBrown;
-                      return (
-                        <View key={c.id} style={ej.item}>
-                          <Text style={ej.emoji}>{emoji}</Text>
-                          <View style={[ej.dot, { backgroundColor: color }]} />
-                          <Text style={[ej.stepLabel, { color }]}>{c.fromStep}</Text>
-                          <Text style={ej.date}>{dateStr}</Text>
-                        </View>
-                      );
-                    })}
-                  </View>
-                </>
-              ) : (
-                <PlaceholderCard
-                  icon="📈"
-                  title="Your journey starts here"
-                  body="Complete your first session to begin tracking how you feel as you move through each step. Over time you will see your patterns shift."
-                />
-              )}
-
-              {/* Session reflections */}
-              {reflections.length > 0 && (
-                <>
-                  <Text style={[styles.sectionIntro, { marginTop: 20 }]}>Session reflections</Text>
-                  {reflections.map((r, i) => {
-                    const dateStr = new Date(r.date).toLocaleDateString('en-ZA', { day: 'numeric', month: 'short' });
-                    return (
-                      <View key={i} style={rf.card}>
-                        <Text style={rf.date}>{dateStr}</Text>
-                        <Text style={rf.text}>{r.text}</Text>
-                      </View>
-                    );
-                  })}
-                </>
-              )}
-            </View>
           </>
         )}
 
@@ -317,7 +228,7 @@ export default function GrowthTab() {
                 </>
               ) : (
                 <View style={pt.setupCard}>
-                  <Text style={{ fontSize: 28, marginBottom: 12 }}>💞</Text>
+                  <IconHeart size={28} color={Colors.mauve} style={{ marginBottom: 12 }} />
                   <Text style={pt.setupTitle}>Invite your partner</Text>
                   <Text style={pt.setupBody}>
                     Send your partner a link so they can create their own Tether account. Once they join, their emotional profile will appear here automatically.
@@ -351,7 +262,7 @@ export default function GrowthTab() {
                 ))
               ) : (
                 <PlaceholderCard
-                  icon="💭"
+                  icon={<IconUser size={22} color={Colors.lightBrown} />}
                   title="Partner insights build over time"
                   body="As you complete more sessions, Tether will help you understand your partner better."
                 />
@@ -375,7 +286,7 @@ export default function GrowthTab() {
               ))
             ) : (
               <PlaceholderCard
-                icon="🔮"
+                icon={<IconCompass size={22} color={Colors.lightBrown} />}
                 title="Patterns will emerge here"
                 body="Complete a few sessions to start seeing relationship patterns. Tether will identify recurring themes across your conflicts."
               />
@@ -423,34 +334,6 @@ const tb = StyleSheet.create({
   },
   label: { fontFamily: Fonts.bodyMedium, fontSize: 12, color: Colors.midBrown },
   labelActive: { color: Colors.charcoal },
-});
-
-const rf = StyleSheet.create({
-  card: { backgroundColor: Colors.warmWhite, borderWidth: 1, borderColor: Colors.sand, borderRadius: Radius.lg, padding: 16, marginBottom: 12 },
-  date: { fontFamily: Fonts.bodyMedium, fontSize: 11, color: Colors.terracotta, letterSpacing: 0.4, textTransform: 'uppercase', marginBottom: 8 },
-  text: { fontFamily: Fonts.body, fontSize: 14, color: Colors.charcoal, lineHeight: 22 },
-});
-
-const ej = StyleSheet.create({
-  track: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  item: { backgroundColor: Colors.warmWhite, borderWidth: 1, borderColor: Colors.sand, borderRadius: Radius.lg, padding: 12, alignItems: 'center', gap: 4, minWidth: 64 },
-  emoji: { fontSize: 22 },
-  dot: { width: 6, height: 6, borderRadius: 3 },
-  stepLabel: { fontFamily: Fonts.bodyMedium, fontSize: 10, textTransform: 'uppercase', letterSpacing: 0.5 },
-  date: { fontFamily: Fonts.body, fontSize: 10, color: Colors.lightBrown },
-});
-
-const jn = StyleSheet.create({
-  statsRow: { flexDirection: 'row', gap: 10, marginBottom: 16 },
-  statCard: { flex: 1, backgroundColor: Colors.warmWhite, borderWidth: 1, borderColor: Colors.sand, borderRadius: Radius.lg, padding: 14, alignItems: 'center' },
-  statNum: { fontFamily: Fonts.display, fontSize: 26, color: Colors.charcoal, marginBottom: 2 },
-  statLabel: { fontFamily: Fonts.body, fontSize: 10, color: Colors.midBrown, textAlign: 'center', lineHeight: 14 },
-  growthCard: { backgroundColor: Colors.sagePale, borderWidth: 1, borderColor: Colors.sageLight, borderRadius: Radius.lg, padding: 16, marginBottom: 16 },
-  growthTitle: { fontFamily: Fonts.display, fontSize: 16, color: Colors.charcoal, marginBottom: 2 },
-  growthSub: { fontFamily: Fonts.body, fontSize: 12, color: Colors.midBrown, marginBottom: 12 },
-  growthItem: { flexDirection: 'row', alignItems: 'flex-start', gap: 10, marginBottom: 8 },
-  growthDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: Colors.sage, marginTop: 6, flexShrink: 0 },
-  growthText: { fontFamily: Fonts.body, fontSize: 13, color: Colors.charcoal, lineHeight: 19, flex: 1 },
 });
 
 const styles = StyleSheet.create({

@@ -1,10 +1,6 @@
 import { Tabs } from 'expo-router';
-import { Text } from 'react-native';
 import { Colors, Fonts } from '../../src/constants/theme';
-
-function TabIcon({ emoji, focused }: { emoji: string; focused: boolean }) {
-  return <Text style={{ fontSize: 20, opacity: focused ? 1 : 0.35 }}>{emoji}</Text>;
-}
+import { IconHome, IconCompass, IconLeaf, IconSliders } from '../../src/components/Icons';
 
 export default function TabLayout() {
   return (
@@ -19,7 +15,7 @@ export default function TabLayout() {
           paddingBottom: 20,
           paddingTop: 8,
         },
-        tabBarActiveTintColor: Colors.terracotta,
+        tabBarActiveTintColor: Colors.sage,
         tabBarInactiveTintColor: Colors.lightBrown,
         tabBarLabelStyle: {
           fontFamily: Fonts.bodyMedium,
@@ -29,10 +25,10 @@ export default function TabLayout() {
         },
       }}
     >
-      <Tabs.Screen name="index" options={{ title: 'Home', tabBarIcon: ({ focused }) => <TabIcon emoji="🏡" focused={focused} /> }} />
-      <Tabs.Screen name="sessions" options={{ title: 'Sessions', tabBarIcon: ({ focused }) => <TabIcon emoji="💬" focused={focused} /> }} />
-      <Tabs.Screen name="learnings" options={{ title: 'Growth', tabBarIcon: ({ focused }) => <TabIcon emoji="🌱" focused={focused} /> }} />
-      <Tabs.Screen name="tools" options={{ title: 'Tools', tabBarIcon: ({ focused }) => <TabIcon emoji="🛠️" focused={focused} /> }} />
+      <Tabs.Screen name="index" options={{ title: 'Home', tabBarIcon: ({ color }) => <IconHome size={22} color={color} /> }} />
+      <Tabs.Screen name="sessions" options={{ title: 'Sessions', tabBarIcon: ({ color }) => <IconCompass size={22} color={color} /> }} />
+      <Tabs.Screen name="learnings" options={{ title: 'Growth', tabBarIcon: ({ color }) => <IconLeaf size={22} color={color} /> }} />
+      <Tabs.Screen name="tools" options={{ title: 'Tools', tabBarIcon: ({ color }) => <IconSliders size={22} color={color} /> }} />
       <Tabs.Screen name="settings" options={{ href: null }} />
     </Tabs>
   );

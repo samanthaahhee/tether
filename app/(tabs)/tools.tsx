@@ -3,6 +3,26 @@ import { View, Text, ScrollView, FlatList, TouchableOpacity, StyleSheet, Animate
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Colors, Fonts, Radius, Shadows } from '../../src/constants/theme';
 import { TOOLS_CONTENT, REPAIR_ATTEMPTS } from '../../src/constants/data';
+import { IconWind, IconMoon, IconActivity, IconLeaf, IconHeart, IconCheck, IconUser, IconClock, IconX } from '../../src/components/Icons';
+
+const BREATHING_ICONS: Record<string, React.ComponentType<{ size?: number; color?: string }>> = {
+  'box': IconActivity,
+  '478': IconMoon,
+};
+
+const GROUNDING_ICONS: Record<string, React.ComponentType<{ size?: number; color?: string }>> = {
+  '54321': IconWind,
+  'body-scan': IconUser,
+};
+
+const REPAIR_ICONS: Record<string, React.ComponentType<{ size?: number; color?: string }>> = {
+  'Olive branch': IconHeart,
+  'Accountability': IconCheck,
+  'Pause request': IconClock,
+  'Soft start': IconLeaf,
+  'I hear you': IconUser,
+  'Be together': IconHeart,
+};
 
 function BreathingExercise({ exercise }: { exercise: typeof TOOLS_CONTENT.breathing[0] }) {
   const [active, setActive] = useState(false);
@@ -62,7 +82,7 @@ function BreathingExercise({ exercise }: { exercise: typeof TOOLS_CONTENT.breath
   return (
     <View style={br.card}>
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 6 }}>
-        <Text style={{ fontSize: 20 }}>{exercise.emoji}</Text>
+        {(() => { const I = BREATHING_ICONS[exercise.id]; return I ? <I size={20} color={Colors.sage} /> : null; })()}
         <Text style={br.name}>{exercise.name}</Text>
       </View>
       <Text style={br.desc}>{exercise.desc}</Text>
@@ -100,12 +120,12 @@ const br = StyleSheet.create({
   startText: { fontFamily: Fonts.bodyMedium, fontSize: 13, color: Colors.sage },
 });
 
-function ExpandableCard({ icon, title, children }: { icon: string; title: string; children: React.ReactNode }) {
+function ExpandableCard({ icon, title, children }: { icon: React.ReactNode; title: string; children: React.ReactNode }) {
   const [expanded, setExpanded] = useState(false);
   return (
     <View style={ex.card}>
       <TouchableOpacity onPress={() => setExpanded(!expanded)} style={ex.header} activeOpacity={0.8}>
-        <Text style={{ fontSize: 20 }}>{icon}</Text>
+        {icon}
         <Text style={ex.title}>{title}</Text>
         <Text style={ex.arrow}>{expanded ? '−' : '+'}</Text>
       </TouchableOpacity>
@@ -174,7 +194,7 @@ export default function ToolsTab() {
               return (
                 <View style={[cr.card, { width: cardWidth }]}>
                   <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 8 }}>
-                    <Text style={{ fontSize: 22 }}>{g.emoji}</Text>
+                    {(() => { const I = GROUNDING_ICONS[g.id]; return I ? <I size={22} color={Colors.sage} /> : null; })()}
                     <Text style={cr.name}>{g.name}</Text>
                   </View>
                   <Text style={gt.desc}>{g.desc}</Text>
@@ -202,7 +222,7 @@ export default function ToolsTab() {
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Phrase bank</Text>
 
-          <ExpandableCard icon="🌿" title="Soft start-ups">
+          <ExpandableCard icon={<IconLeaf size={20} color={Colors.sage} />} title="Soft start-ups">
             <Text style={gt.desc}>Replace criticism with gentle openings. Say this, not that.</Text>
             {TOOLS_CONTENT.phrases.softStartups.map((p, i) => (
               <View key={i} style={pb.pair}>
@@ -218,7 +238,7 @@ export default function ToolsTab() {
             ))}
           </ExpandableCard>
 
-          <ExpandableCard icon="🚫" title="Words to avoid">
+          <ExpandableCard icon={<IconX size={20} color={Colors.lightBrown} />} title="Words to avoid">
             <Text style={gt.desc}>These common phrases escalate conflict. Here is why and what to say instead.</Text>
             {TOOLS_CONTENT.phrases.wordsToAvoid.map((w, i) => (
               <View key={i} style={pb.avoidCard}>
@@ -249,7 +269,8 @@ function RepairCard({ repair }: { repair: typeof REPAIR_ATTEMPTS[0] }) {
   const [expanded, setExpanded] = useState(false);
   return (
     <TouchableOpacity style={ra.card} onPress={() => setExpanded(!expanded)} activeOpacity={0.8}>
-      <Text style={{ fontSize: 22, marginBottom: 6 }}>{repair.icon}</Text>
+      {(() => { const I = REPAIR_ICONS[repair.name]; return I ? <I size={22} color={Colors.sage} /> : null; })()}
+      <View style={{ height: 6 }} />
       <Text style={ra.name}>{repair.name}</Text>
       {expanded && <Text style={ra.msg}>{repair.msg}</Text>}
     </TouchableOpacity>

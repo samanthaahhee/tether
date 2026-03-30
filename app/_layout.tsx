@@ -1,6 +1,8 @@
 import { useEffect } from 'react';
 import { Slot, router, useSegments } from 'expo-router';
 import { useFonts, Lora_500Medium, Lora_400Regular_Italic } from '@expo-google-fonts/lora';
+import { Questrial_400Regular } from '@expo-google-fonts/questrial';
+import { Fraunces_300Light, Fraunces_400Regular, Fraunces_300Light_Italic, Fraunces_400Regular_Italic } from '@expo-google-fonts/fraunces';
 import { DMSans_400Regular, DMSans_500Medium } from '@expo-google-fonts/dm-sans';
 import { AppStateProvider } from '../src/hooks/useAppState';
 import { AuthProvider, useAuth } from '../src/hooks/useAuth';
@@ -30,8 +32,9 @@ function RouteGuard() {
         router.replace('/onboarding');
       }
     } else {
-      // Signed in + onboarded — go to tabs
-      if (!inTabs) {
+      // Signed in + onboarded — go to tabs (allow standalone pages through)
+      const standalonePages = ['reflections', 'assessment'];
+      if (!inTabs && !standalonePages.includes(segments[0] as string)) {
         router.replace('/(tabs)');
       }
     }
@@ -44,6 +47,11 @@ export default function RootLayout() {
   const [fontsLoaded] = useFonts({
     Lora_500Medium,
     Lora_400Regular_Italic,
+    Questrial_400Regular,
+    Fraunces_300Light,
+    Fraunces_400Regular,
+    Fraunces_300Light_Italic,
+    Fraunces_400Regular_Italic,
     DMSans_400Regular,
     DMSans_500Medium,
   });

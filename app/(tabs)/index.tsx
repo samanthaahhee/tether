@@ -1,28 +1,54 @@
-import { ScrollView, View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { ScrollView, View, Text, TouchableOpacity, FlatList, StyleSheet, useWindowDimensions } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAppState } from '../../src/hooks/useAppState';
 import { Colors, Fonts, Radius, Shadows } from '../../src/constants/theme';
 import { DAILY_INSIGHTS, ModeKey } from '../../src/constants/data';
-import { useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { ChevronRight } from '../../src/components/Icon';
+import { IconSettings, IconSparkles, IconWind, IconSearch, IconLeaf, IconHeart, IconMoodLow, IconMoodOkay, IconMoodGood, IconMoodGreat, IconMoodAmazing } from '../../src/components/Icons';
+import { DogSitting, DogPeeking } from '../../src/components/Dog';
 
 const JOURNEY_STEPS = [
-  { mode: 'vent' as ModeKey, num: 'Step 1', name: 'Vent', emoji: '🌊', color: Colors.terracotta, paleBg: Colors.terracottaPale, border: Colors.terracottaLight, desc: 'Speak or type freely in a completely private space. Your partner will never see this. Just let it out.', tag: 'Start here every time' },
-  { mode: 'understand' as ModeKey, num: 'Step 2', name: 'Understand', emoji: '🔍', color: Colors.gold, paleBg: Colors.goldPale, border: '#D4B46A', desc: 'Gently explore what is really happening. What pattern is at play? What are you actually needing?', tag: 'When you are ready to reflect' },
-  { mode: 'prepare' as ModeKey, num: 'Step 3', name: 'Prepare', emoji: '🌿', color: Colors.sage, paleBg: Colors.sagePale, border: Colors.sageLight, desc: 'Build a script, craft a bridge message, or plan your next conversation. Turn insight into action.', tag: 'When you are ready to communicate' },
-  { mode: 'bridge' as ModeKey, num: 'Step 4', name: 'Nurture', emoji: '💛', color: Colors.sage, paleBg: Colors.sagePale, border: Colors.sageLight, desc: 'Compose and send a calm, considered NVC message to your partner. Close the loop with care.', tag: 'When you are ready to repair' },
+  { mode: 'vent' as ModeKey, num: 'Step 1', name: 'Vent', icon: 'wind' as const, color: '#636E3F', gradient: ['#F0F1E6', '#F7F8F0'] as [string, string], border: '#D4D8B8', desc: 'Speak or type freely in a completely private space. Your partner will never see this. Just let it out.', tag: 'Start here every time' },
+  { mode: 'understand' as ModeKey, num: 'Step 2', name: 'Understand', icon: 'search' as const, color: '#735EA0', gradient: ['#F2EEF7', '#F8F5FC'] as [string, string], border: '#DDD4EC', desc: 'Gently explore what is really happening. What pattern is at play? What are you actually needing?', tag: 'When you are ready to reflect' },
+  { mode: 'prepare' as ModeKey, num: 'Step 3', name: 'Prepare', icon: 'leaf' as const, color: '#329799', gradient: ['#EAF7F7', '#F3FBFB'] as [string, string], border: '#C0EBEB', desc: 'Figure out what you want to say and how to say it fairly. Turn feelings into clear language.', tag: 'When you are ready to communicate' },
+  { mode: 'bridge' as ModeKey, num: 'Step 4', name: 'Nurture', icon: 'heart' as const, color: '#9E7420', gradient: ['#FBF4E6', '#FDF9F0'] as [string, string], border: '#F5E0B5', desc: 'A conversation guide to help you open well, stay grounded, and close with care.', tag: 'When you are ready to repair' },
 ];
+
+const STEP_ICONS: Record<string, React.ComponentType<{ size?: number; color?: string }>> = {
+  wind: IconWind,
+  search: IconSearch,
+  leaf: IconLeaf,
+  heart: IconHeart,
+};
+
+const CAROUSEL_GAP = 12;
+const CAROUSEL_PEEK = 28;
+const CAROUSEL_LEFT = 20;
+
 
 export default function HomeTab() {
   const { state, dispatch } = useAppState();
   const router = useRouter();
+  const { width: windowWidth } = useWindowDimensions();
   const insight = useMemo(() => DAILY_INSIGHTS[new Date().getDate() % DAILY_INSIGHTS.length], []);
   const h = new Date().getHours();
   const timeGreeting = h < 12 ? 'Good morning' : h < 17 ? 'Good afternoon' : 'Good evening';
   const name = state.profile.name || 'friend';
 
   const activeSession = state.sessions.find((s) => s.id === state.activeSessionId);
+  const [journeyIdx, setJourneyIdx] = useState(0);
+
+  const cardWidth = windowWidth - CAROUSEL_LEFT - CAROUSEL_GAP - CAROUSEL_PEEK;
+  const snapInterval = cardWidth + CAROUSEL_GAP;
+
+  const resolvedCount = state.sessions.filter((s) => s.status === 'resolved').length;
+  const captures = state.learnings.emotionalCaptures;
+  const reflections = state.learnings.reflections;
+  const growthMoments = state.userMemory?.growthMoments ?? [];
+  const hasJourneyData = state.sessions.length > 0 || captures.length > 0 || growthMoments.length > 0;
 
   const startSession = () => {
     if (!activeSession) {
@@ -35,6 +61,7 @@ export default function HomeTab() {
     <SafeAreaView style={styles.safe} edges={['top']}>
       <ScrollView style={styles.scroll} contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
 
+        {/* Greeting */}
         <View style={styles.greeting}>
           <View style={styles.greetingRow}>
             <View style={{ flex: 1 }}>
@@ -42,12 +69,16 @@ export default function HomeTab() {
               <Text style={styles.greetingTitle}>{timeGreeting}, {name}</Text>
               <Text style={styles.greetingSub}>Your feelings are welcome here.</Text>
             </View>
-            <TouchableOpacity onPress={() => router.push('/(tabs)/settings')} style={styles.settingsBtn} activeOpacity={0.7}>
-              <Text style={{ fontSize: 22 }}>⚙️</Text>
-            </TouchableOpacity>
+            <View style={{ alignItems: 'center', gap: 4 }}>
+              <DogSitting size={48} />
+              <TouchableOpacity onPress={() => router.push('/(tabs)/settings')} style={styles.settingsBtn} activeOpacity={0.7}>
+                <IconSettings size={18} color={Colors.lightBrown} />
+              </TouchableOpacity>
+            </View>
           </View>
         </View>
 
+        {/* Session CTA */}
         <TouchableOpacity style={styles.startCard} onPress={startSession} activeOpacity={0.88}>
           <View style={styles.startCardBlob} />
           <Text style={styles.startTag}>{activeSession ? 'CONTINUE SESSION' : 'START HERE'}</Text>
@@ -59,32 +90,146 @@ export default function HomeTab() {
           </View>
         </TouchableOpacity>
 
-        <View style={styles.section}>
-          <Text style={styles.sectionLabel}>YOUR JOURNEY</Text>
-          {JOURNEY_STEPS.map((step, i) => (
-            <TouchableOpacity key={step.mode} onPress={startSession} activeOpacity={0.8} style={styles.journeyRow}>
-              <View style={styles.journeyLeft}>
-                <View style={[styles.journeyOrb, { backgroundColor: step.paleBg, borderColor: step.border }]}>
-                  <Text style={{ fontSize: 18 }}>{step.emoji}</Text>
-                </View>
-                {i < JOURNEY_STEPS.length - 1 && (
-                  <View style={[styles.journeyLine, { backgroundColor: step.border }]} />
-                )}
-              </View>
-              <View style={styles.journeyBody}>
-                <Text style={[styles.journeyNum, { color: step.color }]}>{step.num}</Text>
-                <Text style={styles.journeyName}>{step.name}</Text>
-                <Text style={styles.journeyDesc}>{step.desc}</Text>
-                <View style={[styles.journeyTag, { backgroundColor: step.paleBg }]}>
-                  <Text style={[styles.journeyTagText, { color: step.color }]}>{step.tag}</Text>
-                </View>
-              </View>
-            </TouchableOpacity>
-          ))}
+        {/* Journey Carousel */}
+        <View style={{ marginBottom: 28 }}>
+          <View style={{ paddingHorizontal: 20, marginBottom: 12 }}>
+            <Text style={styles.sectionHeading}>How Tether works</Text>
+            <Text style={styles.sectionSub}>Four steps from raw emotion to resolution.</Text>
+          </View>
+          <FlatList
+            data={JOURNEY_STEPS}
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            snapToInterval={snapInterval}
+            snapToAlignment="start"
+            decelerationRate="fast"
+            contentContainerStyle={{ paddingLeft: CAROUSEL_LEFT }}
+            ItemSeparatorComponent={() => <View style={{ width: CAROUSEL_GAP }} />}
+            keyExtractor={(item) => item.mode}
+            onMomentumScrollEnd={(e) => {
+              const idx = Math.round(e.nativeEvent.contentOffset.x / snapInterval);
+              setJourneyIdx(idx);
+            }}
+            renderItem={({ item: step }) => {
+              const StepIcon = STEP_ICONS[step.icon];
+              return (
+              <TouchableOpacity onPress={startSession} activeOpacity={0.8} style={{ width: cardWidth }}>
+                <LinearGradient colors={step.gradient} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={[jc.card, { borderColor: step.border }]}>
+                  <View style={[jc.orb, { backgroundColor: 'rgba(255,255,255,0.7)', borderColor: step.border }]}>
+                    {StepIcon && <StepIcon size={22} color={step.color} />}
+                  </View>
+                  <Text style={[jc.num, { color: step.color }]}>{step.num}</Text>
+                  <Text style={jc.name}>{step.name}</Text>
+                  <Text style={jc.desc}>{step.desc}</Text>
+                  <View style={[jc.tag, { backgroundColor: 'rgba(255,255,255,0.6)' }]}>
+                    <Text style={[jc.tagText, { color: step.color }]}>{step.tag}</Text>
+                  </View>
+                </LinearGradient>
+              </TouchableOpacity>
+              );
+            }}
+          />
+          <View style={jc.dots}>
+            {JOURNEY_STEPS.map((_, i) => (
+              <View key={i} style={[jc.dot, i === journeyIdx && jc.dotActive]} />
+            ))}
+          </View>
         </View>
 
+        {/* Your Journey */}
+        {hasJourneyData ? (
+          <View style={{ paddingHorizontal: 20, marginBottom: 24 }}>
+            <Text style={styles.sectionHeading}>Your journey</Text>
+            <Text style={[styles.sectionSub, { marginBottom: 16 }]}>How you have been feeling and growing across sessions.</Text>
+
+            {/* Stats row */}
+            <View style={st.row}>
+              <View style={st.card}>
+                <Text style={st.num}>{resolvedCount}</Text>
+                <Text style={st.label}>Sessions{'\n'}completed</Text>
+              </View>
+              <View style={st.card}>
+                <Text style={st.num}>{captures.length}</Text>
+                <Text style={st.label}>Emotional{'\n'}check-ins</Text>
+              </View>
+              <View style={st.card}>
+                <Text style={st.num}>{growthMoments.length}</Text>
+                <Text style={st.label}>Growth{'\n'}moments</Text>
+              </View>
+            </View>
+
+            {/* Emotional trajectory */}
+            {captures.length > 0 && (
+              <>
+                <Text style={et.heading}>Emotional trajectory</Text>
+                <Text style={et.sub}>How you felt after each session</Text>
+                <ScrollView horizontal showsHorizontalScrollIndicator={false} style={et.scrollWrap} contentContainerStyle={et.scrollContent}>
+                  {captures.slice(0, 16).map((c) => {
+                    const SCORE_MOODS = [IconMoodLow, IconMoodOkay, IconMoodGood, IconMoodGreat, IconMoodAmazing];
+                    const MoodIcon = SCORE_MOODS[c.score - 1] ?? IconMoodOkay;
+                    const color = c.score >= 4 ? Colors.sage : c.score >= 3 ? Colors.amber : Colors.lightBrown;
+                    const barH = Math.max(10, (c.score / 5) * 56);
+                    const dateStr = new Date(c.date).toLocaleDateString('en-ZA', { day: 'numeric', month: 'short' });
+                    return (
+                      <View key={c.id} style={et.col}>
+                        <View style={et.barWrap}>
+                          <View style={[et.bar, { height: barH, backgroundColor: color }]} />
+                        </View>
+                        <MoodIcon size={20} />
+                        <Text style={et.date}>{dateStr}</Text>
+                      </View>
+                    );
+                  })}
+                </ScrollView>
+              </>
+            )}
+
+            {/* Growth moments */}
+            {growthMoments.length > 0 && (
+              <View style={gm.card}>
+                <Text style={gm.title}>Growth moments</Text>
+                <Text style={gm.sub}>Noticed by Tether across your sessions</Text>
+                {growthMoments.slice(0, 5).map((moment: string, i: number) => (
+                  <View key={i} style={gm.item}>
+                    <View style={gm.dot} />
+                    <Text style={gm.text}>{moment}</Text>
+                  </View>
+                ))}
+              </View>
+            )}
+
+            {/* Latest session reflection */}
+            {reflections.length > 0 && (() => {
+              const latest = reflections[reflections.length - 1];
+              const dateStr = new Date(latest.date).toLocaleDateString('en-ZA', { day: 'numeric', month: 'short' });
+              return (
+                <>
+                  <Text style={rf.heading}>Latest reflection</Text>
+                  <View style={rf.card}>
+                    <Text style={rf.date}>{dateStr}</Text>
+                    <Text style={rf.text} numberOfLines={3}>{latest.text}</Text>
+                  </View>
+                  <TouchableOpacity onPress={() => router.push('/reflections')} style={rf.viewAll} activeOpacity={0.7}>
+                    <Text style={rf.viewAllText}>View all {reflections.length} reflection{reflections.length !== 1 ? 's' : ''}</Text>
+                    <ChevronRight size={9} color={Colors.midBrown} style={{ marginTop: 1 }} />
+                  </TouchableOpacity>
+                </>
+              );
+            })()}
+          </View>
+        ) : (
+          <View style={{ paddingHorizontal: 20, marginBottom: 24 }}>
+            <View style={ph.card}>
+              <DogPeeking size={56} style={{ marginBottom: 8 }} />
+              <Text style={ph.title}>Your journey starts here</Text>
+              <Text style={ph.body}>Complete your first session to begin tracking how you feel as you move through each step. Over time you will see your patterns shift.</Text>
+            </View>
+          </View>
+        )}
+
+        {/* Daily insight */}
         <View style={styles.insightCard}>
-          <Text style={{ fontSize: 18, marginTop: 2 }}>✨</Text>
+          <IconSparkles size={18} color={Colors.mauve} style={{ marginTop: 2 }} />
           <Text style={styles.insightText}>
             <Text style={{ fontFamily: Fonts.bodyMedium, color: Colors.charcoal }}>Today: </Text>
             {insight}
@@ -96,6 +241,69 @@ export default function HomeTab() {
   );
 }
 
+// ── Journey carousel ──
+const jc = StyleSheet.create({
+  card: { borderWidth: 1, borderRadius: Radius.lg, padding: 18, overflow: 'hidden' },
+  orb: { width: 44, height: 44, borderRadius: 22, borderWidth: 2, alignItems: 'center', justifyContent: 'center', marginBottom: 12 },
+  num: { fontFamily: Fonts.bodyMedium, fontSize: 10, letterSpacing: 0.6, textTransform: 'uppercase', marginBottom: 2 },
+  name: { fontFamily: Fonts.display, fontSize: 20, color: Colors.charcoal, marginBottom: 6 },
+  desc: { fontFamily: Fonts.body, fontSize: 13, color: Colors.midBrown, lineHeight: 19, marginBottom: 12 },
+  tag: { borderRadius: Radius.full, paddingHorizontal: 10, paddingVertical: 5, alignSelf: 'flex-start' },
+  tagText: { fontFamily: Fonts.bodyMedium, fontSize: 10 },
+  dots: { flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: 6, marginTop: 14 },
+  dot: { width: 6, height: 6, borderRadius: 3, backgroundColor: Colors.sand },
+  dotActive: { width: 18, backgroundColor: Colors.terracotta },
+});
+
+// ── Stats row ──
+const st = StyleSheet.create({
+  row: { flexDirection: 'row', gap: 10, marginBottom: 20 },
+  card: { flex: 1, backgroundColor: Colors.warmWhite, borderWidth: 1, borderColor: Colors.sand, borderRadius: Radius.lg, padding: 14, alignItems: 'center' },
+  num: { fontFamily: Fonts.display, fontSize: 26, color: Colors.charcoal, marginBottom: 2 },
+  label: { fontFamily: Fonts.body, fontSize: 10, color: Colors.midBrown, textAlign: 'center', lineHeight: 14 },
+});
+
+// ── Emotional trajectory ──
+const et = StyleSheet.create({
+  heading: { fontFamily: Fonts.display, fontSize: 16, color: Colors.charcoal, marginBottom: 2 },
+  sub: { fontFamily: Fonts.body, fontSize: 12, color: Colors.midBrown, marginBottom: 12 },
+  scrollWrap: { backgroundColor: Colors.warmWhite, borderWidth: 1, borderColor: Colors.sand, borderRadius: Radius.lg, marginBottom: 20 },
+  scrollContent: { paddingHorizontal: 12, paddingVertical: 14, gap: 4 },
+  col: { width: 48, alignItems: 'center', gap: 4 },
+  barWrap: { height: 56, justifyContent: 'flex-end' },
+  bar: { width: 20, borderRadius: 10 },
+  emoji: { fontSize: 16 },
+  date: { fontFamily: Fonts.body, fontSize: 9, color: Colors.lightBrown },
+});
+
+// ── Growth moments ──
+const gm = StyleSheet.create({
+  card: { backgroundColor: Colors.sagePale, borderWidth: 1, borderColor: Colors.sageLight, borderRadius: Radius.lg, padding: 16, marginBottom: 20 },
+  title: { fontFamily: Fonts.display, fontSize: 16, color: Colors.charcoal, marginBottom: 2 },
+  sub: { fontFamily: Fonts.body, fontSize: 12, color: Colors.midBrown, marginBottom: 12 },
+  item: { flexDirection: 'row', alignItems: 'flex-start', gap: 10, marginBottom: 8 },
+  dot: { width: 6, height: 6, borderRadius: 3, backgroundColor: Colors.sage, marginTop: 6, flexShrink: 0 },
+  text: { fontFamily: Fonts.body, fontSize: 13, color: Colors.charcoal, lineHeight: 19, flex: 1 },
+});
+
+// ── Session reflections ──
+const rf = StyleSheet.create({
+  heading: { fontFamily: Fonts.display, fontSize: 16, color: Colors.charcoal, marginBottom: 12 },
+  card: { backgroundColor: Colors.warmWhite, borderWidth: 1, borderColor: Colors.sand, borderRadius: Radius.lg, padding: 16, marginBottom: 10 },
+  date: { fontFamily: Fonts.bodyMedium, fontSize: 11, color: Colors.terracotta, letterSpacing: 0.4, textTransform: 'uppercase', marginBottom: 8 },
+  text: { fontFamily: Fonts.body, fontSize: 14, color: Colors.charcoal, lineHeight: 22 },
+  viewAll: { flexDirection: 'row', alignItems: 'center', gap: 4, alignSelf: 'flex-start', paddingVertical: 4, marginBottom: 8 },
+  viewAllText: { fontFamily: Fonts.bodyMedium, fontSize: 12, color: Colors.midBrown },
+});
+
+// ── Placeholder ──
+const ph = StyleSheet.create({
+  card: { backgroundColor: Colors.creamDark, borderWidth: 1, borderColor: Colors.sand, borderRadius: Radius.lg, padding: 16, alignItems: 'center' },
+  title: { fontFamily: Fonts.display, fontSize: 16, color: Colors.charcoal, marginBottom: 4, textAlign: 'center' },
+  body: { fontFamily: Fonts.body, fontSize: 13, color: Colors.midBrown, lineHeight: 19, textAlign: 'center' },
+});
+
+// ── Base styles ──
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: Colors.cream },
   scroll: { flex: 1 },
@@ -113,18 +321,8 @@ const styles = StyleSheet.create({
   startBody: { fontFamily: Fonts.body, fontSize: 14, color: 'rgba(255,255,255,0.88)', lineHeight: 21, marginBottom: 16 },
   startBtn: { backgroundColor: 'rgba(255,255,255,0.2)', borderWidth: 1.5, borderColor: 'rgba(255,255,255,0.4)', borderRadius: Radius.full, paddingVertical: 10, paddingHorizontal: 18, alignSelf: 'flex-start', flexDirection: 'row', alignItems: 'center' },
   startBtnText: { fontFamily: Fonts.bodyMedium, fontSize: 13, color: Colors.white },
-  section: { paddingHorizontal: 20, marginBottom: 24 },
-  sectionLabel: { fontFamily: Fonts.bodyMedium, fontSize: 10, letterSpacing: 0.8, textTransform: 'uppercase', color: Colors.midBrown, marginBottom: 16 },
-  journeyRow: { flexDirection: 'row', alignItems: 'stretch', marginBottom: 0 },
-  journeyLeft: { width: 44, alignItems: 'center', marginRight: 14 },
-  journeyOrb: { width: 40, height: 40, borderRadius: 20, borderWidth: 2, alignItems: 'center', justifyContent: 'center' },
-  journeyLine: { width: 2, flex: 1, marginVertical: 4, opacity: 0.5, minHeight: 16 },
-  journeyBody: { flex: 1, paddingBottom: 20 },
-  journeyNum: { fontFamily: Fonts.bodyMedium, fontSize: 10, letterSpacing: 0.6, textTransform: 'uppercase', marginBottom: 2 },
-  journeyName: { fontFamily: Fonts.display, fontSize: 18, color: Colors.charcoal, marginBottom: 4 },
-  journeyDesc: { fontFamily: Fonts.body, fontSize: 13, color: Colors.midBrown, lineHeight: 19, marginBottom: 8 },
-  journeyTag: { borderRadius: Radius.full, paddingHorizontal: 10, paddingVertical: 4, alignSelf: 'flex-start' },
-  journeyTagText: { fontFamily: Fonts.bodyMedium, fontSize: 10 },
+  sectionHeading: { fontFamily: Fonts.display, fontSize: 16, color: Colors.charcoal, marginBottom: 2 },
+  sectionSub: { fontFamily: Fonts.body, fontSize: 12, color: Colors.midBrown },
   insightCard: { marginHorizontal: 20, backgroundColor: Colors.sagePale, borderWidth: 1, borderColor: Colors.sageLight, borderRadius: Radius.lg, padding: 16, flexDirection: 'row', gap: 12 },
   insightText: { flex: 1, fontFamily: Fonts.body, fontSize: 13, color: Colors.warmBrown, lineHeight: 20 },
 });

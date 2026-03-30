@@ -3,6 +3,7 @@ import {
   View, Text, TextInput, TouchableOpacity, FlatList, ScrollView,
   StyleSheet, KeyboardAvoidingView, Platform, ActivityIndicator, Alert, Modal,
 } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { SafeAreaView } from 'react-native-safe-area-context';
 let ExpoSpeechRecognitionModule: any = null;
 try {
@@ -17,6 +18,15 @@ import { Colors, Fonts, Radius, Shadows } from '../../src/constants/theme';
 import { MODE_CONFIG, ModeKey, SESSION_STEPS, CRISIS_WORDS, REPAIR_ATTEMPTS } from '../../src/constants/data';
 import { Button } from '../../src/components/UI';
 import { ChevronLeft } from '../../src/components/Icon';
+import { DogLying, DogHappy } from '../../src/components/Dog';
+import { IconLeaf, IconWind, IconSearch, IconHeart, IconMoodLow, IconMoodOkay, IconMoodGood, IconMoodGreat, IconMoodAmazing } from '../../src/components/Icons';
+
+const STEP_ICON_MAP: Record<string, React.ComponentType<{ size?: number; color?: string }>> = {
+  wind: IconWind,
+  search: IconSearch,
+  leaf: IconLeaf,
+  heart: IconHeart,
+};
 
 function MicIcon() {
   return (
@@ -29,10 +39,17 @@ function MicIcon() {
 }
 
 const STEP_COLORS: Record<ModeKey, string> = {
-  vent: Colors.terracotta,
-  understand: Colors.gold,
-  prepare: Colors.sage,
-  bridge: Colors.sage,
+  vent: '#636E3F',
+  understand: '#735EA0',
+  prepare: '#329799',
+  bridge: '#9E7420',
+};
+
+const STEP_GRADIENTS: Record<ModeKey, [string, string, string]> = {
+  vent: ['#F0F1E6', '#F7F8F0', '#FDFBF7'],
+  understand: ['#F2EEF7', '#F8F5FC', '#FDFBF7'],
+  prepare: ['#EAF7F7', '#F3FBFB', '#FDFBF7'],
+  bridge: ['#FBF4E6', '#FDF9F0', '#FDFBF7'],
 };
 
 const WELCOMES: Record<ModeKey, (name: string) => string> = {
@@ -136,6 +153,9 @@ function NurtureCard({ session, dispatch: d, profile, onResolved }: {
 
   return (
     <View style={nr.container}>
+      <View style={{ alignItems: 'center', marginBottom: 16 }}>
+        <DogLying size={56} />
+      </View>
       <Text style={nr.heading}>Before you talk, read this</Text>
       <Text style={nr.sub}>Four tools to help you open well, stay grounded, and close with care. Take a moment with each one.</Text>
 
@@ -387,47 +407,15 @@ const sl = StyleSheet.create({
   showMoreText: { fontFamily: Fonts.bodyMedium, fontSize: 13, color: Colors.midBrown },
 });
 
-const CAPTURE_CONFIG: Record<ModeKey, { question: string; options: { emoji: string; label: string; score: number }[] }> = {
-  vent: {
-    question: 'Before moving on, how intense is the emotion right now?',
-    options: [
-      { emoji: '😌', label: 'Calm', score: 1 },
-      { emoji: '😐', label: 'Unsettled', score: 2 },
-      { emoji: '😟', label: 'Heavy', score: 3 },
-      { emoji: '😰', label: 'Overwhelmed', score: 4 },
-      { emoji: '🔥', label: 'Flooded', score: 5 },
-    ],
-  },
-  understand: {
-    question: 'How much clarity have you found?',
-    options: [
-      { emoji: '🌫️', label: 'Still foggy', score: 1 },
-      { emoji: '🌥️', label: 'A little', score: 2 },
-      { emoji: '⛅', label: 'Getting there', score: 3 },
-      { emoji: '🌤️', label: 'Mostly clear', score: 4 },
-      { emoji: '☀️', label: 'Clear', score: 5 },
-    ],
-  },
-  prepare: {
-    question: 'How ready do you feel to reach out to your partner?',
-    options: [
-      { emoji: '😰', label: 'Not ready', score: 1 },
-      { emoji: '😟', label: 'Hesitant', score: 2 },
-      { emoji: '😐', label: 'Almost', score: 3 },
-      { emoji: '🙂', label: 'Ready', score: 4 },
-      { emoji: '😊', label: 'Grounded', score: 5 },
-    ],
-  },
-  bridge: {
-    question: 'How are you feeling as you close this session?',
-    options: [
-      { emoji: '😔', label: 'Still hard', score: 1 },
-      { emoji: '😐', label: 'Same', score: 2 },
-      { emoji: '🙂', label: 'A bit better', score: 3 },
-      { emoji: '😊', label: 'Better', score: 4 },
-      { emoji: '🌿', label: 'Settled', score: 5 },
-    ],
-  },
+const SESSION_CAPTURE = {
+  question: 'How are you feeling after this session?',
+  options: [
+    { Icon: IconMoodLow, label: 'Still hard', score: 1 },
+    { Icon: IconMoodOkay, label: 'Same', score: 2 },
+    { Icon: IconMoodGood, label: 'A bit better', score: 3 },
+    { Icon: IconMoodGreat, label: 'Better', score: 4 },
+    { Icon: IconMoodAmazing, label: 'Settled', score: 5 },
+  ],
 };
 
 function ActiveSessionView({ session, state, dispatch: d, onBack }: { session: Session; state: any; dispatch: any; onBack: () => void }) {
@@ -565,10 +553,14 @@ function ActiveSessionView({ session, state, dispatch: d, onBack }: { session: S
   }, [isRecording, speechAvailable, input]);
 
   const advanceStep = () => {
+    d({ type: 'ADVANCE_STEP', sessionId: session.id });
+  };
+
+  const resolveSession = () => {
     setShowCapture(true);
   };
 
-  const commitAdvance = (score?: number) => {
+  const commitResolve = (score?: number) => {
     setShowCapture(false);
     if (score !== undefined) {
       d({
@@ -582,10 +574,7 @@ function ActiveSessionView({ session, state, dispatch: d, onBack }: { session: S
         },
       });
     }
-    d({ type: 'ADVANCE_STEP', sessionId: session.id });
-  };
 
-  const resolveSession = () => {
     const reflection = generateReflection(session, state.profile);
     d({ type: 'RESOLVE_SESSION', sessionId: session.id, reflection });
     d({ type: 'ADD_REFLECTION', reflection: { sessionId: session.id, text: reflection, date: new Date().toISOString() } });
@@ -602,11 +591,14 @@ function ActiveSessionView({ session, state, dispatch: d, onBack }: { session: S
 
   const goBack = onBack;
 
+  const gradient = STEP_GRADIENTS[step];
+
   return (
-    <SafeAreaView style={styles.safe} edges={['top']}>
+    <LinearGradient colors={gradient} style={{ flex: 1 }}>
+    <SafeAreaView style={{ flex: 1 }} edges={['top']}>
       <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'} keyboardVerticalOffset={0}>
 
-        <View style={[styles.sessionHeader, { backgroundColor: cfg.paleBg, borderBottomColor: cfg.borderColor }]}>
+        <View style={[styles.sessionHeader, { borderBottomColor: Colors.sand }]}>
           {/* Nav row */}
           <View style={styles.sessionHeaderNav}>
             <TouchableOpacity onPress={goBack} style={styles.sessionBackBtn} activeOpacity={0.7}>
@@ -638,12 +630,12 @@ function ActiveSessionView({ session, state, dispatch: d, onBack }: { session: S
 
           {/* Step identity */}
           <View style={styles.sessionStepIdentity}>
-            <Text style={styles.sessionStepEmoji}>{cfg.emoji}</Text>
-            <Text style={[styles.sessionStepName, { color: cfg.color }]}>{cfg.label}</Text>
+            {(() => { const I = STEP_ICON_MAP[cfg.emoji]; return I ? <I size={24} color={cfg.color} /> : null; })()}
+            <Text style={styles.sessionStepName}>{cfg.label}</Text>
           </View>
 
           {/* Progress nodes */}
-          <StepProgressBar session={session} bgColor={cfg.paleBg} borderColor={cfg.borderColor + '40'} onGoToStep={(s) => d({ type: 'GO_TO_STEP', sessionId: session.id, step: s })} />
+          <StepProgressBar session={session} bgColor={Colors.warmWhite} borderColor={Colors.sand} onGoToStep={(s) => d({ type: 'GO_TO_STEP', sessionId: session.id, step: s })} />
         </View>
 
         {floodingDetected && step === 'vent' && (
@@ -666,7 +658,7 @@ function ActiveSessionView({ session, state, dispatch: d, onBack }: { session: S
             renderItem={({ item }) => (
               <View style={[styles.msgRow, item.role === 'user' && styles.msgRowUser]}>
                 <View style={[styles.msgAvatar, item.role === 'user' && styles.msgAvatarUser]}>
-                  <Text style={{ fontSize: 13 }}>{item.role === 'ai' ? '🌿' : (state.profile.name?.[0] || '?')}</Text>
+                  {item.role === 'ai' ? <IconLeaf size={14} color={Colors.sage} /> : <Text style={{ fontSize: 13 }}>{state.profile.name?.[0] || '?'}</Text>}
                 </View>
                 <View style={[styles.msgBubble, item.role === 'user' && styles.msgBubbleUser]}>
                   <Text style={[styles.msgText, item.role === 'user' && { color: Colors.white }]}>{item.text}</Text>
@@ -675,7 +667,7 @@ function ActiveSessionView({ session, state, dispatch: d, onBack }: { session: S
             )}
             ListFooterComponent={loading ? (
               <View style={styles.msgRow}>
-                <View style={styles.msgAvatar}><Text style={{ fontSize: 13 }}>🌿</Text></View>
+                <View style={styles.msgAvatar}><IconLeaf size={14} color={Colors.sage} /></View>
                 <View style={styles.msgBubble}><TypingIndicator /></View>
               </View>
             ) : null}
@@ -745,20 +737,23 @@ function ActiveSessionView({ session, state, dispatch: d, onBack }: { session: S
           </>
         )}
 
-      {/* Emotional capture modal */}
-      <Modal visible={showCapture} transparent animationType="slide" onRequestClose={() => commitAdvance()}>
+      {/* Post-session emotional capture modal */}
+      <Modal visible={showCapture} transparent animationType="slide" onRequestClose={() => commitResolve()}>
         <View style={cap.overlay}>
           <View style={cap.sheet}>
-            <Text style={cap.question}>{CAPTURE_CONFIG[step]?.question}</Text>
+            <View style={{ alignItems: 'center', marginBottom: 12 }}>
+              <DogHappy size={52} />
+            </View>
+            <Text style={cap.question}>{SESSION_CAPTURE.question}</Text>
             <View style={cap.optionsRow}>
-              {CAPTURE_CONFIG[step]?.options.map((opt) => (
-                <TouchableOpacity key={opt.score} onPress={() => commitAdvance(opt.score)} style={cap.optBtn} activeOpacity={0.8}>
-                  <Text style={cap.optEmoji}>{opt.emoji}</Text>
+              {SESSION_CAPTURE.options.map((opt) => (
+                <TouchableOpacity key={opt.score} onPress={() => commitResolve(opt.score)} style={cap.optBtn} activeOpacity={0.8}>
+                  <opt.Icon size={28} />
                   <Text style={cap.optLabel}>{opt.label}</Text>
                 </TouchableOpacity>
               ))}
             </View>
-            <TouchableOpacity onPress={() => commitAdvance()} style={cap.skipBtn} activeOpacity={0.7}>
+            <TouchableOpacity onPress={() => commitResolve()} style={cap.skipBtn} activeOpacity={0.7}>
               <Text style={cap.skipText}>Skip</Text>
             </TouchableOpacity>
           </View>
@@ -767,20 +762,42 @@ function ActiveSessionView({ session, state, dispatch: d, onBack }: { session: S
 
       </KeyboardAvoidingView>
     </SafeAreaView>
+    </LinearGradient>
   );
 }
 
 function generateReflection(session: Session, profile: any): string {
-  const ventMsgs = session.messages.vent?.filter((m) => m.role === 'user').map((m) => m.text).join(' ') || '';
-  const attachLabel = profile.attachment || 'unknown';
-  const needLabel = profile.need || 'unspoken';
   const stepsUsed = session.unlockedSteps.length;
+  const needLabel = profile.need || '';
+  const reachedNurture = session.unlockedSteps.includes('bridge');
 
-  return `In this session, you moved through ${stepsUsed} steps of your journey. ` +
-    `Your ${attachLabel} attachment pattern was likely activated. ` +
-    `The core need underneath was to feel ${needLabel}. ` +
-    `You processed your emotions, explored what was really happening, and took action toward repair. ` +
-    `This is meaningful growth. Each session like this builds emotional resilience and deepens your understanding of yourself in relationship.`;
+  const openers = [
+    'You showed up for yourself today.',
+    'You did something brave today.',
+    'This took courage.',
+    'You chose connection over disconnection.',
+  ];
+  const opener = openers[Math.floor(Math.random() * openers.length)];
+
+  const parts = [opener];
+
+  if (stepsUsed >= 3) {
+    parts.push('You moved from raw emotion all the way through to clarity.');
+  } else if (stepsUsed >= 2) {
+    parts.push('You sat with what you were feeling and started to make sense of it.');
+  } else {
+    parts.push('Even just naming what you are going through is a step forward.');
+  }
+
+  if (needLabel) {
+    parts.push(`Underneath it all, you needed to feel ${needLabel}. That matters.`);
+  }
+
+  if (reachedNurture) {
+    parts.push('You prepared to bring this back to your partner. That is the hardest part, and you did it.');
+  }
+
+  return parts.join(' ');
 }
 
 export default function SessionsTab() {
@@ -870,16 +887,15 @@ const styles = StyleSheet.create({
   headerTitle: { fontFamily: Fonts.display, fontSize: 26, color: Colors.charcoal, marginBottom: 6 },
   headerSub: { fontFamily: Fonts.body, fontSize: 14, color: Colors.midBrown },
   sectionLabel: { fontFamily: Fonts.bodyMedium, fontSize: 10, letterSpacing: 0.8, textTransform: 'uppercase', color: Colors.midBrown, marginBottom: 14 },
-  sessionHeader: { borderBottomWidth: 1 },
+  sessionHeader: { borderBottomWidth: 1, backgroundColor: Colors.warmWhite },
   sessionHeaderNav: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingTop: 10, paddingBottom: 4 },
   sessionBackBtn: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingVertical: 4, paddingRight: 8, minWidth: 56 },
   sessionBackText: { fontFamily: Fonts.bodyMedium, fontSize: 14, color: Colors.midBrown },
   sessionNameInput: { fontFamily: Fonts.body, fontSize: 12, color: Colors.charcoal, textAlign: 'center', paddingVertical: 2, minWidth: 120 },
   sessionNameText: { fontFamily: Fonts.body, fontSize: 12, color: Colors.midBrown, textAlign: 'center' },
   sessionStepCounter: { fontFamily: Fonts.bodyMedium, fontSize: 12, minWidth: 56, textAlign: 'right' },
-  sessionStepIdentity: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 16, paddingTop: 10, paddingBottom: 2 },
-  sessionStepEmoji: { fontSize: 26 },
-  sessionStepName: { fontFamily: Fonts.display, fontSize: 22 },
+  sessionStepIdentity: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingHorizontal: 16, paddingTop: 10, paddingBottom: 2 },
+  sessionStepName: { fontFamily: Fonts.display, fontSize: 22, color: Colors.charcoal },
   floodBanner: { backgroundColor: Colors.terracottaPale, borderBottomWidth: 1, borderBottomColor: Colors.terracottaLight, padding: 10, paddingHorizontal: 16 },
   floodText: { fontFamily: Fonts.body, fontSize: 13, color: Colors.warmBrown },
   msgList: { paddingHorizontal: 16, paddingVertical: 14, gap: 12, flexGrow: 1 },
