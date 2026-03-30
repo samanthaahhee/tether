@@ -99,6 +99,7 @@ type Action =
   | { type: 'ADD_PARTNER_OBSERVATION'; observation: string }
   | { type: 'ADD_RELATIONSHIP_PATTERN'; pattern: string }
   | { type: 'RENAME_SESSION'; sessionId: string; name: string }
+  | { type: 'DELETE_SESSION'; sessionId: string }
   | { type: 'ADD_EMOTIONAL_CAPTURE'; capture: EmotionalCapture }
   | { type: 'UPDATE_SESSION_SUMMARY'; sessionId: string; summary: string }
   | { type: 'SET_CRISIS_COUNTRY'; code: string }
@@ -293,6 +294,13 @@ function reducer(state: AppState, action: Action): AppState {
           ...s,
           name: action.name,
         })),
+      };
+
+    case 'DELETE_SESSION':
+      return {
+        ...state,
+        sessions: state.sessions.filter((s) => s.id !== action.sessionId),
+        activeSessionId: state.activeSessionId === action.sessionId ? null : state.activeSessionId,
       };
 
     case 'UPDATE_SESSION_SUMMARY':

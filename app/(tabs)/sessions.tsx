@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect, useMemo, useCallback } from 'react'
 import {
   View, Text, TextInput, TouchableOpacity, FlatList, ScrollView,
   StyleSheet, KeyboardAvoidingView, Platform, ActivityIndicator, Alert, Modal,
+  Animated, PanResponder,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -18,8 +19,7 @@ import { Colors, Fonts, Radius, Shadows } from '../../src/constants/theme';
 import { MODE_CONFIG, ModeKey, SESSION_STEPS, CRISIS_WORDS, REPAIR_ATTEMPTS } from '../../src/constants/data';
 import { Button } from '../../src/components/UI';
 import { ChevronLeft } from '../../src/components/Icon';
-import { DogLying, DogHappy } from '../../src/components/Dog';
-import { IconLeaf, IconWind, IconSearch, IconHeart, IconMoodLow, IconMoodOkay, IconMoodGood, IconMoodGreat, IconMoodAmazing } from '../../src/components/Icons';
+import { IconLeaf, IconWind, IconSearch, IconHeart, IconX, IconMoodLow, IconMoodOkay, IconMoodGood, IconMoodGreat, IconMoodAmazing } from '../../src/components/Icons';
 
 const STEP_ICON_MAP: Record<string, React.ComponentType<{ size?: number; color?: string }>> = {
   wind: IconWind,
@@ -47,41 +47,41 @@ const STEP_THEME: Record<ModeKey, {
   gradient: [string, string, string]; // gradient stops
 }> = {
   vent: {
-    color: '#636E3F',    // sage-600
-    mid: '#B5BC8A',      // sage-200
-    light: '#D4D8B8',    // sage-100
-    pale: '#F0F1E6',     // sage-50
-    gradient: ['#F0F1E6', '#F7F8F0', '#FDFBF7'],
+    color: '#6E9B72',    // sage-dark
+    mid: '#9BBF9E',      // sage-400
+    light: '#C8E0CA',    // sage-light
+    pale: '#E4F0E5',     // sage-pale
+    gradient: ['#E4F0E5', '#EFF7F0', '#FDFBF7'],
   },
   understand: {
-    color: '#735EA0',    // mauve-600
-    mid: '#C3B5DC',      // mauve-200
-    light: '#DDD4EC',    // mauve-100
-    pale: '#F2EEF7',     // mauve-50
-    gradient: ['#F2EEF7', '#F8F5FC', '#FDFBF7'],
+    color: '#8B6FC0',    // mauve-dark
+    mid: '#B49EDE',      // mauve-400
+    light: '#DCD0F0',    // mauve-light
+    pale: '#F0ECF8',     // mauve-pale
+    gradient: ['#F0ECF8', '#F6F3FC', '#FDFBF7'],
   },
   prepare: {
-    color: '#329799',    // blue-600
-    mid: '#8ED9DA',      // blue-200
-    light: '#C0EBEB',    // blue-100
-    pale: '#EAF7F7',     // blue-50
-    gradient: ['#EAF7F7', '#F3FBFB', '#FDFBF7'],
+    color: '#5B78B5',    // blue-dark
+    mid: '#8BA4D4',      // blue-400
+    light: '#C5D3EC',    // blue-light
+    pale: '#E8EEF8',     // blue-pale
+    gradient: ['#E8EEF8', '#F0F4FB', '#FDFBF7'],
   },
   bridge: {
-    color: '#9E7420',    // amber-600
-    mid: '#ECC97A',      // amber-200
-    light: '#F5E0B5',    // amber-100
-    pale: '#FBF4E6',     // amber-50
-    gradient: ['#FBF4E6', '#FDF9F0', '#FDFBF7'],
+    color: '#A8B03A',    // amber-dark
+    mid: '#D2D965',      // amber-400
+    light: '#E8ECB0',    // amber-light
+    pale: '#F5F6E2',     // amber-pale
+    gradient: ['#F5F6E2', '#F9FAF0', '#FDFBF7'],
   },
 };
 
 // Keep flat lookups for the progress bar
 const STEP_COLORS: Record<ModeKey, string> = {
-  vent: '#636E3F',
-  understand: '#735EA0',
-  prepare: '#329799',
-  bridge: '#9E7420',
+  vent: '#6E9B72',
+  understand: '#8B6FC0',
+  prepare: '#5B78B5',
+  bridge: '#A8B03A',
 };
 
 const WELCOMES: Record<ModeKey, (name: string) => string> = {
@@ -190,9 +190,6 @@ function NurtureCard({ session, dispatch: d, profile, onResolved }: {
 
   return (
     <View style={nr.container}>
-      <View style={{ alignItems: 'center', marginBottom: 16 }}>
-        <DogLying size={56} />
-      </View>
       <Text style={nr.heading}>Before you talk, read this</Text>
       <Text style={nr.sub}>Four tools to help you open well, stay grounded, and close with care. Take a moment with each one.</Text>
 
@@ -278,30 +275,79 @@ const nr = StyleSheet.create({
   sub: { fontFamily: Fonts.body, fontSize: 13, color: Colors.midBrown, marginBottom: 20 },
 
   // Guide cards
-  guideCard: { flexDirection: 'row', gap: 12, backgroundColor: '#FDFBF7', borderWidth: 1, borderColor: '#F5E0B5', borderRadius: Radius.md, padding: 14, marginBottom: 10, alignItems: 'flex-start' },
-  guideNum: { fontFamily: Fonts.display, fontSize: 18, color: '#9E7420', width: 22, flexShrink: 0 },
+  guideCard: { flexDirection: 'row', gap: 12, backgroundColor: '#FDFBF7', borderWidth: 1, borderColor: '#E8ECB0', borderRadius: Radius.md, padding: 14, marginBottom: 10, alignItems: 'flex-start' },
+  guideNum: { fontFamily: Fonts.display, fontSize: 18, color: '#A8B03A', width: 22, flexShrink: 0 },
   guideTitle: { fontFamily: Fonts.bodyMedium, fontSize: 13, color: Colors.charcoal, marginBottom: 6 },
   guideBody: { fontFamily: Fonts.displayItalic, fontSize: 13, color: Colors.charcoal, lineHeight: 20, marginBottom: 6 },
   guideTip: { fontFamily: Fonts.body, fontSize: 11, color: Colors.midBrown, lineHeight: 16 },
 
   reminderHeading: { fontFamily: Fonts.bodyMedium, fontSize: 12, color: Colors.warmBrown, letterSpacing: 0.4, textTransform: 'uppercase', marginTop: 14, marginBottom: 8 },
   reminderRow: { flexDirection: 'row', gap: 8, marginBottom: 16 },
-  reminderChip: { backgroundColor: '#FBF4E6', borderWidth: 1, borderColor: '#F5E0B5', borderRadius: Radius.full, paddingHorizontal: 14, paddingVertical: 8 },
-  reminderChipText: { fontFamily: Fonts.bodyMedium, fontSize: 12, color: '#9E7420' },
-  reminderSet: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', backgroundColor: '#FBF4E6', borderWidth: 1, borderColor: '#F5E0B5', borderRadius: Radius.md, padding: 12, marginBottom: 16 },
+  reminderChip: { backgroundColor: '#F5F6E2', borderWidth: 1, borderColor: '#E8ECB0', borderRadius: Radius.full, paddingHorizontal: 14, paddingVertical: 8 },
+  reminderChipText: { fontFamily: Fonts.bodyMedium, fontSize: 12, color: '#A8B03A' },
+  reminderSet: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', backgroundColor: '#F5F6E2', borderWidth: 1, borderColor: '#E8ECB0', borderRadius: Radius.md, padding: 12, marginBottom: 16 },
   reminderSetText: { fontFamily: Fonts.bodyMedium, fontSize: 13, color: Colors.charcoal },
   reminderChange: { fontFamily: Fonts.bodyMedium, fontSize: 12, color: Colors.midBrown },
 
   // Shared
-  primaryBtn: { backgroundColor: '#9E7420', borderRadius: Radius.full, paddingVertical: 14, alignItems: 'center', marginTop: 4 },
+  primaryBtn: { backgroundColor: '#A8B03A', borderRadius: Radius.full, paddingVertical: 14, alignItems: 'center', marginTop: 4 },
   primaryBtnText: { fontFamily: Fonts.bodyMedium, fontSize: 14, color: Colors.white },
   sentRow: { marginTop: 4, gap: 10 },
-  sentConfirm: { fontFamily: Fonts.bodyMedium, fontSize: 13, color: '#9E7420', textAlign: 'center', paddingVertical: 4 },
+  sentConfirm: { fontFamily: Fonts.bodyMedium, fontSize: 13, color: '#A8B03A', textAlign: 'center', paddingVertical: 4 },
   resolveBtn: { backgroundColor: Colors.charcoal, borderRadius: Radius.full, paddingVertical: 14, alignItems: 'center' },
   resolveBtnText: { fontFamily: Fonts.bodyMedium, fontSize: 14, color: Colors.white },
 });
 
 const PAST_SESSIONS_PREVIEW = 3;
+
+function SwipeableCard({ children, onDelete }: { children: React.ReactNode; onDelete: () => void }) {
+  const translateX = useRef(new Animated.Value(0)).current;
+  const ACTION_WIDTH = 80;
+
+  const panResponder = useRef(
+    PanResponder.create({
+      onMoveShouldSetPanResponder: (_, g) => Math.abs(g.dx) > 10 && Math.abs(g.dx) > Math.abs(g.dy),
+      onPanResponderMove: (_, g) => {
+        if (g.dx < 0) translateX.setValue(Math.max(g.dx, -ACTION_WIDTH));
+      },
+      onPanResponderRelease: (_, g) => {
+        if (g.dx < -ACTION_WIDTH / 2) {
+          Animated.spring(translateX, { toValue: -ACTION_WIDTH, useNativeDriver: true }).start();
+        } else {
+          Animated.spring(translateX, { toValue: 0, useNativeDriver: true }).start();
+        }
+      },
+    })
+  ).current;
+
+  return (
+    <View style={{ marginBottom: 12 }}>
+      {/* Delete action behind */}
+      <View style={sw.actionRow}>
+        <TouchableOpacity
+          style={sw.deleteBtn}
+          onPress={() => {
+            Animated.timing(translateX, { toValue: -400, duration: 200, useNativeDriver: true }).start(() => onDelete());
+          }}
+          activeOpacity={0.8}
+        >
+          <IconX size={20} color={Colors.white} />
+          <Text style={sw.deleteText}>Delete</Text>
+        </TouchableOpacity>
+      </View>
+      {/* Card on top */}
+      <Animated.View {...panResponder.panHandlers} style={{ transform: [{ translateX }] }}>
+        {children}
+      </Animated.View>
+    </View>
+  );
+}
+
+const sw = StyleSheet.create({
+  actionRow: { position: 'absolute', top: 0, bottom: 0, right: 0, width: 80, justifyContent: 'center', alignItems: 'center', backgroundColor: '#6F3327', borderRadius: Radius.lg },
+  deleteBtn: { flex: 1, justifyContent: 'center', alignItems: 'center', width: '100%' },
+  deleteText: { fontFamily: Fonts.bodyMedium, fontSize: 11, color: Colors.white, marginTop: 4 },
+});
 
 function SessionListView({ sessions, dispatch: d, onOpenSession, onStartNew }: { sessions: Session[]; dispatch: any; onOpenSession: (id: string) => void; onStartNew: () => void }) {
   const [showAllPast, setShowAllPast] = useState(false);
@@ -336,30 +382,31 @@ function SessionListView({ sessions, dispatch: d, onOpenSession, onStartNew }: {
               const dateStr = date.toLocaleDateString('en-ZA', { day: 'numeric', month: 'short' });
               const currentStepCfg = MODE_CONFIG[s.currentStep];
               return (
-                <TouchableOpacity
-                  key={s.id}
-                  style={[sl.sessionCard, { borderColor: Colors.terracottaLight, borderWidth: 1.5 }]}
-                  onPress={() => onOpenSession(s.id)}
-                  activeOpacity={0.8}
-                >
-                  <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-                    <Text style={sl.sessionDate}>{dateStr}</Text>
-                    <View style={sl.statusBadge}>
-                      <Text style={sl.statusText}>Active: {currentStepCfg.label}</Text>
+                <SwipeableCard key={s.id} onDelete={() => d({ type: 'DELETE_SESSION', sessionId: s.id })}>
+                  <TouchableOpacity
+                    style={[sl.sessionCard, { borderColor: Colors.terracottaLight, borderWidth: 1.5, marginBottom: 0 }]}
+                    onPress={() => onOpenSession(s.id)}
+                    activeOpacity={0.8}
+                  >
+                    <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+                      <Text style={sl.sessionDate}>{dateStr}</Text>
+                      <View style={sl.statusBadge}>
+                        <Text style={sl.statusText}>Active: {currentStepCfg.label}</Text>
+                      </View>
                     </View>
-                  </View>
-                  {s.name ? <Text style={{ fontFamily: Fonts.display, fontSize: 16, color: Colors.charcoal, marginBottom: 4 }}>{s.name}</Text> : null}
-                  <Text style={sl.sessionPreview} numberOfLines={2}>{firstMsg}</Text>
-                  <View style={sl.stepDots}>
-                    {SESSION_STEPS.map((step) => (
-                      <View key={step} style={[sl.stepDot, s.unlockedSteps.includes(step) && { backgroundColor: STEP_COLORS[step] }]} />
-                    ))}
-                    <Text style={sl.stepCount}>{stepsCompleted}/{SESSION_STEPS.length} steps</Text>
-                  </View>
-                  <View style={{ marginTop: 10, backgroundColor: Colors.terracottaPale, borderRadius: Radius.full, paddingVertical: 8, alignItems: 'center' }}>
-                    <Text style={{ fontFamily: Fonts.bodyMedium, fontSize: 13, color: Colors.terracotta }}>Continue session →</Text>
-                  </View>
-                </TouchableOpacity>
+                    {s.name ? <Text style={{ fontFamily: Fonts.display, fontSize: 16, color: Colors.charcoal, marginBottom: 4 }}>{s.name}</Text> : null}
+                    <Text style={sl.sessionPreview} numberOfLines={2}>{firstMsg}</Text>
+                    <View style={sl.stepDots}>
+                      {SESSION_STEPS.map((step) => (
+                        <View key={step} style={[sl.stepDot, s.unlockedSteps.includes(step) && { backgroundColor: STEP_COLORS[step] }]} />
+                      ))}
+                      <Text style={sl.stepCount}>{stepsCompleted}/{SESSION_STEPS.length} steps</Text>
+                    </View>
+                    <View style={{ marginTop: 10, backgroundColor: Colors.terracottaPale, borderRadius: Radius.full, paddingVertical: 8, alignItems: 'center' }}>
+                      <Text style={{ fontFamily: Fonts.bodyMedium, fontSize: 13, color: Colors.terracotta }}>Continue session →</Text>
+                    </View>
+                  </TouchableOpacity>
+                </SwipeableCard>
               );
             })}
           </View>
@@ -378,32 +425,33 @@ function SessionListView({ sessions, dispatch: d, onOpenSession, onStartNew }: {
                 const date = new Date(s.startDate);
                 const dateStr = date.toLocaleDateString('en-ZA', { day: 'numeric', month: 'short' });
                 return (
-                  <TouchableOpacity
-                    key={s.id}
-                    style={sl.sessionCard}
-                    onPress={() => onOpenSession(s.id)}
-                    activeOpacity={0.8}
-                  >
-                    <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-                      <Text style={sl.sessionDate}>{dateStr}</Text>
-                      <View style={[sl.statusBadge, { backgroundColor: Colors.sagePale, borderColor: Colors.sageLight }]}>
-                        <Text style={[sl.statusText, { color: Colors.sage }]}>Resolved</Text>
+                  <SwipeableCard key={s.id} onDelete={() => d({ type: 'DELETE_SESSION', sessionId: s.id })}>
+                    <TouchableOpacity
+                      style={[sl.sessionCard, { marginBottom: 0 }]}
+                      onPress={() => onOpenSession(s.id)}
+                      activeOpacity={0.8}
+                    >
+                      <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+                        <Text style={sl.sessionDate}>{dateStr}</Text>
+                        <View style={[sl.statusBadge, { backgroundColor: Colors.sagePale, borderColor: Colors.sageLight }]}>
+                          <Text style={[sl.statusText, { color: Colors.sage }]}>Resolved</Text>
+                        </View>
                       </View>
-                    </View>
-                    {s.name ? <Text style={{ fontFamily: Fonts.display, fontSize: 16, color: Colors.charcoal, marginBottom: 4 }}>{s.name}</Text> : null}
-                    <Text style={sl.sessionPreview} numberOfLines={2}>{firstMsg}</Text>
-                    <View style={sl.stepDots}>
-                      {SESSION_STEPS.map((step) => (
-                        <View key={step} style={[sl.stepDot, s.unlockedSteps.includes(step) && { backgroundColor: STEP_COLORS[step] }]} />
-                      ))}
-                      <Text style={sl.stepCount}>{stepsCompleted}/{SESSION_STEPS.length} steps</Text>
-                    </View>
-                    {s.reflection && (
-                      <Text style={{ fontFamily: Fonts.body, fontSize: 12, color: Colors.sage, marginTop: 8, fontStyle: 'italic' }} numberOfLines={2}>
-                        {s.reflection}
-                      </Text>
-                    )}
-                  </TouchableOpacity>
+                      {s.name ? <Text style={{ fontFamily: Fonts.display, fontSize: 16, color: Colors.charcoal, marginBottom: 4 }}>{s.name}</Text> : null}
+                      <Text style={sl.sessionPreview} numberOfLines={2}>{firstMsg}</Text>
+                      <View style={sl.stepDots}>
+                        {SESSION_STEPS.map((step) => (
+                          <View key={step} style={[sl.stepDot, s.unlockedSteps.includes(step) && { backgroundColor: STEP_COLORS[step] }]} />
+                        ))}
+                        <Text style={sl.stepCount}>{stepsCompleted}/{SESSION_STEPS.length} steps</Text>
+                      </View>
+                      {s.reflection && (
+                        <Text style={{ fontFamily: Fonts.body, fontSize: 12, color: Colors.sage, marginTop: 8, fontStyle: 'italic' }} numberOfLines={2}>
+                          {s.reflection}
+                        </Text>
+                      )}
+                    </TouchableOpacity>
+                  </SwipeableCard>
                 );
               })}
               {!showAllPast && hidden > 0 && (
@@ -629,10 +677,8 @@ function ActiveSessionView({ session, state, dispatch: d, onBack }: { session: S
 
   const goBack = onBack;
 
-  const gradient = theme.gradient;
-
   return (
-    <LinearGradient colors={gradient} style={{ flex: 1 }}>
+    <View style={{ flex: 1, backgroundColor: Colors.cream }}>
     <SafeAreaView style={{ flex: 1 }} edges={['top']}>
       <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'} keyboardVerticalOffset={0}>
 
@@ -691,6 +737,7 @@ function ActiveSessionView({ session, state, dispatch: d, onBack }: { session: S
             ref={flatRef}
             data={messages}
             keyExtractor={(m) => m.id}
+            style={{ flex: 1 }}
             contentContainerStyle={styles.msgList}
             showsVerticalScrollIndicator={false}
             renderItem={({ item }) => (
@@ -698,8 +745,8 @@ function ActiveSessionView({ session, state, dispatch: d, onBack }: { session: S
                 <View style={[styles.msgAvatar, item.role === 'user' && { backgroundColor: theme.light }]}>
                   {item.role === 'ai' ? <IconLeaf size={14} color={theme.color} /> : <Text style={{ fontSize: 13, color: theme.color }}>{state.profile.name?.[0] || '?'}</Text>}
                 </View>
-                <View style={[styles.msgBubble, item.role === 'user' && { backgroundColor: theme.color, borderWidth: 0, borderBottomLeftRadius: 16, borderBottomRightRadius: 4 }]}>
-                  <Text style={[styles.msgText, item.role === 'user' && { color: Colors.white }]}>{item.text}</Text>
+                <View style={[styles.msgBubble, item.role === 'user' && { backgroundColor: theme.pale, borderWidth: 1, borderColor: theme.light, borderBottomLeftRadius: 16, borderBottomRightRadius: 4 }]}>
+                  <Text style={[styles.msgText, item.role === 'user' && { color: Colors.charcoal }]}>{item.text}</Text>
                 </View>
               </View>
             )}
@@ -720,17 +767,16 @@ function ActiveSessionView({ session, state, dispatch: d, onBack }: { session: S
 
         {session.status !== 'resolved' && !isBridgeStep && (
           <>
-            {userMsgCount === 0 && cfg.quickActions.length > 0 && (
-              <View style={styles.qaWrap}>
-                {cfg.quickActions.map((qa) => (
-                  <TouchableOpacity key={qa} onPress={() => setInput(qa)} style={[styles.qaPill, { borderColor: theme.light }]}>
-                    <Text style={[styles.qaText, { color: theme.color }]}>{qa}</Text>
-                  </TouchableOpacity>
-                ))}
-              </View>
-            )}
-
             <View style={styles.inputArea}>
+              {userMsgCount === 0 && cfg.quickActions.length > 0 && (
+                <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.qaWrap}>
+                  {cfg.quickActions.map((qa) => (
+                    <TouchableOpacity key={qa} onPress={() => setInput(qa)} style={[styles.qaPill, { borderColor: theme.light }]}>
+                      <Text style={[styles.qaText, { color: theme.color }]} numberOfLines={1}>{qa}</Text>
+                    </TouchableOpacity>
+                  ))}
+                </ScrollView>
+              )}
               {isRecording && (
                 <View style={styles.recordingBanner}>
                   <View style={styles.recordingDot} />
@@ -779,9 +825,6 @@ function ActiveSessionView({ session, state, dispatch: d, onBack }: { session: S
       <Modal visible={showCapture} transparent animationType="slide" onRequestClose={() => commitResolve()}>
         <View style={cap.overlay}>
           <View style={cap.sheet}>
-            <View style={{ alignItems: 'center', marginBottom: 12 }}>
-              <DogHappy size={52} />
-            </View>
             <Text style={cap.question}>{SESSION_CAPTURE.question}</Text>
             <View style={cap.optionsRow}>
               {SESSION_CAPTURE.options.map((opt) => (
@@ -800,7 +843,7 @@ function ActiveSessionView({ session, state, dispatch: d, onBack }: { session: S
 
       </KeyboardAvoidingView>
     </SafeAreaView>
-    </LinearGradient>
+    </View>
   );
 }
 
@@ -860,7 +903,7 @@ export default function SessionsTab() {
 
   // After CREATE_SESSION, the newest session is at index 0
   // Watch for new sessions and auto-open them, then set the name
-  const latestSessionId = state.sessions[0]?.id;
+  const latestSessionId = state.sessions.length > 0 ? state.sessions[0].id : null;
   const prevLatestRef = useRef(latestSessionId);
   useEffect(() => {
     if (latestSessionId && latestSessionId !== prevLatestRef.current) {
@@ -872,6 +915,13 @@ export default function SessionsTab() {
     }
     prevLatestRef.current = latestSessionId;
   }, [latestSessionId]);
+
+  // Clear viewingId if the session was deleted
+  useEffect(() => {
+    if (viewingId && !state.sessions.find((s) => s.id === viewingId)) {
+      setViewingId(null);
+    }
+  }, [state.sessions, viewingId]);
 
   if (showNamePrompt) {
     return (
@@ -932,20 +982,20 @@ const styles = StyleSheet.create({
   sessionNameInput: { fontFamily: Fonts.body, fontSize: 12, color: Colors.charcoal, textAlign: 'center', paddingVertical: 2, minWidth: 120 },
   sessionNameText: { fontFamily: Fonts.body, fontSize: 12, color: Colors.midBrown, textAlign: 'center' },
   sessionStepCounter: { fontFamily: Fonts.bodyMedium, fontSize: 12, minWidth: 56, textAlign: 'right' },
-  sessionStepIdentity: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingHorizontal: 16, paddingTop: 10, paddingBottom: 2 },
+  sessionStepIdentity: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10, paddingHorizontal: 16, paddingTop: 10, paddingBottom: 2 },
   sessionStepName: { fontFamily: Fonts.display, fontSize: 22, color: Colors.charcoal },
   floodBanner: { borderBottomWidth: 1, padding: 10, paddingHorizontal: 16 },
   floodText: { fontFamily: Fonts.body, fontSize: 13, color: Colors.warmBrown },
-  msgList: { paddingHorizontal: 16, paddingVertical: 14, gap: 12, flexGrow: 1 },
+  msgList: { paddingHorizontal: 16, paddingVertical: 14, gap: 12 },
   msgRow: { flexDirection: 'row', alignItems: 'flex-end', gap: 8, maxWidth: '88%' },
   msgRowUser: { flexDirection: 'row-reverse', alignSelf: 'flex-end', maxWidth: '88%' },
   msgAvatar: { width: 28, height: 28, borderRadius: 14, backgroundColor: Colors.creamDark, alignItems: 'center', justifyContent: 'center', flexShrink: 0 },
   msgBubble: { backgroundColor: Colors.warmWhite, borderWidth: 1, borderColor: Colors.sand, borderRadius: 16, borderBottomLeftRadius: 4, padding: 12, maxWidth: '85%' },
   // msgBubbleUser now set inline via theme.color
   msgText: { fontFamily: Fonts.body, fontSize: 14, color: Colors.charcoal, lineHeight: 21 },
-  qaWrap: { flexDirection: 'row', paddingHorizontal: 12, paddingBottom: 6, paddingTop: 6, gap: 6, flexWrap: 'wrap' },
-  qaPill: { backgroundColor: Colors.white, borderWidth: 1.5, borderRadius: Radius.full, paddingHorizontal: 14, paddingVertical: 8 },
-  qaText: { fontFamily: Fonts.bodyMedium, fontSize: 12 },
+  qaWrap: { flexDirection: 'row', alignItems: 'center', paddingBottom: 10 },
+  qaPill: { backgroundColor: Colors.white, borderWidth: 1.5, borderRadius: 20, paddingHorizontal: 14, paddingVertical: 8, marginRight: 8, height: 36, justifyContent: 'center' },
+  qaText: { fontFamily: Fonts.bodyMedium, fontSize: 12, lineHeight: 16 },
   inputArea: { backgroundColor: Colors.warmWhite, borderTopWidth: 1, borderTopColor: Colors.sand, padding: 12 },
   inputRow: { flexDirection: 'row', alignItems: 'flex-end', gap: 8 },
   input: { flex: 1, backgroundColor: Colors.cream, borderWidth: 1.5, borderColor: Colors.sand, borderRadius: 14, paddingHorizontal: 14, paddingVertical: 11, fontFamily: Fonts.body, fontSize: 15, color: Colors.charcoal, maxHeight: 110, minHeight: 44 },

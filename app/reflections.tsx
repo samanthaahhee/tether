@@ -4,7 +4,6 @@ import { useRouter } from 'expo-router';
 import { useAppState } from '../src/hooks/useAppState';
 import { Colors, Fonts, Radius } from '../src/constants/theme';
 import { ChevronLeft } from '../src/components/Icon';
-import { DogPeeking } from '../src/components/Dog';
 
 export default function ReflectionsPage() {
   const { state } = useAppState();
@@ -36,7 +35,6 @@ export default function ReflectionsPage() {
 
         {reflections.length === 0 && (
           <View style={styles.empty}>
-            <DogPeeking size={64} style={{ marginBottom: 12 }} />
             <Text style={styles.emptyTitle}>No reflections yet</Text>
             <Text style={styles.emptyBody}>Complete a session to see your first reflection here.</Text>
           </View>

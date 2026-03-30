@@ -8,7 +8,6 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAppState } from '../src/hooks/useAppState';
 import { useAuth } from '../src/hooks/useAuth';
 import { Colors, Fonts, Radius } from '../src/constants/theme';
-import { DogSitting } from '../src/components/Dog';
 import {
   ATTACH_REVEALS, CONFLICT_REVEALS, WINDOW_REVEALS, LOVE_REVEALS,
   ATTACH_INSIGHTS, ATTACHMENT_LABELS, CONFLICT_LABELS, LOVE_LABELS,
@@ -233,9 +232,6 @@ export default function Onboarding() {
 
           {step === 8 && (
             <View style={styles.stepWrap}>
-              <View style={{ alignItems: 'center', marginBottom: 16 }}>
-                <DogSitting size={72} />
-              </View>
               <Text style={styles.stepTag}>Your profile is ready</Text>
               <Text style={[styles.stepH, { textAlign: 'center' }]}>Welcome, {name}</Text>
               <Text style={[styles.stepSub, { textAlign: 'center' }]}>Here is what Tether has learned about you.</Text>

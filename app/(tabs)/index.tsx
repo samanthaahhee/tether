@@ -8,13 +8,12 @@ import { DAILY_INSIGHTS, ModeKey } from '../../src/constants/data';
 import { useState, useMemo } from 'react';
 import { ChevronRight } from '../../src/components/Icon';
 import { IconSettings, IconSparkles, IconWind, IconSearch, IconLeaf, IconHeart, IconMoodLow, IconMoodOkay, IconMoodGood, IconMoodGreat, IconMoodAmazing } from '../../src/components/Icons';
-import { DogSitting, DogPeeking } from '../../src/components/Dog';
 
 const JOURNEY_STEPS = [
-  { mode: 'vent' as ModeKey, num: 'Step 1', name: 'Vent', icon: 'wind' as const, color: '#636E3F', gradient: ['#F0F1E6', '#F7F8F0'] as [string, string], border: '#D4D8B8', desc: 'Speak or type freely in a completely private space. Your partner will never see this. Just let it out.', tag: 'Start here every time' },
-  { mode: 'understand' as ModeKey, num: 'Step 2', name: 'Understand', icon: 'search' as const, color: '#735EA0', gradient: ['#F2EEF7', '#F8F5FC'] as [string, string], border: '#DDD4EC', desc: 'Gently explore what is really happening. What pattern is at play? What are you actually needing?', tag: 'When you are ready to reflect' },
-  { mode: 'prepare' as ModeKey, num: 'Step 3', name: 'Prepare', icon: 'leaf' as const, color: '#329799', gradient: ['#EAF7F7', '#F3FBFB'] as [string, string], border: '#C0EBEB', desc: 'Figure out what you want to say and how to say it fairly. Turn feelings into clear language.', tag: 'When you are ready to communicate' },
-  { mode: 'bridge' as ModeKey, num: 'Step 4', name: 'Nurture', icon: 'heart' as const, color: '#9E7420', gradient: ['#FBF4E6', '#FDF9F0'] as [string, string], border: '#F5E0B5', desc: 'A conversation guide to help you open well, stay grounded, and close with care.', tag: 'When you are ready to repair' },
+  { mode: 'vent' as ModeKey, num: 'Step 1', name: 'Vent', icon: 'wind' as const, color: '#6E9B72', gradient: ['#E4F0E5', '#EFF7F0'] as [string, string], border: '#C8E0CA', desc: 'Speak or type freely in a completely private space. Your partner will never see this. Just let it out.', tag: 'Start here every time' },
+  { mode: 'understand' as ModeKey, num: 'Step 2', name: 'Understand', icon: 'search' as const, color: '#8B6FC0', gradient: ['#F0ECF8', '#F6F3FC'] as [string, string], border: '#DCD0F0', desc: 'Gently explore what is really happening. What pattern is at play? What are you actually needing?', tag: 'When you are ready to reflect' },
+  { mode: 'prepare' as ModeKey, num: 'Step 3', name: 'Prepare', icon: 'leaf' as const, color: '#5B78B5', gradient: ['#E8EEF8', '#F0F4FB'] as [string, string], border: '#C5D3EC', desc: 'Figure out what you want to say and how to say it fairly. Turn feelings into clear language.', tag: 'When you are ready to communicate' },
+  { mode: 'bridge' as ModeKey, num: 'Step 4', name: 'Nurture', icon: 'heart' as const, color: '#A8B03A', gradient: ['#F5F6E2', '#F9FAF0'] as [string, string], border: '#E8ECB0', desc: 'A conversation guide to help you open well, stay grounded, and close with care.', tag: 'When you are ready to repair' },
 ];
 
 const STEP_ICONS: Record<string, React.ComponentType<{ size?: number; color?: string }>> = {
@@ -69,12 +68,9 @@ export default function HomeTab() {
               <Text style={styles.greetingTitle}>{timeGreeting}, {name}</Text>
               <Text style={styles.greetingSub}>Your feelings are welcome here.</Text>
             </View>
-            <View style={{ alignItems: 'center', gap: 4 }}>
-              <DogSitting size={48} />
-              <TouchableOpacity onPress={() => router.push('/(tabs)/settings')} style={styles.settingsBtn} activeOpacity={0.7}>
-                <IconSettings size={18} color={Colors.lightBrown} />
-              </TouchableOpacity>
-            </View>
+            <TouchableOpacity onPress={() => router.push('/(tabs)/settings')} style={styles.settingsBtn} activeOpacity={0.7}>
+              <IconSettings size={22} color={Colors.midBrown} />
+            </TouchableOpacity>
           </View>
         </View>
 
@@ -204,15 +200,17 @@ export default function HomeTab() {
               const dateStr = new Date(latest.date).toLocaleDateString('en-ZA', { day: 'numeric', month: 'short' });
               return (
                 <>
-                  <Text style={rf.heading}>Latest reflection</Text>
+                  <View style={rf.headingRow}>
+                    <Text style={rf.heading}>Latest reflection</Text>
+                    <TouchableOpacity onPress={() => router.push('/reflections')} style={rf.viewAll} activeOpacity={0.7}>
+                      <Text style={rf.viewAllText}>View all</Text>
+                      <ChevronRight size={9} color={Colors.midBrown} style={{ marginTop: 1 }} />
+                    </TouchableOpacity>
+                  </View>
                   <View style={rf.card}>
                     <Text style={rf.date}>{dateStr}</Text>
                     <Text style={rf.text} numberOfLines={3}>{latest.text}</Text>
                   </View>
-                  <TouchableOpacity onPress={() => router.push('/reflections')} style={rf.viewAll} activeOpacity={0.7}>
-                    <Text style={rf.viewAllText}>View all {reflections.length} reflection{reflections.length !== 1 ? 's' : ''}</Text>
-                    <ChevronRight size={9} color={Colors.midBrown} style={{ marginTop: 1 }} />
-                  </TouchableOpacity>
                 </>
               );
             })()}
@@ -220,20 +218,20 @@ export default function HomeTab() {
         ) : (
           <View style={{ paddingHorizontal: 20, marginBottom: 24 }}>
             <View style={ph.card}>
-              <DogPeeking size={56} style={{ marginBottom: 8 }} />
               <Text style={ph.title}>Your journey starts here</Text>
               <Text style={ph.body}>Complete your first session to begin tracking how you feel as you move through each step. Over time you will see your patterns shift.</Text>
             </View>
           </View>
         )}
 
-        {/* Daily insight */}
-        <View style={styles.insightCard}>
-          <IconSparkles size={18} color={Colors.mauve} style={{ marginTop: 2 }} />
-          <Text style={styles.insightText}>
-            <Text style={{ fontFamily: Fonts.bodyMedium, color: Colors.charcoal }}>Today: </Text>
-            {insight}
-          </Text>
+        {/* Daily quote */}
+        <View style={qt.card}>
+          <View style={qt.accent} />
+          <View style={qt.eyebrow}>
+            <IconSparkles size={14} color={Colors.mauve} />
+            <Text style={qt.eyebrowText}>Today's reflection</Text>
+          </View>
+          <Text style={qt.quote}>{insight}</Text>
         </View>
 
       </ScrollView>
@@ -243,7 +241,7 @@ export default function HomeTab() {
 
 // ── Journey carousel ──
 const jc = StyleSheet.create({
-  card: { borderWidth: 1, borderRadius: Radius.lg, padding: 18, overflow: 'hidden' },
+  card: { borderWidth: 1, borderRadius: Radius.lg, padding: 18, overflow: 'hidden', height: 200, justifyContent: 'space-between' },
   orb: { width: 44, height: 44, borderRadius: 22, borderWidth: 2, alignItems: 'center', justifyContent: 'center', marginBottom: 12 },
   num: { fontFamily: Fonts.bodyMedium, fontSize: 10, letterSpacing: 0.6, textTransform: 'uppercase', marginBottom: 2 },
   name: { fontFamily: Fonts.display, fontSize: 20, color: Colors.charcoal, marginBottom: 6 },
@@ -288,12 +286,22 @@ const gm = StyleSheet.create({
 
 // ── Session reflections ──
 const rf = StyleSheet.create({
-  heading: { fontFamily: Fonts.display, fontSize: 16, color: Colors.charcoal, marginBottom: 12 },
+  headingRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 },
+  heading: { fontFamily: Fonts.display, fontSize: 16, color: Colors.charcoal },
   card: { backgroundColor: Colors.warmWhite, borderWidth: 1, borderColor: Colors.sand, borderRadius: Radius.lg, padding: 16, marginBottom: 10 },
   date: { fontFamily: Fonts.bodyMedium, fontSize: 11, color: Colors.terracotta, letterSpacing: 0.4, textTransform: 'uppercase', marginBottom: 8 },
   text: { fontFamily: Fonts.body, fontSize: 14, color: Colors.charcoal, lineHeight: 22 },
-  viewAll: { flexDirection: 'row', alignItems: 'center', gap: 4, alignSelf: 'flex-start', paddingVertical: 4, marginBottom: 8 },
+  viewAll: { flexDirection: 'row', alignItems: 'center', gap: 4 },
   viewAllText: { fontFamily: Fonts.bodyMedium, fontSize: 12, color: Colors.midBrown },
+});
+
+// ── Daily quote ──
+const qt = StyleSheet.create({
+  card: { marginHorizontal: 20, backgroundColor: Colors.warmWhite, borderWidth: 1, borderColor: Colors.sand, borderRadius: Radius.lg, padding: 24, overflow: 'hidden' },
+  accent: { position: 'absolute', top: 0, left: 0, width: 4, height: '100%', backgroundColor: Colors.mauve, borderTopLeftRadius: Radius.lg, borderBottomLeftRadius: Radius.lg },
+  eyebrow: { flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 12 },
+  eyebrowText: { fontFamily: Fonts.bodyMedium, fontSize: 11, letterSpacing: 1, textTransform: 'uppercase', color: Colors.mauve },
+  quote: { fontFamily: Fonts.displayItalic, fontSize: 17, color: Colors.charcoal, lineHeight: 28 },
 });
 
 // ── Placeholder ──
@@ -310,7 +318,7 @@ const styles = StyleSheet.create({
   content: { paddingBottom: 32 },
   greeting: { paddingHorizontal: 20, paddingTop: 24, marginBottom: 20 },
   greetingRow: { flexDirection: 'row', alignItems: 'flex-start' },
-  settingsBtn: { padding: 4, marginTop: 2 },
+  settingsBtn: { width: 40, height: 40, borderRadius: 20, backgroundColor: Colors.creamDark, alignItems: 'center', justifyContent: 'center' },
   greetingTime: { fontFamily: Fonts.bodyMedium, fontSize: 10, letterSpacing: 0.8, textTransform: 'uppercase', color: Colors.terracotta, marginBottom: 4 },
   greetingTitle: { fontFamily: Fonts.display, fontSize: 26, color: Colors.charcoal, lineHeight: 32, marginBottom: 4 },
   greetingSub: { fontFamily: Fonts.body, fontSize: 14, color: Colors.midBrown },
@@ -323,6 +331,4 @@ const styles = StyleSheet.create({
   startBtnText: { fontFamily: Fonts.bodyMedium, fontSize: 13, color: Colors.white },
   sectionHeading: { fontFamily: Fonts.display, fontSize: 16, color: Colors.charcoal, marginBottom: 2 },
   sectionSub: { fontFamily: Fonts.body, fontSize: 12, color: Colors.midBrown },
-  insightCard: { marginHorizontal: 20, backgroundColor: Colors.sagePale, borderWidth: 1, borderColor: Colors.sageLight, borderRadius: Radius.lg, padding: 16, flexDirection: 'row', gap: 12 },
-  insightText: { flex: 1, fontFamily: Fonts.body, fontSize: 13, color: Colors.warmBrown, lineHeight: 20 },
 });

@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, ScrollView, FlatList, TouchableOpacity, StyleSheet, Animated, useWindowDimensions } from 'react-native';
+import { View, Text, ScrollView, FlatList, TouchableOpacity, StyleSheet, Animated, useWindowDimensions, Modal } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Colors, Fonts, Radius, Shadows } from '../../src/constants/theme';
 import { TOOLS_CONTENT, REPAIR_ATTEMPTS } from '../../src/constants/data';
@@ -80,29 +81,44 @@ function BreathingExercise({ exercise }: { exercise: typeof TOOLS_CONTENT.breath
   const currentStepLabel = active ? exercise.steps[stepIdx % exercise.steps.length] : '';
 
   return (
-    <View style={br.card}>
-      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 6 }}>
-        {(() => { const I = BREATHING_ICONS[exercise.id]; return I ? <I size={20} color={Colors.sage} /> : null; })()}
-        <Text style={br.name}>{exercise.name}</Text>
-      </View>
-      <Text style={br.desc}>{exercise.desc}</Text>
-
-      {active ? (
-        <View style={br.activeArea}>
-          <Animated.View style={[br.circle, { transform: [{ scale }] }]}>
-            <Text style={br.circleText}>{currentStepLabel}</Text>
-          </Animated.View>
-          <Text style={br.cycleText}>Cycle {cycle + 1} of {totalCycles}</Text>
-          <TouchableOpacity onPress={stop} style={br.stopBtn}>
-            <Text style={br.stopText}>Stop</Text>
-          </TouchableOpacity>
+    <>
+      <View style={br.card}>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 6 }}>
+          {(() => { const I = BREATHING_ICONS[exercise.id]; return I ? <I size={20} color={Colors.sage} /> : null; })()}
+          <Text style={br.name}>{exercise.name}</Text>
         </View>
-      ) : (
+        <Text style={br.desc}>{exercise.desc}</Text>
         <TouchableOpacity onPress={() => setActive(true)} style={br.startBtn} activeOpacity={0.8}>
           <Text style={br.startText}>Start exercise</Text>
         </TouchableOpacity>
-      )}
-    </View>
+      </View>
+
+      <Modal visible={active} animationType="fade" onRequestClose={stop}>
+        <LinearGradient colors={['#4A7A4E', '#2D4F30']} style={br.fullScreen}>
+          <Text style={br.fullTitle}>{exercise.name}</Text>
+          <Text style={br.fullCycle}>Cycle {cycle + 1} of {totalCycles}</Text>
+
+          <View style={br.circleWrap}>
+            <Animated.View style={[br.circleOuter, { transform: [{ scale }] }]}>
+              <LinearGradient
+                colors={['#C8E0CA', '#9BBF9E', '#6E9B72']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={br.circleGradient}
+              >
+                <Text style={br.fullCircleText}>{currentStepLabel}</Text>
+              </LinearGradient>
+            </Animated.View>
+          </View>
+
+          <Text style={br.fullStepHint}>{exercise.steps.map((s, i) => i === stepIdx % exercise.steps.length ? `[ ${s} ]` : s).join('  ·  ')}</Text>
+
+          <TouchableOpacity onPress={stop} style={br.fullStopBtn} activeOpacity={0.8}>
+            <Text style={br.fullStopText}>End exercise</Text>
+          </TouchableOpacity>
+        </LinearGradient>
+      </Modal>
+    </>
   );
 }
 
@@ -110,14 +126,19 @@ const br = StyleSheet.create({
   card: { backgroundColor: Colors.warmWhite, borderWidth: 1, borderColor: Colors.sand, borderRadius: Radius.lg, padding: 16, marginBottom: 12 },
   name: { fontFamily: Fonts.display, fontSize: 16, color: Colors.charcoal },
   desc: { fontFamily: Fonts.body, fontSize: 13, color: Colors.midBrown, lineHeight: 19, marginBottom: 14 },
-  activeArea: { alignItems: 'center', paddingVertical: 16 },
-  circle: { width: 120, height: 120, borderRadius: 60, backgroundColor: Colors.sagePale, borderWidth: 2, borderColor: Colors.sage, alignItems: 'center', justifyContent: 'center', marginBottom: 14 },
-  circleText: { fontFamily: Fonts.body, fontSize: 12, color: Colors.sage, textAlign: 'center', paddingHorizontal: 8 },
-  cycleText: { fontFamily: Fonts.body, fontSize: 12, color: Colors.midBrown, marginBottom: 12 },
-  stopBtn: { backgroundColor: Colors.sand, borderRadius: Radius.full, paddingHorizontal: 20, paddingVertical: 8 },
-  stopText: { fontFamily: Fonts.bodyMedium, fontSize: 13, color: Colors.warmBrown },
   startBtn: { backgroundColor: Colors.sagePale, borderWidth: 1, borderColor: Colors.sageLight, borderRadius: Radius.md, paddingVertical: 10, alignItems: 'center' },
   startText: { fontFamily: Fonts.bodyMedium, fontSize: 13, color: Colors.sage },
+  // Full screen
+  fullScreen: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 32 },
+  fullTitle: { fontFamily: Fonts.displayLight, fontSize: 28, color: '#E4F0E5', marginBottom: 4 },
+  fullCycle: { fontFamily: Fonts.body, fontSize: 13, color: '#9BBF9E', marginBottom: 40 },
+  circleWrap: { width: 220, height: 220, alignItems: 'center', justifyContent: 'center', marginBottom: 40 },
+  circleOuter: { width: 200, height: 200 },
+  circleGradient: { width: 200, height: 200, borderRadius: 100, alignItems: 'center', justifyContent: 'center' },
+  fullCircleText: { fontFamily: Fonts.display, fontSize: 20, color: '#FDFBF7', textAlign: 'center' },
+  fullStepHint: { fontFamily: Fonts.body, fontSize: 12, color: '#9BBF9E', textAlign: 'center', marginBottom: 48, lineHeight: 20 },
+  fullStopBtn: { backgroundColor: 'rgba(255,255,255,0.15)', borderWidth: 1.5, borderColor: 'rgba(255,255,255,0.25)', borderRadius: 100, paddingHorizontal: 32, paddingVertical: 14 },
+  fullStopText: { fontFamily: Fonts.bodyMedium, fontSize: 14, color: '#F0F1E6' },
 });
 
 function ExpandableCard({ icon, title, children }: { icon: React.ReactNode; title: string; children: React.ReactNode }) {

@@ -9,32 +9,32 @@ export const Colors = {
   sand: '#E8DFCC',
   sandDark: '#E8DFCD',
 
-  // Sage (primary)
-  sage: '#8A9660',
-  sageDark: '#636E3F',
-  sageDeep: '#404727',
-  sageLight: '#D4D8B8',
-  sagePale: '#F0F1E6',
+  // Sage (primary) — soft mint
+  sage: '#9BBF9E',
+  sageDark: '#6E9B72',
+  sageDeep: '#4A7A4E',
+  sageLight: '#C8E0CA',
+  sagePale: '#E4F0E5',
 
-  // Mauve (accent)
-  mauve: '#9E87C3',
-  mauveDark: '#735EA0',
-  mauveDeep: '#4D3E72',
-  mauveLight: '#DDD4EC',
-  mauvePale: '#F2EEF7',
+  // Mauve (accent) — soft lilac
+  mauve: '#B49EDE',
+  mauveDark: '#8B6FC0',
+  mauveDeep: '#5E4494',
+  mauveLight: '#DCD0F0',
+  mauvePale: '#F0ECF8',
 
-  // Blue-teal (warm)
-  blue: '#55BFC1',
-  blueDark: '#329799',
-  blueDeep: '#1D6B6C',
-  blueLight: '#C0EBEB',
-  bluePale: '#EAF7F7',
+  // Blue-periwinkle (fresh)
+  blue: '#8BA4D4',
+  blueDark: '#5B78B5',
+  blueDeep: '#3A5490',
+  blueLight: '#C5D3EC',
+  bluePale: '#E8EEF8',
 
-  // Amber (glow)
-  amber: '#D4A340',
-  amberDark: '#9E7420',
-  amberLight: '#F5E0B5',
-  amberPale: '#FBF4E6',
+  // Amber (glow) — chartreuse/lime
+  amber: '#D2D965',
+  amberDark: '#A8B03A',
+  amberLight: '#E8ECB0',
+  amberPale: '#F5F6E2',
 
   // Stone (text)
   charcoal: '#201D18',
@@ -46,9 +46,9 @@ export const Colors = {
   stone50: '#F5F2EC',
 
   // Legacy aliases (keep for compatibility during migration)
-  terracotta: '#8A9660',        // → sage (primary CTA)
-  terracottaLight: '#B5BC8A',   // → sage-200
-  terracottaPale: '#F0F1E6',    // → sagePale
+  terracotta: '#6E9B72',        // → sage-dark (primary CTA)
+  terracottaLight: '#9BBF9E',   // → sage-400
+  terracottaPale: '#E4F0E5',    // → sagePale
   blush: '#9E87C3',             // → mauve (accent)
   blushPale: '#F2EEF7',         // → mauvePale
   gold: '#D4A340',              // → amber
@@ -60,15 +60,15 @@ export const Colors = {
   successBg: '#EAFAF0',
   successBorder: '#7ECFA0',
   successText: '#1E6B43',
-  warningBg: '#FBF4E6',
-  warningBorder: '#ECC97A',
-  warningText: '#9E7420',
+  warningBg: '#F5F6E2',
+  warningBorder: '#D2D965',
+  warningText: '#A8B03A',
   errorBg: '#FBF0EE',
   errorBorder: '#E8B0A8',
   errorText: '#6F3327',
-  infoBg: '#EAF7F7',
-  infoBorder: '#8ED9DA',
-  infoText: '#1D6B6C',
+  infoBg: '#E8EEF8',
+  infoBorder: '#8BA4D4',
+  infoText: '#3A5490',
 };
 
 // ── Typography ────────────────────────────────────────────────────────────────
@@ -151,7 +151,7 @@ export const Shadows = {
   },
   // Legacy alias
   terracotta: {
-    shadowColor: '#636E3F',
+    shadowColor: '#4A7A4E',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.30,
     shadowRadius: 16,
