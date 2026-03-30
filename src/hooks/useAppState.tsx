@@ -301,6 +301,11 @@ function reducer(state: AppState, action: Action): AppState {
         ...state,
         sessions: state.sessions.filter((s) => s.id !== action.sessionId),
         activeSessionId: state.activeSessionId === action.sessionId ? null : state.activeSessionId,
+        learnings: {
+          ...state.learnings,
+          reflections: state.learnings.reflections.filter((r) => r.sessionId !== action.sessionId),
+          emotionalCaptures: state.learnings.emotionalCaptures.filter((c) => c.sessionId !== action.sessionId),
+        },
       };
 
     case 'UPDATE_SESSION_SUMMARY':

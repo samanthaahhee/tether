@@ -5,14 +5,16 @@ import {
 } from 'react-native';
 import { router } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Colors, Fonts, Radius } from '../../src/constants/theme';
+import { Colors, Fonts, Radius, Shadows } from '../../src/constants/theme';
 import { useAuth } from '../../src/hooks/useAuth';
+import { IconLeaf } from '../../src/components/Icons';
 
 export default function SignIn() {
-  const { signIn } = useAuth();
+  const { signIn, signInWithGoogle } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
   const [error, setError] = useState('');
 
   const handleSignIn = async () => {
@@ -25,25 +27,51 @@ export default function SignIn() {
       setLoading(false);
       return;
     }
-    // Routing handled by _layout based on auth + onboarded state
     setLoading(false);
   };
 
+  const handleGoogle = async () => {
+    setError('');
+    setGoogleLoading(true);
+    const { error: gError } = await signInWithGoogle();
+    if (gError) setError(gError);
+    setGoogleLoading(false);
+  };
+
   return (
-    <SafeAreaView style={styles.safe} edges={['top', 'bottom']}>
+    <SafeAreaView style={s.safe} edges={['top', 'bottom']}>
       <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
-        <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
+        <ScrollView contentContainerStyle={s.scroll} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
 
-          <View style={styles.logoOrb}>
-            <Text style={styles.logoText}>◎</Text>
+          <View style={s.logoOrb}>
+            <IconLeaf size={28} color={Colors.white} />
           </View>
-          <Text style={styles.title}>Welcome back</Text>
-          <Text style={styles.subtitle}>Sign in to continue your journey.</Text>
+          <Text style={s.title}>Welcome back</Text>
+          <Text style={s.subtitle}>Sign in to continue your journey.</Text>
 
-          <View style={styles.form}>
-            <Text style={styles.label}>Email</Text>
+          {/* Google Sign-In */}
+          <TouchableOpacity style={s.googleBtn} onPress={handleGoogle} disabled={googleLoading} activeOpacity={0.85}>
+            {googleLoading
+              ? <ActivityIndicator color={Colors.charcoal} />
+              : <>
+                  <Text style={s.googleG}>G</Text>
+                  <Text style={s.googleText}>Continue with Google</Text>
+                </>
+            }
+          </TouchableOpacity>
+
+          {/* Divider */}
+          <View style={s.divider}>
+            <View style={s.dividerLine} />
+            <Text style={s.dividerText}>or</Text>
+            <View style={s.dividerLine} />
+          </View>
+
+          {/* Email form */}
+          <View style={s.form}>
+            <Text style={s.label}>Email</Text>
             <TextInput
-              style={styles.input}
+              style={s.input}
               value={email}
               onChangeText={setEmail}
               placeholder="you@example.com"
@@ -53,9 +81,9 @@ export default function SignIn() {
               autoCorrect={false}
             />
 
-            <Text style={styles.label}>Password</Text>
+            <Text style={s.label}>Password</Text>
             <TextInput
-              style={styles.input}
+              style={s.input}
               value={password}
               onChangeText={setPassword}
               placeholder="Your password"
@@ -64,22 +92,22 @@ export default function SignIn() {
               onSubmitEditing={handleSignIn}
             />
 
-            {error ? <Text style={styles.error}>{error}</Text> : null}
+            {error ? <Text style={s.error}>{error}</Text> : null}
 
             <TouchableOpacity
-              style={[styles.btn, loading && styles.btnDisabled]}
+              style={[s.btn, loading && s.btnDisabled]}
               onPress={handleSignIn}
               disabled={loading}
               activeOpacity={0.85}
             >
               {loading
                 ? <ActivityIndicator color={Colors.white} />
-                : <Text style={styles.btnText}>Sign in</Text>}
+                : <Text style={s.btnText}>Sign in</Text>}
             </TouchableOpacity>
           </View>
 
-          <TouchableOpacity onPress={() => router.replace('/auth/sign-up')} style={styles.switchLink}>
-            <Text style={styles.switchText}>New to Tether? <Text style={styles.switchAction}>Create account</Text></Text>
+          <TouchableOpacity onPress={() => router.replace('/auth/sign-up')} style={s.switchLink}>
+            <Text style={s.switchText}>New to Tether? <Text style={s.switchAction}>Create account</Text></Text>
           </TouchableOpacity>
 
         </ScrollView>
@@ -88,21 +116,32 @@ export default function SignIn() {
   );
 }
 
-const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: Colors.warmWhite },
+const s = StyleSheet.create({
+  safe: { flex: 1, backgroundColor: Colors.cream },
   scroll: { flexGrow: 1, paddingHorizontal: 28, paddingTop: 48, paddingBottom: 32, alignItems: 'center' },
-  logoOrb: { width: 60, height: 60, borderRadius: 30, backgroundColor: Colors.terracotta, alignItems: 'center', justifyContent: 'center', marginBottom: 20 },
-  logoText: { fontSize: 26, color: Colors.white },
-  title: { fontFamily: Fonts.display, fontSize: 28, color: Colors.charcoal, textAlign: 'center', marginBottom: 8 },
-  subtitle: { fontFamily: Fonts.body, fontSize: 14, color: Colors.midBrown, textAlign: 'center', lineHeight: 21, marginBottom: 32 },
-  form: { width: '100%', gap: 8, marginBottom: 24 },
-  label: { fontFamily: Fonts.bodyMedium, fontSize: 12, color: Colors.charcoal, letterSpacing: 0.3, marginBottom: 2 },
-  input: { width: '100%', padding: 14, borderRadius: Radius.md, borderWidth: 1.5, borderColor: Colors.sand, backgroundColor: Colors.cream, fontFamily: Fonts.body, fontSize: 15, color: Colors.charcoal, marginBottom: 8 },
-  error: { fontFamily: Fonts.body, fontSize: 13, color: Colors.terracotta, marginBottom: 4 },
-  btn: { backgroundColor: Colors.terracotta, borderRadius: Radius.full, paddingVertical: 15, alignItems: 'center', marginTop: 8 },
+  logoOrb: { width: 56, height: 56, borderRadius: 28, backgroundColor: Colors.sage, alignItems: 'center', justifyContent: 'center', marginBottom: 20, ...Shadows.sm },
+  title: { fontFamily: Fonts.displayLight, fontSize: 28, color: Colors.charcoal, textAlign: 'center', marginBottom: 8 },
+  subtitle: { fontFamily: Fonts.body, fontSize: 14, color: Colors.midBrown, textAlign: 'center', lineHeight: 21, marginBottom: 28 },
+
+  // Google
+  googleBtn: { width: '100%', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10, backgroundColor: Colors.warmWhite, borderWidth: 1.5, borderColor: Colors.sand, borderRadius: Radius.full, paddingVertical: 14, marginBottom: 20 },
+  googleG: { fontFamily: Fonts.bodyMedium, fontSize: 18, color: Colors.charcoal },
+  googleText: { fontFamily: Fonts.bodyMedium, fontSize: 14, color: Colors.charcoal },
+
+  // Divider
+  divider: { flexDirection: 'row', alignItems: 'center', gap: 12, width: '100%', marginBottom: 20 },
+  dividerLine: { flex: 1, height: 1, backgroundColor: Colors.sand },
+  dividerText: { fontFamily: Fonts.body, fontSize: 12, color: Colors.lightBrown },
+
+  // Form
+  form: { width: '100%', gap: 6, marginBottom: 24 },
+  label: { fontFamily: Fonts.bodyMedium, fontSize: 12, color: Colors.midBrown, letterSpacing: 0.3, marginBottom: 2, marginTop: 4 },
+  input: { width: '100%', padding: 14, borderRadius: Radius.md, borderWidth: 1.5, borderColor: Colors.sand, backgroundColor: Colors.warmWhite, fontFamily: Fonts.body, fontSize: 15, color: Colors.charcoal },
+  error: { fontFamily: Fonts.body, fontSize: 13, color: Colors.errorText, marginTop: 4 },
+  btn: { backgroundColor: Colors.sageDark, borderRadius: Radius.full, paddingVertical: 15, alignItems: 'center', marginTop: 12, ...Shadows.sm },
   btnDisabled: { opacity: 0.6 },
   btnText: { fontFamily: Fonts.bodyMedium, fontSize: 15, color: Colors.white },
   switchLink: { marginTop: 8 },
   switchText: { fontFamily: Fonts.body, fontSize: 14, color: Colors.midBrown, textAlign: 'center' },
-  switchAction: { fontFamily: Fonts.bodyMedium, color: Colors.terracotta },
+  switchAction: { fontFamily: Fonts.bodyMedium, color: Colors.sageDark },
 });

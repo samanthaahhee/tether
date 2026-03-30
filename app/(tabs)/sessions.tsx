@@ -302,19 +302,26 @@ const PAST_SESSIONS_PREVIEW = 3;
 
 function SwipeableCard({ children, onDelete }: { children: React.ReactNode; onDelete: () => void }) {
   const translateX = useRef(new Animated.Value(0)).current;
+  const openRef = useRef(false);
   const ACTION_WIDTH = 80;
 
   const panResponder = useRef(
     PanResponder.create({
       onMoveShouldSetPanResponder: (_, g) => Math.abs(g.dx) > 10 && Math.abs(g.dx) > Math.abs(g.dy),
       onPanResponderMove: (_, g) => {
-        if (g.dx < 0) translateX.setValue(Math.max(g.dx, -ACTION_WIDTH));
+        const base = openRef.current ? -ACTION_WIDTH : 0;
+        const newVal = Math.min(0, Math.max(base + g.dx, -ACTION_WIDTH));
+        translateX.setValue(newVal);
       },
       onPanResponderRelease: (_, g) => {
-        if (g.dx < -ACTION_WIDTH / 2) {
-          Animated.spring(translateX, { toValue: -ACTION_WIDTH, useNativeDriver: true }).start();
+        const base = openRef.current ? -ACTION_WIDTH : 0;
+        const final = base + g.dx;
+        if (final < -ACTION_WIDTH / 2) {
+          Animated.spring(translateX, { toValue: -ACTION_WIDTH, useNativeDriver: true, friction: 8 }).start();
+          openRef.current = true;
         } else {
-          Animated.spring(translateX, { toValue: 0, useNativeDriver: true }).start();
+          Animated.spring(translateX, { toValue: 0, useNativeDriver: true, friction: 8 }).start();
+          openRef.current = false;
         }
       },
     })
@@ -381,17 +388,18 @@ function SessionListView({ sessions, dispatch: d, onOpenSession, onStartNew }: {
               const date = new Date(s.startDate);
               const dateStr = date.toLocaleDateString('en-ZA', { day: 'numeric', month: 'short' });
               const currentStepCfg = MODE_CONFIG[s.currentStep];
+              const stepTheme = STEP_THEME[s.currentStep];
               return (
                 <SwipeableCard key={s.id} onDelete={() => d({ type: 'DELETE_SESSION', sessionId: s.id })}>
                   <TouchableOpacity
-                    style={[sl.sessionCard, { borderColor: Colors.terracottaLight, borderWidth: 1.5, marginBottom: 0 }]}
+                    style={[sl.sessionCard, { borderColor: Colors.sand, borderWidth: 1, marginBottom: 0 }]}
                     onPress={() => onOpenSession(s.id)}
                     activeOpacity={0.8}
                   >
                     <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
                       <Text style={sl.sessionDate}>{dateStr}</Text>
-                      <View style={sl.statusBadge}>
-                        <Text style={sl.statusText}>Active: {currentStepCfg.label}</Text>
+                      <View style={[sl.statusBadge, { backgroundColor: stepTheme.pale, borderColor: stepTheme.light }]}>
+                        <Text style={[sl.statusText, { color: stepTheme.color }]}>Active: {currentStepCfg.label}</Text>
                       </View>
                     </View>
                     {s.name ? <Text style={{ fontFamily: Fonts.display, fontSize: 16, color: Colors.charcoal, marginBottom: 4 }}>{s.name}</Text> : null}
@@ -402,8 +410,8 @@ function SessionListView({ sessions, dispatch: d, onOpenSession, onStartNew }: {
                       ))}
                       <Text style={sl.stepCount}>{stepsCompleted}/{SESSION_STEPS.length} steps</Text>
                     </View>
-                    <View style={{ marginTop: 10, backgroundColor: Colors.terracottaPale, borderRadius: Radius.full, paddingVertical: 8, alignItems: 'center' }}>
-                      <Text style={{ fontFamily: Fonts.bodyMedium, fontSize: 13, color: Colors.terracotta }}>Continue session →</Text>
+                    <View style={{ marginTop: 10, backgroundColor: Colors.creamDark, borderRadius: Radius.full, paddingVertical: 8, alignItems: 'center' }}>
+                      <Text style={{ fontFamily: Fonts.bodyMedium, fontSize: 13, color: Colors.midBrown }}>Continue session →</Text>
                     </View>
                   </TouchableOpacity>
                 </SwipeableCard>

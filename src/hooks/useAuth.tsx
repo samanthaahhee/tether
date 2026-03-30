@@ -29,6 +29,7 @@ interface AuthContextValue {
   signUp: (email: string, password: string) => Promise<{ error: string | null }>;
   signIn: (email: string, password: string) => Promise<{ error: string | null }>;
   signOut: () => Promise<void>;
+  signInWithGoogle: () => Promise<{ error: string | null }>;
   syncProfile: (data: Partial<SupabaseProfile>) => Promise<void>;
   generateInvite: () => Promise<string>;
   acceptInvite: (code: string) => Promise<{ error: string | null }>;
@@ -124,6 +125,37 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     await supabase.auth.signOut();
   };
 
+  const signInWithGoogle = async (): Promise<{ error: string | null }> => {
+    try {
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: 'tether://auth/callback',
+          skipBrowserRedirect: true,
+        },
+      });
+      if (error) return { error: error.message };
+      if (data?.url) {
+        const WebBrowser = require('expo-web-browser');
+        const result = await WebBrowser.openAuthSessionAsync(data.url, 'tether://auth/callback');
+        if (result.type === 'success' && result.url) {
+          const url = new URL(result.url);
+          const params = new URLSearchParams(url.hash.substring(1));
+          const accessToken = params.get('access_token');
+          const refreshToken = params.get('refresh_token');
+          if (accessToken && refreshToken) {
+            await supabase.auth.setSession({ access_token: accessToken, refresh_token: refreshToken });
+            return { error: null };
+          }
+        }
+        return { error: 'Google sign-in was cancelled.' };
+      }
+      return { error: 'Could not start Google sign-in.' };
+    } catch (e: any) {
+      return { error: e.message || 'Google sign-in failed.' };
+    }
+  };
+
   const syncProfile = async (data: Partial<SupabaseProfile>) => {
     if (!user) return;
     await supabase.from('profiles').upsert({ id: user.id, ...data, updated_at: new Date().toISOString() });
@@ -174,7 +206,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   return (
     <AuthContext.Provider value={{
       user, session, profile, partnerProfile, couple, loading,
-      signUp, signIn, signOut, syncProfile, generateInvite, acceptInvite, refreshCouple,
+      signUp, signIn, signOut, signInWithGoogle, syncProfile, generateInvite, acceptInvite, refreshCouple,
     }}>
       {children}
     </AuthContext.Provider>

@@ -241,7 +241,7 @@ export default function HomeTab() {
 
 // ── Journey carousel ──
 const jc = StyleSheet.create({
-  card: { borderWidth: 1, borderRadius: Radius.lg, padding: 18, overflow: 'hidden', height: 200, justifyContent: 'space-between' },
+  card: { borderWidth: 1, borderRadius: Radius.lg, padding: 18, overflow: 'hidden', height: 240, justifyContent: 'space-between' },
   orb: { width: 44, height: 44, borderRadius: 22, borderWidth: 2, alignItems: 'center', justifyContent: 'center', marginBottom: 12 },
   num: { fontFamily: Fonts.bodyMedium, fontSize: 10, letterSpacing: 0.6, textTransform: 'uppercase', marginBottom: 2 },
   name: { fontFamily: Fonts.display, fontSize: 20, color: Colors.charcoal, marginBottom: 6 },
@@ -298,7 +298,7 @@ const rf = StyleSheet.create({
 // ── Daily quote ──
 const qt = StyleSheet.create({
   card: { marginHorizontal: 20, backgroundColor: Colors.warmWhite, borderWidth: 1, borderColor: Colors.sand, borderRadius: Radius.lg, padding: 24, overflow: 'hidden' },
-  accent: { position: 'absolute', top: 0, left: 0, width: 4, height: '100%', backgroundColor: Colors.mauve, borderTopLeftRadius: Radius.lg, borderBottomLeftRadius: Radius.lg },
+  accent: { position: 'absolute', top: -1, bottom: -1, left: -1, width: 5, backgroundColor: Colors.mauve },
   eyebrow: { flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 12 },
   eyebrowText: { fontFamily: Fonts.bodyMedium, fontSize: 11, letterSpacing: 1, textTransform: 'uppercase', color: Colors.mauve },
   quote: { fontFamily: Fonts.displayItalic, fontSize: 17, color: Colors.charcoal, lineHeight: 28 },
@@ -319,8 +319,8 @@ const styles = StyleSheet.create({
   greeting: { paddingHorizontal: 20, paddingTop: 24, marginBottom: 20 },
   greetingRow: { flexDirection: 'row', alignItems: 'flex-start' },
   settingsBtn: { width: 40, height: 40, borderRadius: 20, backgroundColor: Colors.creamDark, alignItems: 'center', justifyContent: 'center' },
-  greetingTime: { fontFamily: Fonts.bodyMedium, fontSize: 10, letterSpacing: 0.8, textTransform: 'uppercase', color: Colors.terracotta, marginBottom: 4 },
-  greetingTitle: { fontFamily: Fonts.display, fontSize: 26, color: Colors.charcoal, lineHeight: 32, marginBottom: 4 },
+  greetingTime: { fontFamily: Fonts.bodyMedium, fontSize: 10, letterSpacing: 0.8, textTransform: 'uppercase', color: Colors.sage, marginBottom: 4 },
+  greetingTitle: { fontFamily: Fonts.displayLight, fontSize: 26, color: Colors.charcoal, lineHeight: 32, marginBottom: 4 },
   greetingSub: { fontFamily: Fonts.body, fontSize: 14, color: Colors.midBrown },
   startCard: { marginHorizontal: 20, marginBottom: 24, backgroundColor: Colors.terracotta, borderRadius: Radius.lg, padding: 20, overflow: 'hidden', ...Shadows.terracotta },
   startCardBlob: { position: 'absolute', top: -40, right: -40, width: 120, height: 120, borderRadius: 60, backgroundColor: 'rgba(255,255,255,0.1)' },
