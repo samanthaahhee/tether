@@ -22,7 +22,11 @@
       },
       "package": "com.tether.app"
     },
-    "plugins": ["expo-router", "expo-font"],
+    "plugins": [
+      "expo-router",
+      "expo-font",
+      "expo-speech-recognition"
+    ],
     "scheme": "tether"
   }
 }

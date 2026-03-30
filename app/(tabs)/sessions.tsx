@@ -1,13 +1,20 @@
-import React, { useState, useRef, useEffect, useMemo } from 'react';
+import React, { useState, useRef, useEffect, useMemo, useCallback } from 'react';
 import {
   View, Text, TextInput, TouchableOpacity, FlatList, ScrollView,
   StyleSheet, KeyboardAvoidingView, Platform, ActivityIndicator, Alert, Modal,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+let ExpoSpeechRecognitionModule: any = null;
+try {
+  const speech = require('expo-speech-recognition');
+  ExpoSpeechRecognitionModule = speech.ExpoSpeechRecognitionModule;
+} catch {
+  // Native module not available (e.g. Expo Go)
+}
 import { useAppState, Message, Session } from '../../src/hooks/useAppState';
 import { useClaude } from '../../src/hooks/useClaude';
 import { Colors, Fonts, Radius, Shadows } from '../../src/constants/theme';
-import { MODE_CONFIG, ModeKey, SESSION_STEPS, CRISIS_WORDS } from '../../src/constants/data';
+import { MODE_CONFIG, ModeKey, SESSION_STEPS, CRISIS_WORDS, REPAIR_ATTEMPTS } from '../../src/constants/data';
 import { Button } from '../../src/components/UI';
 import { ChevronLeft } from '../../src/components/Icon';
 
@@ -31,8 +38,8 @@ const STEP_COLORS: Record<ModeKey, string> = {
 const WELCOMES: Record<ModeKey, (name: string) => string> = {
   vent: (name) => 'Hello' + (name ? ', ' + name : '') + '. This is your private space. Your partner will never see or hear anything you share here. You can type or use the microphone to speak freely. There are no wrong words. What is weighing on you right now?',
   understand: () => 'When you are ready, let us look gently at what has been happening. Often the surface argument points to something deeper: a fear, a need, a longing to feel close. What would you like to explore?',
-  prepare: () => 'Let us build something useful together. Whether you want to write a message to your partner, prepare for a difficult conversation, or find a way to repair, what would be most helpful?',
-  bridge: () => 'You have done the hard work of getting here. Now let us compose a message to your partner using what you have discovered about your feelings and needs.',
+  prepare: () => 'Now that you understand what is really going on, let us figure out what you want to say. I will help you turn your feelings into clear, fair language your partner can actually hear. What do you want them to understand?',
+  bridge: () => 'You are ready. Below is your conversation guide: four tools to help you open well, stay grounded, and close with care. Take a moment to read through them before you begin.',
 };
 
 const MIN_MESSAGES_TO_ADVANCE = 3;
@@ -57,7 +64,7 @@ const ti = StyleSheet.create({
   dot: { width: 7, height: 7, borderRadius: 3.5, backgroundColor: Colors.sandDark },
 });
 
-function StepProgressBar({ session, bgColor, borderColor }: { session: Session; bgColor: string; borderColor: string }) {
+function StepProgressBar({ session, bgColor, borderColor, onGoToStep }: { session: Session; bgColor: string; borderColor: string; onGoToStep: (step: ModeKey) => void }) {
   return (
     <View style={[sp.container, { backgroundColor: bgColor, borderBottomColor: borderColor }]}>
       {SESSION_STEPS.map((step, i) => {
@@ -65,6 +72,7 @@ function StepProgressBar({ session, bgColor, borderColor }: { session: Session; 
         const isCompleted = session.unlockedSteps.includes(step) && step !== session.currentStep;
         const isCurrent = step === session.currentStep;
         const isLocked = !session.unlockedSteps.includes(step);
+        const isTappable = !isLocked && !isCurrent;
         const color = STEP_COLORS[step];
 
         return (
@@ -72,7 +80,12 @@ function StepProgressBar({ session, bgColor, borderColor }: { session: Session; 
             {i > 0 && (
               <View style={[sp.line, { backgroundColor: isLocked ? Colors.sand : color, opacity: isLocked ? 0.4 : 0.6 }]} />
             )}
-            <View style={{ alignItems: 'center', gap: 4 }}>
+            <TouchableOpacity
+              style={{ alignItems: 'center', gap: 4 }}
+              activeOpacity={isTappable ? 0.6 : 1}
+              onPress={() => isTappable && onGoToStep(step)}
+              disabled={isLocked}
+            >
               <View style={[
                 sp.node,
                 isCompleted && { backgroundColor: color, borderColor: color },
@@ -88,7 +101,7 @@ function StepProgressBar({ session, bgColor, borderColor }: { session: Session; 
               <Text style={[sp.label, isCurrent && { color, fontFamily: Fonts.bodyMedium }, isLocked && { opacity: 0.35 }]}>
                 {cfg.label}
               </Text>
-            </View>
+            </TouchableOpacity>
           </React.Fragment>
         );
       })}
@@ -104,63 +117,131 @@ const sp = StyleSheet.create({
   label: { fontFamily: Fonts.body, fontSize: 9, color: Colors.midBrown, textTransform: 'uppercase', letterSpacing: 0.4 },
 });
 
-function NvcCompose({ session, dispatch: d }: { session: Session; dispatch: any }) {
+const REMINDER_OPTIONS = ['Tonight', 'Tomorrow morning', 'This weekend'];
+
+function NurtureCard({ session, dispatch: d, profile, onResolved }: {
+  session: Session; dispatch: any; profile: any; onResolved: () => void;
+}) {
+  const [conversationDone, setConversationDone] = useState(false);
+  const [reminderSet, setReminderSet] = useState<string | null>(null);
+
   const draft = session.nvcDraft || { obs: '', feel: '', need: '', request: '' };
-  const update = (field: string, val: string) => {
-    d({ type: 'SET_NVC_DRAFT', sessionId: session.id, draft: { ...draft, [field]: val } });
-  };
 
-  const sendBridge = () => {
-    if (!draft.obs && !draft.feel) {
-      Alert.alert('Please add at least an observation and a feeling');
-      return;
-    }
-    const parts: string[] = [];
-    if (draft.obs) parts.push('When ' + (draft.obs.toLowerCase().startsWith('when') ? draft.obs.slice(5) : draft.obs));
-    if (draft.feel) parts.push('I felt ' + draft.feel);
-    if (draft.need) parts.push('because I need ' + draft.need);
-    if (draft.request) parts.push(draft.request);
-    const msg = parts.join('. ') + '.';
+  const obsClean = draft.obs ? (draft.obs.toLowerCase().startsWith('when') ? draft.obs.slice(5).trim() : draft.obs) : '';
+  const openingLine = obsClean && draft.feel
+    ? `"When ${obsClean}, I felt ${draft.feel}. Can we talk about it?"`
+    : '"There is something I have been wanting to share with you. Is now a good time?"';
 
-    d({ type: 'ADD_SESSION_MESSAGE', sessionId: session.id, step: 'bridge', message: { role: 'user', text: '📩 Message sent:\n\n' + msg, id: Date.now().toString() } });
-    d({ type: 'SET_NVC_DRAFT', sessionId: session.id, draft: { obs: '', feel: '', need: '', request: '' } });
-  };
-
-  const fields = [
-    { key: 'obs', label: 'Observation: what happened?', placeholder: 'A specific event without judgment...', multiline: true },
-    { key: 'feel', label: 'Feeling', placeholder: 'e.g. hurt, scared, lonely...', multiline: false },
-    { key: 'need', label: 'Need', placeholder: 'e.g. reassurance, connection...', multiline: false },
-    { key: 'request', label: 'One specific request', placeholder: 'e.g. could we talk for 15 minutes tonight?', multiline: false },
-  ];
+  const repair = REPAIR_ATTEMPTS[2]; // pause request — most universally useful
 
   return (
-    <View style={nvc.card}>
-      <Text style={nvc.title}>Compose your message</Text>
-      <Text style={nvc.sub}>Observation · Feeling · Need · Request</Text>
-      {fields.map((f) => (
-        <View key={f.key} style={{ marginBottom: 12 }}>
-          <Text style={nvc.fieldLabel}>{f.label}</Text>
-          <TextInput
-            value={(draft as any)[f.key]}
-            onChangeText={(v) => update(f.key, v)}
-            placeholder={f.placeholder}
-            placeholderTextColor={Colors.lightBrown}
-            style={[nvc.fieldInput, f.multiline && { minHeight: 64, textAlignVertical: 'top' }]}
-            multiline={f.multiline}
-          />
+    <View style={nr.container}>
+      <Text style={nr.heading}>Before you talk, read this</Text>
+      <Text style={nr.sub}>Four tools to help you open well, stay grounded, and close with care. Take a moment with each one.</Text>
+
+      <View style={nr.guideCard}>
+        <Text style={nr.guideNum}>1</Text>
+        <View style={{ flex: 1 }}>
+          <Text style={nr.guideTitle}>Your opening line</Text>
+          <Text style={nr.guideBody}>{openingLine}</Text>
+          <Text style={nr.guideTip}>Soft start: name the situation, not the person.</Text>
         </View>
-      ))}
-      <Button label="Send message" onPress={sendBridge} variant="primary" fullWidth />
+      </View>
+
+      <View style={nr.guideCard}>
+        <Text style={nr.guideNum}>2</Text>
+        <View style={{ flex: 1 }}>
+          <Text style={nr.guideTitle}>If things get heated</Text>
+          <Text style={nr.guideBody}>"{repair.msg}"</Text>
+          <Text style={nr.guideTip}>A pause is not abandonment. Name it clearly.</Text>
+        </View>
+      </View>
+
+      <View style={nr.guideCard}>
+        <Text style={nr.guideNum}>3</Text>
+        <View style={{ flex: 1 }}>
+          <Text style={nr.guideTitle}>What you need from this conversation</Text>
+          <Text style={nr.guideBody}>
+            {draft.need
+              ? `You need ${draft.need}. Keep returning to this if the conversation drifts.`
+              : 'Revisit your Understand step to name what you most need your partner to hear.'}
+          </Text>
+          <Text style={nr.guideTip}>Your need is the anchor. Stay connected to it.</Text>
+        </View>
+      </View>
+
+      <View style={nr.guideCard}>
+        <Text style={nr.guideNum}>4</Text>
+        <View style={{ flex: 1 }}>
+          <Text style={nr.guideTitle}>How to close well</Text>
+          <Text style={nr.guideBody}>"Thank you for staying in this with me. It means a lot."</Text>
+          <Text style={nr.guideTip}>End with gratitude, even if you did not resolve everything. The conversation itself is the repair.</Text>
+        </View>
+      </View>
+
+      {!reminderSet ? (
+        <>
+          <Text style={nr.reminderHeading}>Set a reminder</Text>
+          <View style={nr.reminderRow}>
+            {REMINDER_OPTIONS.map((opt) => (
+              <TouchableOpacity key={opt} style={nr.reminderChip} onPress={() => setReminderSet(opt)} activeOpacity={0.8}>
+                <Text style={nr.reminderChipText}>{opt}</Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        </>
+      ) : (
+        <View style={nr.reminderSet}>
+          <Text style={nr.reminderSetText}>Reminder set for {reminderSet}</Text>
+          <TouchableOpacity onPress={() => setReminderSet(null)} activeOpacity={0.7}>
+            <Text style={nr.reminderChange}>Change</Text>
+          </TouchableOpacity>
+        </View>
+      )}
+
+      {!conversationDone ? (
+        <TouchableOpacity style={nr.primaryBtn} onPress={() => setConversationDone(true)} activeOpacity={0.85}>
+          <Text style={nr.primaryBtnText}>I have had the conversation</Text>
+        </TouchableOpacity>
+      ) : (
+        <View style={nr.sentRow}>
+          <Text style={nr.sentConfirm}>Well done. That took courage.</Text>
+          <TouchableOpacity style={nr.resolveBtn} onPress={onResolved} activeOpacity={0.85}>
+            <Text style={nr.resolveBtnText}>Complete this session</Text>
+          </TouchableOpacity>
+        </View>
+      )}
     </View>
   );
 }
 
-const nvc = StyleSheet.create({
-  card: { margin: 16, backgroundColor: Colors.warmWhite, borderWidth: 1, borderColor: Colors.sageLight, borderRadius: Radius.lg, padding: 16 },
-  title: { fontFamily: Fonts.display, fontSize: 16, color: Colors.charcoal, marginBottom: 4 },
-  sub: { fontFamily: Fonts.body, fontSize: 12, color: Colors.midBrown, marginBottom: 16 },
-  fieldLabel: { fontFamily: Fonts.bodyMedium, fontSize: 11, color: Colors.warmBrown, letterSpacing: 0.4, textTransform: 'uppercase', marginBottom: 6 },
-  fieldInput: { backgroundColor: Colors.cream, borderWidth: 1.5, borderColor: Colors.sand, borderRadius: Radius.md, paddingHorizontal: 12, paddingVertical: 10, fontFamily: Fonts.body, fontSize: 14, color: Colors.charcoal },
+const nr = StyleSheet.create({
+  container: { flex: 1, margin: 16, padding: 20 },
+  heading: { fontFamily: Fonts.display, fontSize: 18, color: Colors.charcoal, marginBottom: 4 },
+  sub: { fontFamily: Fonts.body, fontSize: 13, color: Colors.midBrown, marginBottom: 20 },
+
+  // Guide cards
+  guideCard: { flexDirection: 'row', gap: 12, backgroundColor: Colors.cream, borderWidth: 1, borderColor: Colors.sand, borderRadius: Radius.md, padding: 14, marginBottom: 10, alignItems: 'flex-start' },
+  guideNum: { fontFamily: Fonts.display, fontSize: 18, color: Colors.sage, width: 22, flexShrink: 0 },
+  guideTitle: { fontFamily: Fonts.bodyMedium, fontSize: 13, color: Colors.charcoal, marginBottom: 6 },
+  guideBody: { fontFamily: Fonts.displayItalic, fontSize: 13, color: Colors.charcoal, lineHeight: 20, marginBottom: 6 },
+  guideTip: { fontFamily: Fonts.body, fontSize: 11, color: Colors.midBrown, lineHeight: 16 },
+
+  reminderHeading: { fontFamily: Fonts.bodyMedium, fontSize: 12, color: Colors.warmBrown, letterSpacing: 0.4, textTransform: 'uppercase', marginTop: 14, marginBottom: 8 },
+  reminderRow: { flexDirection: 'row', gap: 8, marginBottom: 16 },
+  reminderChip: { backgroundColor: Colors.creamDark, borderWidth: 1, borderColor: Colors.sand, borderRadius: Radius.full, paddingHorizontal: 14, paddingVertical: 8 },
+  reminderChipText: { fontFamily: Fonts.bodyMedium, fontSize: 12, color: Colors.warmBrown },
+  reminderSet: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', backgroundColor: Colors.goldPale, borderWidth: 1, borderColor: '#D4B46A', borderRadius: Radius.md, padding: 12, marginBottom: 16 },
+  reminderSetText: { fontFamily: Fonts.bodyMedium, fontSize: 13, color: Colors.charcoal },
+  reminderChange: { fontFamily: Fonts.bodyMedium, fontSize: 12, color: Colors.midBrown },
+
+  // Shared
+  primaryBtn: { backgroundColor: Colors.sage, borderRadius: Radius.full, paddingVertical: 14, alignItems: 'center', marginTop: 4 },
+  primaryBtnText: { fontFamily: Fonts.bodyMedium, fontSize: 14, color: Colors.white },
+  sentRow: { marginTop: 4, gap: 10 },
+  sentConfirm: { fontFamily: Fonts.bodyMedium, fontSize: 13, color: Colors.sage, textAlign: 'center', paddingVertical: 4 },
+  resolveBtn: { backgroundColor: Colors.charcoal, borderRadius: Radius.full, paddingVertical: 14, alignItems: 'center' },
+  resolveBtnText: { fontFamily: Fonts.bodyMedium, fontSize: 14, color: Colors.white },
 });
 
 const PAST_SESSIONS_PREVIEW = 3;
@@ -351,12 +432,12 @@ const CAPTURE_CONFIG: Record<ModeKey, { question: string; options: { emoji: stri
 
 function ActiveSessionView({ session, state, dispatch: d, onBack }: { session: Session; state: any; dispatch: any; onBack: () => void }) {
   const [input, setInput] = useState('');
-  const [showNvc, setShowNvc] = useState(false);
   const [editingName, setEditingName] = useState(false);
   const [nameInput, setNameInput] = useState(session.name);
   const [showCapture, setShowCapture] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
-  const recognitionRef = useRef<any>(null);
+  const [speechAvailable, setSpeechAvailable] = useState(false);
+  const transcriptRef = useRef('');
   const flatRef = useRef<FlatList>(null);
   const step = session.currentStep;
   const cfg = MODE_CONFIG[step];
@@ -378,13 +459,12 @@ function ActiveSessionView({ session, state, dispatch: d, onBack }: { session: S
   const userMsgCount = useMemo(() => messages.filter((m) => m.role === 'user').length, [messages]);
   const canAdvance = userMsgCount >= MIN_MESSAGES_TO_ADVANCE && SESSION_STEPS.indexOf(step) < SESSION_STEPS.length - 1;
   const isBridgeStep = step === 'bridge';
-  const bridgeMessageSent = isBridgeStep && messages.some((m) => m.text.startsWith('📩'));
 
   useEffect(() => {
     if (messages.length === 0) {
       // For vent step with existing memory, generate a personalised check-in first
       if (step === 'vent' && state.userMemory) {
-        const lastSession = state.sessions.find((s) => s.status === 'resolved' && s.summary);
+        const lastSession = state.sessions.find((s: Session) => s.status === 'resolved' && s.summary);
         generateCheckIn(state.userMemory, lastSession?.summary).then((checkIn) => {
           const opening = checkIn
             ? checkIn + '\n\n' + WELCOMES[step](state.profile.name)
@@ -436,57 +516,53 @@ function ActiveSessionView({ session, state, dispatch: d, onBack }: { session: S
     });
   };
 
-  const toggleRecording = () => {
-    if (isRecording) {
-      if (recognitionRef.current) {
-        recognitionRef.current.stop();
-        recognitionRef.current = null;
-      }
-      setIsRecording(false);
-      return;
-    }
+  // Check speech recognition availability and subscribe to events
+  useEffect(() => {
+    if (!ExpoSpeechRecognitionModule) return;
+    ExpoSpeechRecognitionModule.getStateAsync().then(() => setSpeechAvailable(true)).catch(() => setSpeechAvailable(false));
 
-    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-    if (!SpeechRecognition) {
-      Alert.alert('Not supported', 'Voice input is not supported in this browser. Please type your message instead.');
-      return;
-    }
-
-    const recognition = new SpeechRecognition();
-    recognition.continuous = true;
-    recognition.interimResults = true;
-    recognition.lang = 'en-US';
-
-    let finalTranscript = input;
-
-    recognition.onresult = (event: any) => {
-      let interim = '';
-      for (let i = event.resultIndex; i < event.results.length; i++) {
-        const transcript = event.results[i][0].transcript;
-        if (event.results[i].isFinal) {
-          finalTranscript += (finalTranscript ? ' ' : '') + transcript;
-          setInput(finalTranscript);
-        } else {
-          interim += transcript;
-          setInput(finalTranscript + (finalTranscript ? ' ' : '') + interim);
+    const subs = [
+      ExpoSpeechRecognitionModule.addListener('result', (event: any) => {
+        const transcript = event.results?.[0]?.transcript || '';
+        if (transcript) {
+          const base = transcriptRef.current;
+          setInput(base + (base ? ' ' : '') + transcript);
+          if (event.isFinal) {
+            transcriptRef.current = base + (base ? ' ' : '') + transcript;
+          }
         }
-      }
-    };
+      }),
+      ExpoSpeechRecognitionModule.addListener('end', () => setIsRecording(false)),
+      ExpoSpeechRecognitionModule.addListener('error', () => setIsRecording(false)),
+    ];
+    return () => subs.forEach((s: any) => s?.remove());
+  }, []);
 
-    recognition.onerror = () => {
-      setIsRecording(false);
-      recognitionRef.current = null;
-    };
+  const toggleRecording = useCallback(async () => {
+    if (isRecording) {
+      ExpoSpeechRecognitionModule.stop();
+      return;
+    }
 
-    recognition.onend = () => {
-      setIsRecording(false);
-      recognitionRef.current = null;
-    };
+    if (!speechAvailable) {
+      Alert.alert('Not available', 'Voice input is not available on this device.');
+      return;
+    }
 
-    recognitionRef.current = recognition;
-    recognition.start();
+    const { granted } = await ExpoSpeechRecognitionModule.requestPermissionsAsync();
+    if (!granted) {
+      Alert.alert('Permission needed', 'Tether needs microphone access for voice input.');
+      return;
+    }
+
+    transcriptRef.current = input;
+    ExpoSpeechRecognitionModule.start({
+      lang: 'en-US',
+      interimResults: true,
+      continuous: true,
+    });
     setIsRecording(true);
-  };
+  }, [isRecording, speechAvailable, input]);
 
   const advanceStep = () => {
     setShowCapture(true);
@@ -567,7 +643,7 @@ function ActiveSessionView({ session, state, dispatch: d, onBack }: { session: S
           </View>
 
           {/* Progress nodes */}
-          <StepProgressBar session={session} bgColor={cfg.paleBg} borderColor={cfg.borderColor + '40'} />
+          <StepProgressBar session={session} bgColor={cfg.paleBg} borderColor={cfg.borderColor + '40'} onGoToStep={(s) => d({ type: 'GO_TO_STEP', sessionId: session.id, step: s })} />
         </View>
 
         {floodingDetected && step === 'vent' && (
@@ -576,40 +652,35 @@ function ActiveSessionView({ session, state, dispatch: d, onBack }: { session: S
           </View>
         )}
 
-        {isBridgeStep && !showNvc && (
-          <TouchableOpacity
-            style={{ margin: 12, backgroundColor: Colors.sagePale, borderWidth: 1, borderColor: Colors.sageLight, borderRadius: Radius.md, padding: 12, alignItems: 'center' }}
-            onPress={() => setShowNvc(true)}
-          >
-            <Text style={{ fontFamily: Fonts.bodyMedium, fontSize: 13, color: Colors.sage }}>Open message composer</Text>
-          </TouchableOpacity>
+        {isBridgeStep ? (
+          <ScrollView style={{ flex: 1 }} contentContainerStyle={{ flexGrow: 1, paddingBottom: 40 }} showsVerticalScrollIndicator={false}>
+            <NurtureCard session={session} dispatch={d} profile={state.profile} onResolved={resolveSession} />
+          </ScrollView>
+        ) : (
+          <FlatList
+            ref={flatRef}
+            data={messages}
+            keyExtractor={(m) => m.id}
+            contentContainerStyle={styles.msgList}
+            showsVerticalScrollIndicator={false}
+            renderItem={({ item }) => (
+              <View style={[styles.msgRow, item.role === 'user' && styles.msgRowUser]}>
+                <View style={[styles.msgAvatar, item.role === 'user' && styles.msgAvatarUser]}>
+                  <Text style={{ fontSize: 13 }}>{item.role === 'ai' ? '🌿' : (state.profile.name?.[0] || '?')}</Text>
+                </View>
+                <View style={[styles.msgBubble, item.role === 'user' && styles.msgBubbleUser]}>
+                  <Text style={[styles.msgText, item.role === 'user' && { color: Colors.white }]}>{item.text}</Text>
+                </View>
+              </View>
+            )}
+            ListFooterComponent={loading ? (
+              <View style={styles.msgRow}>
+                <View style={styles.msgAvatar}><Text style={{ fontSize: 13 }}>🌿</Text></View>
+                <View style={styles.msgBubble}><TypingIndicator /></View>
+              </View>
+            ) : null}
+          />
         )}
-
-        {isBridgeStep && showNvc && <NvcCompose session={session} dispatch={d} />}
-
-        <FlatList
-          ref={flatRef}
-          data={messages}
-          keyExtractor={(m) => m.id}
-          contentContainerStyle={styles.msgList}
-          showsVerticalScrollIndicator={false}
-          renderItem={({ item }) => (
-            <View style={[styles.msgRow, item.role === 'user' && styles.msgRowUser]}>
-              <View style={[styles.msgAvatar, item.role === 'user' && styles.msgAvatarUser]}>
-                <Text style={{ fontSize: 13 }}>{item.role === 'ai' ? '🌿' : (state.profile.name?.[0] || '?')}</Text>
-              </View>
-              <View style={[styles.msgBubble, item.role === 'user' && styles.msgBubbleUser]}>
-                <Text style={[styles.msgText, item.role === 'user' && { color: Colors.white }]}>{item.text}</Text>
-              </View>
-            </View>
-          )}
-          ListFooterComponent={loading ? (
-            <View style={styles.msgRow}>
-              <View style={styles.msgAvatar}><Text style={{ fontSize: 13 }}>🌿</Text></View>
-              <View style={styles.msgBubble}><TypingIndicator /></View>
-            </View>
-          ) : null}
-        />
 
         {canAdvance && (
           <TouchableOpacity style={styles.advanceBanner} onPress={advanceStep} activeOpacity={0.85}>
@@ -617,21 +688,17 @@ function ActiveSessionView({ session, state, dispatch: d, onBack }: { session: S
           </TouchableOpacity>
         )}
 
-        {bridgeMessageSent && (
-          <TouchableOpacity style={styles.resolveBanner} onPress={resolveSession} activeOpacity={0.85}>
-            <Text style={styles.resolveText}>Mark session as resolved ✓</Text>
-          </TouchableOpacity>
-        )}
-
-        {session.status !== 'resolved' && (
+        {session.status !== 'resolved' && !isBridgeStep && (
           <>
-            <View style={styles.qaWrap}>
-              {cfg.quickActions.map((qa) => (
-                <TouchableOpacity key={qa} onPress={() => setInput(qa)} style={styles.qaPill}>
-                  <Text style={styles.qaText}>{qa}</Text>
-                </TouchableOpacity>
-              ))}
-            </View>
+            {userMsgCount === 0 && cfg.quickActions.length > 0 && (
+              <View style={styles.qaWrap}>
+                {cfg.quickActions.map((qa) => (
+                  <TouchableOpacity key={qa} onPress={() => setInput(qa)} style={styles.qaPill}>
+                    <Text style={styles.qaText}>{qa}</Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            )}
 
             <View style={styles.inputArea}>
               {isRecording && (
@@ -650,16 +717,18 @@ function ActiveSessionView({ session, state, dispatch: d, onBack }: { session: S
                   multiline
                   blurOnSubmit={false}
                 />
-                <TouchableOpacity
-                  onPress={toggleRecording}
-                  style={[styles.micBtn, isRecording && { backgroundColor: Colors.terracotta }]}
-                  activeOpacity={0.8}
-                >
-                  {isRecording
-                    ? <View style={{ width: 14, height: 14, borderRadius: 2, backgroundColor: Colors.white }} />
-                    : <MicIcon />
-                  }
-                </TouchableOpacity>
+                {speechAvailable && (
+                  <TouchableOpacity
+                    onPress={toggleRecording}
+                    style={[styles.micBtn, isRecording && { backgroundColor: Colors.terracotta }]}
+                    activeOpacity={0.8}
+                  >
+                    {isRecording
+                      ? <View style={{ width: 14, height: 14, borderRadius: 2, backgroundColor: Colors.white }} />
+                      : <MicIcon />
+                    }
+                  </TouchableOpacity>
+                )}
                 <TouchableOpacity
                   onPress={sendMessage}
                   disabled={loading || !input.trim()}
@@ -834,8 +903,6 @@ const styles = StyleSheet.create({
   sendBtn: { width: 44, height: 44, borderRadius: 22, alignItems: 'center', justifyContent: 'center', ...Shadows.terracotta },
   advanceBanner: { backgroundColor: Colors.sagePale, borderWidth: 1, borderColor: Colors.sageLight, marginHorizontal: 12, marginVertical: 6, borderRadius: Radius.md, padding: 12, alignItems: 'center' },
   advanceText: { fontFamily: Fonts.bodyMedium, fontSize: 13, color: Colors.sage },
-  resolveBanner: { backgroundColor: Colors.sage, marginHorizontal: 12, marginVertical: 6, borderRadius: Radius.md, padding: 14, alignItems: 'center', ...Shadows.sm },
-  resolveText: { fontFamily: Fonts.bodyMedium, fontSize: 14, color: Colors.white },
 });
 
 const cap = StyleSheet.create({

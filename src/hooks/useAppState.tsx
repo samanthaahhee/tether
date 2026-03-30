@@ -90,6 +90,7 @@ type Action =
   | { type: 'CREATE_SESSION' }
   | { type: 'SET_ACTIVE_SESSION'; sessionId: string | null }
   | { type: 'ADVANCE_STEP'; sessionId: string }
+  | { type: 'GO_TO_STEP'; sessionId: string; step: ModeKey }
   | { type: 'ADD_SESSION_MESSAGE'; sessionId: string; step: ModeKey; message: Message }
   | { type: 'SET_NVC_DRAFT'; sessionId: string; draft: { obs: string; feel: string; need: string; request: string } }
   | { type: 'RESOLVE_SESSION'; sessionId: string; reflection: string }
@@ -207,6 +208,16 @@ function reducer(state: AppState, action: Action): AppState {
               ? s.unlockedSteps
               : [...s.unlockedSteps, nextStep],
           };
+        }),
+      };
+    }
+
+    case 'GO_TO_STEP': {
+      return {
+        ...state,
+        sessions: updateSession(state.sessions, action.sessionId, (s) => {
+          if (!s.unlockedSteps.includes(action.step)) return s;
+          return { ...s, currentStep: action.step };
         }),
       };
     }

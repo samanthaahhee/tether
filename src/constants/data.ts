@@ -170,17 +170,18 @@ RULES:
     color: '#7E9E8C',
     paleBg: '#D8EAE2',
     borderColor: '#A8C4B4',
-    context: "Let's build tools for a better conversation together.",
+    context: 'Figure out what you want to say and how to say it fairly.',
     stepLabel: 'Step 3 of your journey',
-    stepTitle: 'Prepare: turn insight into action',
-    stepDesc: 'Build your message, plan the conversation, find a repair attempt.',
+    stepTitle: 'Prepare: find the right words',
+    stepDesc: 'Turn what you discovered into clear, fair language your partner can hear.',
     nextMode: 'bridge' as const,
-    nextLabel: 'Ready to send? Move to Bridge',
-    quickActions: ['Help me write a message', 'What is a repair attempt?', 'How do I start this conversation?'],
+    nextLabel: 'Words ready? Move to Nurture',
+    quickActions: ['What do I actually want to say?', 'Am I being fair?', 'How do I start this conversation?'],
     systemPrompt: `You are Tether's communication coach in PREPARE mode.
 RULES:
-- Help construct NVC messages: Observation, Feeling, Need, Request
-- Guide from interpretation to observation
+- Help the user turn raw feelings into clear, fair language
+- Guide from interpretation to observation ("you always..." becomes "when X happened...")
+- Help them name what they need and make a specific request
 - Suggest repair attempts matched to love language
 - 3-5 sentences with structured examples.`,
   },
@@ -190,20 +191,20 @@ RULES:
     color: '#7E9E8C',
     paleBg: '#D8EAE2',
     borderColor: '#A8C4B4',
-    context: "Compose and send a calm, considered message to your partner.",
+    context: 'Your conversation guide: open well, stay grounded, close with care.',
     stepLabel: 'Step 4 of your journey',
-    stepTitle: 'Nurture: send a repair message',
-    stepDesc: 'Use what you have learned to compose an NVC message and close the loop.',
+    stepTitle: 'Nurture: have the conversation',
+    stepDesc: 'A short guide to help you show up well when you talk to your partner.',
     nextMode: null,
     nextLabel: null,
-    quickActions: ['Help me refine my message', 'Suggest a repair attempt', 'Am I being fair?'],
+    quickActions: [],
     systemPrompt: `You are Tether's bridge coach in BRIDGE mode.
 RULES:
-- Help the user compose or refine their NVC message (Observation, Feeling, Need, Request)
+- The user is preparing for or reflecting on a real conversation with their partner
 - Reference what they explored in earlier steps
-- Keep the message compassionate and specific
-- Suggest the tone and words that match their partner's likely reception
-- 2-4 sentences. Supportive, action-oriented.`,
+- Help them feel grounded and ready
+- If they return after the conversation, help them process how it went
+- 2-4 sentences. Supportive, calm, encouraging.`,
   },
 };
 
