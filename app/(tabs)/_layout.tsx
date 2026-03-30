@@ -7,6 +7,7 @@ export default function TabLayout() {
     <Tabs
       screenOptions={{
         headerShown: false,
+        sceneStyle: { backgroundColor: Colors.cream },
         tabBarStyle: {
           backgroundColor: Colors.warmWhite,
           borderTopColor: Colors.sand,
@@ -15,7 +16,7 @@ export default function TabLayout() {
           paddingBottom: 20,
           paddingTop: 8,
         },
-        tabBarActiveTintColor: Colors.sage,
+        tabBarActiveTintColor: Colors.sageDark,
         tabBarInactiveTintColor: Colors.lightBrown,
         tabBarLabelStyle: {
           fontFamily: Fonts.bodyMedium,

@@ -40,11 +40,11 @@ export function Button({
       ]}
     >
       {loading ? (
-        <ActivityIndicator color={variant === 'secondary' || variant === 'ghost' ? Colors.terracotta : Colors.white} />
+        <ActivityIndicator color={variant === 'secondary' || variant === 'ghost' ? Colors.sageDark : Colors.white} />
       ) : (
         <Text style={[
           btn.label,
-          variant === 'secondary' && { color: Colors.warmBrown },
+          variant === 'secondary' && { color: Colors.charcoal },
           variant === 'ghost' && { color: Colors.midBrown },
         ]}>
           {label}
@@ -62,8 +62,8 @@ const btn = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  primary: { backgroundColor: Colors.terracotta, ...Shadows.terracotta },
-  secondary: { backgroundColor: 'transparent', borderWidth: 1.5, borderColor: Colors.sandDark },
+  primary: { backgroundColor: Colors.sageDark, ...Shadows.sm },
+  secondary: { backgroundColor: Colors.warmWhite, borderWidth: 1.5, borderColor: Colors.sand },
   ghost: { backgroundColor: 'transparent' },
   sage: { backgroundColor: Colors.sage, ...Shadows.sm },
   label: { fontFamily: Fonts.bodyMedium, fontSize: 15, color: Colors.white, letterSpacing: 0.2 },

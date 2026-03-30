@@ -300,11 +300,12 @@ const nr = StyleSheet.create({
 const PAST_SESSIONS_PREVIEW = 3;
 
 function SessionMenu({ sessionId, status, dispatch: d }: { sessionId: string; status: string; dispatch: any }) {
+  // haptic on menu open handled inline
   const [open, setOpen] = useState(false);
 
   return (
     <View>
-      <TouchableOpacity onPress={() => setOpen(!open)} style={sm.trigger} activeOpacity={0.6} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
+      <TouchableOpacity onPress={() => {setOpen(!open); }} style={sm.trigger} activeOpacity={0.6} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
         <View style={sm.dot} />
         <View style={sm.dot} />
         <View style={sm.dot} />
@@ -534,10 +535,10 @@ const sf = StyleSheet.create({
 });
 
 const sl = StyleSheet.create({
-  startBtn: { backgroundColor: Colors.terracotta, borderRadius: Radius.lg, padding: 20, overflow: 'hidden', ...Shadows.terracotta },
+  startBtn: { backgroundColor: Colors.sageDark, borderRadius: Radius.lg, padding: 20, overflow: 'hidden', ...Shadows.sm },
   startBlob: { position: 'absolute', top: -40, right: -40, width: 120, height: 120, borderRadius: 60, backgroundColor: 'rgba(255,255,255,0.1)' },
   startTag: { fontFamily: Fonts.bodyMedium, fontSize: 11, letterSpacing: 0.8, color: 'rgba(255,255,255,0.8)', marginBottom: 8 },
-  startTitle: { fontFamily: Fonts.display, fontSize: 22, color: Colors.white, marginBottom: 8 },
+  startTitle: { fontFamily: Fonts.displayLight, fontSize: 22, color: Colors.white, marginBottom: 8 },
   startBody: { fontFamily: Fonts.body, fontSize: 14, color: 'rgba(255,255,255,0.88)', lineHeight: 21, marginBottom: 16 },
   startCta: { backgroundColor: 'rgba(255,255,255,0.2)', borderWidth: 1.5, borderColor: 'rgba(255,255,255,0.4)', borderRadius: Radius.full, paddingVertical: 10, paddingHorizontal: 18, alignSelf: 'flex-start' },
   startCtaText: { fontFamily: Fonts.bodyMedium, fontSize: 13, color: Colors.white },
@@ -563,6 +564,29 @@ const SESSION_CAPTURE = {
     { Icon: IconMoodAmazing, label: 'Settled', score: 5 },
   ],
 };
+
+function ChatBubble({ item, theme, profileInitial }: { item: Message; theme: typeof STEP_THEME[ModeKey]; profileInitial: string }) {
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const slideAnim = useRef(new Animated.Value(8)).current;
+
+  useEffect(() => {
+    Animated.parallel([
+      Animated.timing(fadeAnim, { toValue: 1, duration: 300, useNativeDriver: true }),
+      Animated.timing(slideAnim, { toValue: 0, duration: 300, useNativeDriver: true }),
+    ]).start();
+  }, []);
+
+  return (
+    <Animated.View style={[styles.msgRow, item.role === 'user' && styles.msgRowUser, { opacity: fadeAnim, transform: [{ translateY: slideAnim }] }]}>
+      <View style={[styles.msgAvatar, item.role === 'user' && { backgroundColor: theme.light }]}>
+        {item.role === 'ai' ? <IconLeaf size={14} color={theme.color} /> : <Text style={{ fontSize: 13, color: theme.color }}>{profileInitial}</Text>}
+      </View>
+      <View style={[styles.msgBubble, item.role === 'user' && { backgroundColor: theme.pale, borderWidth: 1, borderColor: theme.light, borderBottomLeftRadius: 16, borderBottomRightRadius: 4 }]}>
+        <Text style={[styles.msgText, item.role === 'user' && { color: Colors.charcoal }]}>{item.text}</Text>
+      </View>
+    </Animated.View>
+  );
+}
 
 function ActiveSessionView({ session, state, dispatch: d, onBack }: { session: Session; state: any; dispatch: any; onBack: () => void }) {
   const [input, setInput] = useState('');
@@ -622,6 +646,7 @@ function ActiveSessionView({ session, state, dispatch: d, onBack }: { session: S
   const sendMessage = async () => {
     const text = input.trim();
     if (!text || loading) return;
+
     setInput('');
 
     const lower = text.toLowerCase();
@@ -700,10 +725,12 @@ function ActiveSessionView({ session, state, dispatch: d, onBack }: { session: S
   }, [isRecording, speechAvailable, input]);
 
   const advanceStep = () => {
+
     d({ type: 'ADVANCE_STEP', sessionId: session.id });
   };
 
   const resolveSession = () => {
+
     setShowCapture(true);
   };
 
@@ -802,14 +829,7 @@ function ActiveSessionView({ session, state, dispatch: d, onBack }: { session: S
             contentContainerStyle={styles.msgList}
             showsVerticalScrollIndicator={false}
             renderItem={({ item }) => (
-              <View style={[styles.msgRow, item.role === 'user' && styles.msgRowUser]}>
-                <View style={[styles.msgAvatar, item.role === 'user' && { backgroundColor: theme.light }]}>
-                  {item.role === 'ai' ? <IconLeaf size={14} color={theme.color} /> : <Text style={{ fontSize: 13, color: theme.color }}>{state.profile.name?.[0] || '?'}</Text>}
-                </View>
-                <View style={[styles.msgBubble, item.role === 'user' && { backgroundColor: theme.pale, borderWidth: 1, borderColor: theme.light, borderBottomLeftRadius: 16, borderBottomRightRadius: 4 }]}>
-                  <Text style={[styles.msgText, item.role === 'user' && { color: Colors.charcoal }]}>{item.text}</Text>
-                </View>
-              </View>
+              <ChatBubble item={item} theme={theme} profileInitial={state.profile.name?.[0] || '?'} />
             )}
             ListFooterComponent={loading ? (
               <View style={styles.msgRow}>

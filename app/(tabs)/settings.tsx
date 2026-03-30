@@ -296,7 +296,7 @@ const styles = StyleSheet.create({
   header: { padding: 20, paddingBottom: 8 },
   title: { fontFamily: Fonts.display, fontSize: 26, color: Colors.charcoal },
   section: { paddingHorizontal: 20, marginBottom: 20 },
-  sectionTitle: { fontFamily: Fonts.bodyMedium, fontSize: 11, letterSpacing: 0.8, textTransform: 'uppercase', color: Colors.terracotta, marginBottom: 8, paddingLeft: 2 },
+  sectionTitle: { fontFamily: Fonts.bodyMedium, fontSize: 11, letterSpacing: 0.8, textTransform: 'uppercase', color: Colors.midBrown, marginBottom: 8, paddingLeft: 2 },
   sectionCard: { backgroundColor: Colors.warmWhite, borderWidth: 1, borderColor: Colors.sand, borderRadius: Radius.lg, overflow: 'hidden' },
   row: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', padding: 14, borderBottomWidth: 1, borderBottomColor: Colors.creamDark },
   rowLeft: { flexDirection: 'row', alignItems: 'center', gap: 12, flex: 1 },

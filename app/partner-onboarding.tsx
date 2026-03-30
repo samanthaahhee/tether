@@ -12,58 +12,59 @@ import {
   ATTACHMENT_LABELS, CONFLICT_LABELS, LOVE_LABELS, WINDOW_LABELS, NEED_LABELS,
 } from '../src/constants/data';
 import { Button, InsightReveal } from '../src/components/UI';
+import { IconWind, IconMoon, IconSearch, IconLeaf, IconCheck, IconActivity, IconShield, IconHeart, IconFlame, IconUser, IconClock, IconSparkles, IconLock } from '../src/components/Icons';
 
 const TOTAL_STEPS = 8; // handoff + name + 5 questions + summary
 
 interface OptionData {
   value: string;
-  emoji: string;
+  icon: React.ComponentType<{ size?: number; color?: string }>;
   title: string;
   desc: string;
 }
 
 const ATTACH_OPTIONS: OptionData[] = [
-  { value: 'secure', emoji: '😌', title: 'They are probably just busy', desc: 'I feel fine. I trust they will respond when they can. I do not feel unsettled.' },
-  { value: 'anxious', emoji: '😰', title: 'Have I done something wrong?', desc: 'I notice myself checking my phone. I might send a follow-up or feel low-level anxiety until I hear back.' },
-  { value: 'avoidant', emoji: '😶', title: 'I actually appreciate the space', desc: 'I do not feel bothered. I might even feel relieved to have time to myself.' },
-  { value: 'disorganised', emoji: '🌀', title: 'It depends: sometimes fine, sometimes I spiral', desc: 'My reaction shifts. Sometimes I am okay; other times a small silence can feel like something is seriously wrong.' },
+  { value: 'secure', icon: IconCheck, title: 'They are probably just busy', desc: 'I feel fine. I trust they will respond when they can. I do not feel unsettled.' },
+  { value: 'anxious', icon: IconActivity, title: 'Have I done something wrong?', desc: 'I notice myself checking my phone. I might send a follow-up or feel low-level anxiety until I hear back.' },
+  { value: 'avoidant', icon: IconMoon, title: 'I actually appreciate the space', desc: 'I do not feel bothered. I might even feel relieved to have time to myself.' },
+  { value: 'disorganised', icon: IconActivity, title: 'It depends: sometimes fine, sometimes I spiral', desc: 'My reaction shifts. Sometimes I am okay; other times a small silence can feel like something is seriously wrong.' },
 ];
 
 const CONFLICT_OPTIONS: OptionData[] = [
-  { value: 'criticise', emoji: '🗣️', title: 'Keep talking: say everything I am feeling', desc: 'I want to be heard. The more dismissed I feel, the louder or more intense I might get.' },
-  { value: 'defensive', emoji: '🛡️', title: 'Explain my side and counter what they are saying', desc: 'I feel the need to be understood and to correct what feels unfair. I build my case.' },
-  { value: 'stonewall', emoji: '🧊', title: 'Go quiet and withdraw until I have calmed down', desc: 'I shut down. I need to process alone. I cannot think clearly when emotions are high.' },
-  { value: 'peacekeep', emoji: '🕊️', title: 'Apologise or change the subject to stop the tension', desc: 'I will do almost anything to lower the temperature, even if it means swallowing what I feel.' },
+  { value: 'criticise', icon: IconWind, title: 'Keep talking: say everything I am feeling', desc: 'I want to be heard. The more dismissed I feel, the louder or more intense I might get.' },
+  { value: 'defensive', icon: IconShield, title: 'Explain my side and counter what they are saying', desc: 'I feel the need to be understood and to correct what feels unfair. I build my case.' },
+  { value: 'stonewall', icon: IconMoon, title: 'Go quiet and withdraw until I have calmed down', desc: 'I shut down. I need to process alone. I cannot think clearly when emotions are high.' },
+  { value: 'peacekeep', icon: IconHeart, title: 'Apologise or change the subject to stop the tension', desc: 'I will do almost anything to lower the temperature, even if it means swallowing what I feel.' },
 ];
 
 const WINDOW_OPTIONS: OptionData[] = [
-  { value: 'hyper', emoji: '🔥', title: 'I heat up: heart races, voice rises, I feel flooded', desc: 'My body surges. I feel like I need to say everything immediately or the moment will pass.' },
-  { value: 'hypo', emoji: '🧊', title: 'I shut down: I go blank, numb, cannot find words', desc: 'My mind empties. I freeze up, feel distant, or go very quiet.' },
-  { value: 'mixed', emoji: '🌀', title: 'It depends on the situation', desc: 'Sometimes I boil over, sometimes I go quiet. The same argument can produce very different reactions.' },
-  { value: 'regulated', emoji: '😌', title: 'I stay mostly regulated and can keep thinking clearly', desc: 'I feel uncomfortable but I do not lose the thread. I can listen without completely flooding.' },
+  { value: 'hyper', icon: IconFlame, title: 'I heat up: heart races, voice rises, I feel flooded', desc: 'My body surges. I feel like I need to say everything immediately or the moment will pass.' },
+  { value: 'hypo', icon: IconMoon, title: 'I shut down: I go blank, numb, cannot find words', desc: 'My mind empties. I freeze up, feel distant, or go very quiet.' },
+  { value: 'mixed', icon: IconActivity, title: 'It depends on the situation', desc: 'Sometimes I boil over, sometimes I go quiet. The same argument can produce very different reactions.' },
+  { value: 'regulated', icon: IconCheck, title: 'I stay mostly regulated and can keep thinking clearly', desc: 'I feel uncomfortable but I do not lose the thread. I can listen without completely flooding.' },
 ];
 
 const LOVE_OPTIONS: OptionData[] = [
-  { value: 'words', emoji: '💬', title: 'Them saying: I love you, we are okay', desc: 'Hearing the words out loud. Being told explicitly that they still care.' },
-  { value: 'acts', emoji: '🛠️', title: 'Them doing something helpful without being asked', desc: 'Making dinner, sorting something I was stressed about. Action speaks louder than words.' },
-  { value: 'touch', emoji: '🤝', title: 'A proper hug that lasts longer than usual', desc: 'Physical closeness. I need to feel their body near mine. That is when the tension breaks.' },
-  { value: 'time', emoji: '⏳', title: 'Sitting together with their full attention', desc: 'Phones away, just us. Even if we do not talk about what happened, presence is everything.' },
-  { value: 'gifts', emoji: '🎁', title: 'A small gesture that shows they thought of me', desc: 'A note, something they picked up, a playlist. It is about knowing I was in their mind.' },
+  { value: 'words', icon: IconHeart, title: 'Them saying: I love you, we are okay', desc: 'Hearing the words out loud. Being told explicitly that they still care.' },
+  { value: 'acts', icon: IconLeaf, title: 'Them doing something helpful without being asked', desc: 'Making dinner, sorting something I was stressed about. Action speaks louder than words.' },
+  { value: 'touch', icon: IconUser, title: 'A proper hug that lasts longer than usual', desc: 'Physical closeness. I need to feel their body near mine. That is when the tension breaks.' },
+  { value: 'time', icon: IconClock, title: 'Sitting together with their full attention', desc: 'Phones away, just us. Even if we do not talk about what happened, presence is everything.' },
+  { value: 'gifts', icon: IconSparkles, title: 'A small gesture that shows they thought of me', desc: 'A note, something they picked up, a playlist. It is about knowing I was in their mind.' },
 ];
 
 const NEED_OPTIONS: OptionData[] = [
-  { value: 'seen', emoji: '👁️', title: 'I need to feel seen and understood', desc: 'I do not need fixing. I need to know my feelings make sense and that they genuinely get it.' },
-  { value: 'safe', emoji: '🛡️', title: 'I need to feel safe and secure', desc: 'I need to know we are not going to fall apart. Stability and reassurance that we are still okay.' },
-  { value: 'respected', emoji: '🌿', title: 'I need to feel respected and valued', desc: 'My perspective matters, my efforts are noticed, I am not taken for granted.' },
-  { value: 'space', emoji: '🌬️', title: 'I need space to process without pressure', desc: 'I cannot think when someone is pushing for resolution. I need to come to things in my own time.' },
+  { value: 'seen', icon: IconSearch, title: 'I need to feel seen and understood', desc: 'I do not need fixing. I need to know my feelings make sense and that they genuinely get it.' },
+  { value: 'safe', icon: IconShield, title: 'I need to feel safe and secure', desc: 'I need to know we are not going to fall apart. Stability and reassurance that we are still okay.' },
+  { value: 'respected', icon: IconLeaf, title: 'I need to feel respected and valued', desc: 'My perspective matters, my efforts are noticed, I am not taken for granted.' },
+  { value: 'space', icon: IconWind, title: 'I need space to process without pressure', desc: 'I cannot think when someone is pushing for resolution. I need to come to things in my own time.' },
 ];
 
 function OptionCard({ option, selected, onPress }: { option: OptionData; selected: boolean; onPress: () => void }) {
   return (
     <TouchableOpacity onPress={onPress} activeOpacity={0.8} style={[styles.optCard, selected && styles.optCardSelected]}>
-      <Text style={styles.optEmoji}>{option.emoji}</Text>
+      <option.icon size={20} color={selected ? Colors.sageDark : Colors.midBrown} />
       <View style={{ flex: 1 }}>
-        <Text style={[styles.optTitle, selected && { color: Colors.blush }]}>{option.title}</Text>
+        <Text style={[styles.optTitle, selected && { color: Colors.sageDark }]}>{option.title}</Text>
         <Text style={styles.optDesc}>{option.desc}</Text>
       </View>
       {selected && (
@@ -133,7 +134,7 @@ export default function PartnerOnboarding() {
         {step > 0 && (
           <View style={styles.header}>
             <View style={styles.progressTrack}>
-              <View style={[styles.progressFill, { width: ((step / (TOTAL_STEPS - 1)) * 100) + '%' }]} />
+              <View style={[styles.progressFill, { width: ((step / (TOTAL_STEPS - 1)) * 100) + '%' as any }]} />
             </View>
             <TouchableOpacity onPress={() => router.back()}>
               <Text style={styles.skipText}>Cancel</Text>
@@ -152,17 +153,19 @@ export default function PartnerOnboarding() {
           {/* Step 0: Handoff screen */}
           {step === 0 && (
             <View style={styles.handoff}>
-              <Text style={{ fontSize: 56, textAlign: 'center', marginBottom: 20 }}>🤝</Text>
+              <View style={{ alignItems: 'center', marginBottom: 20 }}>
+                <IconUser size={48} color={Colors.sage} />
+              </View>
               <Text style={styles.handoffTitle}>Hand the phone to your partner</Text>
               <Text style={styles.handoffSub}>
                 This takes about 3 minutes. Your partner will answer a few questions about themselves: their honest instincts, not what they think they should say.
               </Text>
               <View style={styles.handoffHint}>
-                <Text style={styles.hintIcon}>🔒</Text>
+                <IconLock size={16} color={Colors.warmBrown} />
                 <Text style={styles.hintText}>Their answers are saved only on this device and are never shared outside the app.</Text>
               </View>
               <View style={styles.handoffHint}>
-                <Text style={styles.hintIcon}>✏️</Text>
+                <IconSparkles size={16} color={Colors.warmBrown} />
                 <Text style={styles.hintText}>You can update or redo this profile anytime from Settings.</Text>
               </View>
               <View style={styles.footer}>
@@ -268,7 +271,9 @@ export default function PartnerOnboarding() {
           {/* Step 7: Summary */}
           {step === 7 && (
             <View style={styles.stepWrap}>
-              <Text style={{ fontSize: 48, textAlign: 'center', marginBottom: 16 }}>🌿</Text>
+              <View style={{ alignItems: 'center', marginBottom: 16 }}>
+                <IconLeaf size={48} color={Colors.sage} />
+              </View>
               <Text style={styles.stepTag}>Profile complete</Text>
               <Text style={[styles.stepH, { textAlign: 'center' }]}>Thank you, {name}</Text>
               <Text style={[styles.stepSub, { textAlign: 'center' }]}>
@@ -304,10 +309,10 @@ export default function PartnerOnboarding() {
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: Colors.warmWhite },
+  safe: { flex: 1, backgroundColor: Colors.cream },
   header: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 20, paddingVertical: 16 },
   progressTrack: { flex: 1, height: 4, backgroundColor: Colors.sand, borderRadius: 2, overflow: 'hidden' },
-  progressFill: { height: '100%', backgroundColor: Colors.blush, borderRadius: 2 },
+  progressFill: { height: '100%', backgroundColor: Colors.sage, borderRadius: 2 },
   skipText: { fontFamily: Fonts.body, fontSize: 13, color: Colors.midBrown },
   scroll: { paddingBottom: 40 },
   handoff: { flex: 1, paddingHorizontal: 20, paddingTop: 48, gap: 16 },
@@ -315,18 +320,18 @@ const styles = StyleSheet.create({
   handoffSub: { fontFamily: Fonts.body, fontSize: 15, color: Colors.midBrown, lineHeight: 23, textAlign: 'center', marginBottom: 8 },
   handoffHint: { backgroundColor: Colors.creamDark, borderWidth: 1, borderColor: Colors.sand, borderRadius: Radius.md, padding: 14, flexDirection: 'row', alignItems: 'flex-start', gap: 10 },
   stepWrap: { paddingHorizontal: 20, paddingTop: 12, gap: 10 },
-  stepTag: { fontFamily: Fonts.bodyMedium, fontSize: 11, letterSpacing: 0.8, textTransform: 'uppercase', color: Colors.blush },
+  stepTag: { fontFamily: Fonts.bodyMedium, fontSize: 11, letterSpacing: 0.8, textTransform: 'uppercase', color: Colors.sage },
   stepH: { fontFamily: Fonts.display, fontSize: 24, color: Colors.charcoal, lineHeight: 32, marginBottom: 2 },
   stepSub: { fontFamily: Fonts.body, fontSize: 14, color: Colors.midBrown, lineHeight: 21, marginBottom: 8 },
-  nameInput: { width: '100%', padding: 16, borderRadius: Radius.md, borderWidth: 2, borderColor: Colors.sand, backgroundColor: Colors.cream, fontFamily: Fonts.body, fontSize: 16, color: Colors.charcoal, marginBottom: 4 },
+  nameInput: { width: '100%', padding: 16, borderRadius: Radius.md, borderWidth: 1.5, borderColor: Colors.sand, backgroundColor: Colors.cream, fontFamily: Fonts.body, fontSize: 16, color: Colors.charcoal, marginBottom: 4 },
   hintIcon: { fontSize: 16, marginTop: 1 },
   hintText: { flex: 1, fontFamily: Fonts.body, fontSize: 13, color: Colors.warmBrown, lineHeight: 19 },
   optCard: { flexDirection: 'row', alignItems: 'flex-start', gap: 12, backgroundColor: Colors.cream, borderWidth: 2, borderColor: Colors.sand, borderRadius: Radius.lg, padding: 14 },
-  optCardSelected: { borderColor: Colors.blush, backgroundColor: Colors.blushPale },
+  optCardSelected: { borderColor: Colors.sage, backgroundColor: Colors.sagePale },
   optEmoji: { fontSize: 22, marginTop: 2 },
   optTitle: { fontFamily: Fonts.bodyMedium, fontSize: 14, color: Colors.charcoal, marginBottom: 3 },
   optDesc: { fontFamily: Fonts.body, fontSize: 12, color: Colors.midBrown, lineHeight: 18 },
-  optCheck: { width: 20, height: 20, borderRadius: 10, backgroundColor: Colors.blush, alignItems: 'center', justifyContent: 'center', marginTop: 2, flexShrink: 0 },
+  optCheck: { width: 20, height: 20, borderRadius: 10, backgroundColor: Colors.sage, alignItems: 'center', justifyContent: 'center', marginTop: 2, flexShrink: 0 },
   summaryGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   summaryPill: { width: '47%', backgroundColor: Colors.creamDark, borderRadius: Radius.sm, padding: 12 },
   pillLabel: { fontFamily: Fonts.bodyMedium, fontSize: 10, letterSpacing: 0.6, textTransform: 'uppercase', color: Colors.midBrown, marginBottom: 3 },

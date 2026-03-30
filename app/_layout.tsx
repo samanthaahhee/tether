@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { View } from 'react-native';
 import { Slot, router, useSegments } from 'expo-router';
 import { useFonts, Lora_500Medium, Lora_400Regular_Italic } from '@expo-google-fonts/lora';
 import { Questrial_400Regular } from '@expo-google-fonts/questrial';
@@ -59,10 +60,12 @@ export default function RootLayout() {
   if (!fontsLoaded) return null;
 
   return (
+    <View style={{ flex: 1, backgroundColor: '#FAF7F0' }}>
     <AppStateProvider>
       <AuthProvider>
         <RouteGuard />
       </AuthProvider>
     </AppStateProvider>
+    </View>
   );
 }

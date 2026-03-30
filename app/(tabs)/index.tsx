@@ -75,7 +75,7 @@ export default function HomeTab() {
 
         {/* Session CTA */}
         <TouchableOpacity style={styles.startCard} onPress={startSession} activeOpacity={0.88}>
-          <View style={styles.startCardBlob} />
+          <View style={styles.startCardAccent} />
           <Text style={styles.startTag}>{activeSession ? 'CONTINUE SESSION' : 'START HERE'}</Text>
           <Text style={styles.startTitle}>{activeSession ? 'Continue your session' : 'Start a new session'}</Text>
           <Text style={styles.startBody}>{activeSession ? 'You have an active session. Pick up where you left off.' : 'Whatever is happening, start here. Tether guides you from raw emotion to resolution, one step at a time.'}</Text>
@@ -199,8 +199,9 @@ export default function HomeTab() {
         ) : (
           <View style={{ paddingHorizontal: 20, marginBottom: 24 }}>
             <View style={ph.card}>
+              <IconLeaf size={24} color={Colors.sageLight} style={{ marginBottom: 10 }} />
               <Text style={ph.title}>Your journey starts here</Text>
-              <Text style={ph.body}>Complete your first session to begin tracking how you feel as you move through each step. Over time you will see your patterns shift.</Text>
+              <Text style={ph.body}>Start your first session and this space will fill with your emotional trajectory, reflections, and progress over time.</Text>
             </View>
           </View>
         )}
@@ -294,12 +295,12 @@ const styles = StyleSheet.create({
   greetingTime: { fontFamily: Fonts.bodyMedium, fontSize: 10, letterSpacing: 0.8, textTransform: 'uppercase', color: Colors.sage, marginBottom: 4 },
   greetingTitle: { fontFamily: Fonts.displayLight, fontSize: 26, color: Colors.charcoal, lineHeight: 32, marginBottom: 4 },
   greetingSub: { fontFamily: Fonts.body, fontSize: 14, color: Colors.midBrown },
-  startCard: { marginHorizontal: 20, marginBottom: 24, backgroundColor: Colors.terracotta, borderRadius: Radius.lg, padding: 20, overflow: 'hidden', ...Shadows.terracotta },
-  startCardBlob: { position: 'absolute', top: -40, right: -40, width: 120, height: 120, borderRadius: 60, backgroundColor: 'rgba(255,255,255,0.1)' },
-  startTag: { fontFamily: Fonts.bodyMedium, fontSize: 10, letterSpacing: 0.8, textTransform: 'uppercase', color: 'rgba(255,255,255,0.8)', marginBottom: 8 },
-  startTitle: { fontFamily: Fonts.display, fontSize: 22, color: Colors.white, marginBottom: 8 },
-  startBody: { fontFamily: Fonts.body, fontSize: 14, color: 'rgba(255,255,255,0.88)', lineHeight: 21, marginBottom: 16 },
-  startBtn: { backgroundColor: 'rgba(255,255,255,0.2)', borderWidth: 1.5, borderColor: 'rgba(255,255,255,0.4)', borderRadius: Radius.full, paddingVertical: 10, paddingHorizontal: 18, alignSelf: 'flex-start', flexDirection: 'row', alignItems: 'center' },
+  startCard: { marginHorizontal: 20, marginBottom: 24, backgroundColor: Colors.sageDark, borderRadius: Radius.lg, padding: 22, overflow: 'hidden', ...Shadows.sm },
+  startCardAccent: { position: 'absolute', top: -50, right: -50, width: 140, height: 140, borderRadius: 70, backgroundColor: 'rgba(255,255,255,0.06)' },
+  startTag: { fontFamily: Fonts.bodyMedium, fontSize: 11, letterSpacing: 1, textTransform: 'uppercase', color: 'rgba(255,255,255,0.6)', marginBottom: 10 },
+  startTitle: { fontFamily: Fonts.displayLight, fontSize: 24, color: Colors.white, marginBottom: 8 },
+  startBody: { fontFamily: Fonts.body, fontSize: 14, color: 'rgba(255,255,255,0.8)', lineHeight: 22, marginBottom: 18 },
+  startBtn: { backgroundColor: 'rgba(255,255,255,0.15)', borderWidth: 1.5, borderColor: 'rgba(255,255,255,0.25)', borderRadius: Radius.full, paddingVertical: 11, paddingHorizontal: 20, alignSelf: 'flex-start', flexDirection: 'row', alignItems: 'center' },
   startBtnText: { fontFamily: Fonts.bodyMedium, fontSize: 13, color: Colors.white },
   sectionHeading: { fontFamily: Fonts.display, fontSize: 16, color: Colors.charcoal, marginBottom: 2 },
   sectionSub: { fontFamily: Fonts.body, fontSize: 12, color: Colors.midBrown },

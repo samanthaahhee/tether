@@ -14,7 +14,7 @@ export const ASSESSMENT_DETAIL: Record<string, Record<string, {
 
     secure: {
       label: "Secure",
-      emoji: "🌿",
+      emoji: "",
       subtitle: "You trust that love is stable",
       about: [
         "Secure attachment develops when, early in life, the people who cared for you were consistently available — not perfect, but reliably present and responsive enough that you learned a fundamental truth: when I reach out, someone reaches back. That foundational experience became the quiet confidence you carry into every relationship you have as an adult.",
@@ -44,7 +44,7 @@ export const ASSESSMENT_DETAIL: Record<string, Record<string, {
 
     anxious: {
       label: "Anxious",
-      emoji: "🌊",
+      emoji: "",
       subtitle: "You love deeply and fear losing it",
       about: [
         "Anxious attachment takes root when early caregiving was inconsistent — warm and available sometimes, preoccupied or distant at others. When you couldn't predict whether reaching out would bring comfort or nothing, your nervous system learned to stay on high alert: scan for signs of disconnection, amplify distress signals to make sure they're heard, and don't relax until you feel certain the person is still there. That strategy made complete sense then. It travels with you now.",
@@ -74,7 +74,7 @@ export const ASSESSMENT_DETAIL: Record<string, Record<string, {
 
     avoidant: {
       label: "Avoidant",
-      emoji: "🪨",
+      emoji: "",
       subtitle: "You value independence and find closeness complicated",
       about: [
         "Avoidant attachment typically develops when emotional needs were consistently met with dismissal, withdrawal, or overwhelm — when the message learned early was that needing people is inconvenient, or that depending on others leads to disappointment. The brilliant adaptation was to stop visibly needing: to turn down the volume on emotional experience, to build a strong self-sufficient identity, and to maintain emotional distance as a form of protection. That strategy served you well then. It costs something now.",
@@ -104,7 +104,7 @@ export const ASSESSMENT_DETAIL: Record<string, Record<string, {
 
     disorganised: {
       label: "Disorganised",
-      emoji: "🌪️",
+      emoji: "",
       subtitle: "You crave deep connection and fear it at the same time",
       about: [
         "Disorganised attachment — sometimes called fearful-avoidant — develops in the most difficult early circumstances: when the person who was supposed to be your safe haven was also a source of fear or unpredictability. When closeness brings both comfort and threat, the nervous system faces an impossible dilemma: approach or withdraw? Run toward or run away? Unable to do either consistently, it does both, and the result is a relational style that can look chaotic, contradictory, or intensely confusing — to others and to yourself.",
@@ -138,7 +138,7 @@ export const ASSESSMENT_DETAIL: Record<string, Record<string, {
 
     words: {
       label: "Words of Affirmation",
-      emoji: "💬",
+      emoji: "",
       subtitle: "You feel loved when you're told so, clearly and often",
       about: [
         "For people whose primary love language is words of affirmation, language is the most direct carrier of love. It's not that you need constant compliments or flowery declarations — what matters is that you hear clearly and specifically that you are seen, valued, and cherished. A thoughtful 'I noticed how hard you worked today' can mean more than an expensive gift. The right sentence at the right moment lands in your body as warmth.",
@@ -168,7 +168,7 @@ export const ASSESSMENT_DETAIL: Record<string, Record<string, {
 
     acts: {
       label: "Acts of Service",
-      emoji: "🛠️",
+      emoji: "",
       subtitle: "You feel loved when someone lightens your load",
       about: [
         "Acts of service is the love language that says: love is a verb. For people who speak this language most fluently, nothing communicates care quite like someone noticing what needs to be done and doing it — without being asked, without being reminded, without making it a transaction. Whether it's making dinner after a hard day, handling an admin task you'd been dreading, or quietly refuelling the car, these actions say 'I see you, and I want to make your life a little easier.'",
@@ -198,7 +198,7 @@ export const ASSESSMENT_DETAIL: Record<string, Record<string, {
 
     touch: {
       label: "Physical Touch",
-      emoji: "🤝",
+      emoji: "",
       subtitle: "You feel loved through physical presence and contact",
       about: [
         "Physical touch as a love language is rooted in one of the most ancient channels of human communication: the body. Long before we had language, we communicated safety, belonging, and care through contact — a hand held, a shoulder squeezed, a body leaned against. For people whose primary love language is physical touch, this channel remains the most direct path to feeling loved. It doesn't have to be sexual; it's often the casual, daily physical contact that matters most.",
@@ -228,7 +228,7 @@ export const ASSESSMENT_DETAIL: Record<string, Record<string, {
 
     time: {
       label: "Quality Time",
-      emoji: "⏳",
+      emoji: "",
       subtitle: "You feel loved when someone is fully present with you",
       about: [
         "For people whose primary love language is quality time, presence is the point. Not just being in the same room — real presence, where attention is undivided and the interaction has a quality of genuine engagement. It could be a long walk with no agenda, a dinner where phones stay away, or an evening of watching something together with full attention. What matters is that someone chose to be here, with you, fully.",
@@ -258,7 +258,7 @@ export const ASSESSMENT_DETAIL: Record<string, Record<string, {
 
     gifts: {
       label: "Thoughtful Gifts",
-      emoji: "🎁",
+      emoji: "",
       subtitle: "You feel loved when someone remembers and surprises you",
       about: [
         "Receiving gifts as a love language is often misunderstood as materialism, and that misunderstanding does a disservice to what it's actually about. For people who speak this language, a gift is not about the object or its cost — it is evidence of thought, attention, and intentionality. The message a well-chosen gift carries is: 'I was thinking about you when you weren't here. I noticed something that reminded me of you. I wanted to mark this moment.' That is a profound expression of love.",
@@ -292,7 +292,7 @@ export const ASSESSMENT_DETAIL: Record<string, Record<string, {
 
     criticise: {
       label: "Direct / Critical",
-      emoji: "⚡",
+      emoji: "",
       subtitle: "You name problems directly — sometimes more sharply than you intend",
       about: [
         "A direct or critical conflict style typically emerges from a belief that problems should be named and addressed rather than glossed over. There's something admirable underneath it: a commitment to honesty, a refusal to let resentment fester, a desire to actually solve things rather than paper over them. People with this style are rarely conflict-avoiders — if anything, they move toward problems rather than away from them, which takes a particular kind of courage.",
@@ -322,7 +322,7 @@ export const ASSESSMENT_DETAIL: Record<string, Record<string, {
 
     defensive: {
       label: "Self-Protective",
-      emoji: "🛡️",
+      emoji: "",
       subtitle: "You protect yourself quickly when you feel blamed",
       about: [
         "Defensiveness is one of the most universally human responses to perceived criticism — when we feel attacked, the nervous system moves to protect. Biologically, it makes perfect sense. Interpersonally, it tends to get in the way. People who identify strongly with a defensive conflict style have usually developed a very quick, very sensitive threat-detection system: at the first hint of blame or criticism, a counterargument rises. The most important thing to understand about defensiveness is that it almost always feels like self-defence from the inside, but looks like counter-attack from the outside.",
@@ -352,7 +352,7 @@ export const ASSESSMENT_DETAIL: Record<string, Record<string, {
 
     stonewall: {
       label: "Inward Processor",
-      emoji: "🧊",
+      emoji: "",
       subtitle: "You go quiet when overwhelmed — but you're still there",
       about: [
         "Stonewalling — shutting down, going quiet, becoming a wall of non-response during conflict — looks from the outside like indifference or contempt. From the inside, it almost always feels like the opposite: an overwhelm so complete that there are no words available, or a protective withdrawal that feels like the only way to prevent things from getting worse. For people with this conflict pattern, emotional flooding is very real and very physiologically intense. Heart rate climbs, thoughts race or go blank, and the capacity to engage meaningfully simply isn't available.",
@@ -382,7 +382,7 @@ export const ASSESSMENT_DETAIL: Record<string, Record<string, {
 
     peacekeep: {
       label: "Peace-Keeper",
-      emoji: "🕊️",
+      emoji: "",
       subtitle: "You keep the peace — sometimes at the cost of your own needs",
       about: [
         "Peace-keeping as a conflict style is rooted in an orientation toward harmony — a genuine wish for things to be okay, for everyone to feel comfortable, for the relationship to be preserved. There is a real generosity in this. Peace-keepers are often extraordinarily good at de-escalating tension, seeing multiple perspectives, and ensuring that no one leaves a conversation feeling decimated. These are genuine skills, and relationships with a peace-keeper can feel spacious and safe in important ways.",
@@ -416,7 +416,7 @@ export const ASSESSMENT_DETAIL: Record<string, Record<string, {
 
     hyper: {
       label: "Hyperarousal",
-      emoji: "🌋",
+      emoji: "",
       subtitle: "Your system floods quickly — intensity is your signal to slow down",
       about: [
         "Hyperarousal refers to the state where your nervous system shifts into a high-activation, high-alert mode — what we might recognise as fight-or-flight. Heart rate climbs, thoughts speed up or become narrow and focused on threat, muscles tense, breathing shallows. In this state, the rational, reflective part of your brain becomes much less accessible and the reactive, survival-oriented part takes over. For people who experience hyperarousal frequently or intensely, emotional situations can quickly feel physically overwhelming.",
@@ -446,7 +446,7 @@ export const ASSESSMENT_DETAIL: Record<string, Record<string, {
 
     hypo: {
       label: "Hypoarousal",
-      emoji: "🌫️",
+      emoji: "",
       subtitle: "Your system goes quiet when overwhelmed — you need gentle re-entry",
       about: [
         "Hypoarousal is the other side of the window of tolerance: rather than flooding with activation, the nervous system drops below the window into a kind of shutdown. This can show up as going blank, feeling numb, losing access to words or thoughts, becoming physically still, dissociating slightly, or feeling a heaviness that makes engagement seem impossible. From the outside it can look like not caring, being checked out, or stonewalling — but from the inside it's usually an experience of having simply gone somewhere inaccessible.",
@@ -476,7 +476,7 @@ export const ASSESSMENT_DETAIL: Record<string, Record<string, {
 
     mixed: {
       label: "Mixed",
-      emoji: "🎢",
+      emoji: "",
       subtitle: "Your response depends on the situation — you read the room carefully",
       about: [
         "Some people don't have a single, consistent pattern of nervous system response — instead, they experience hyperarousal in some contexts and hypoarousal in others, or can move between states within a single interaction. This is called a mixed window of tolerance, and it can feel confusing both to experience and to explain to a partner. Why did this conversation send you into shutdown while a similar one last week had you escalating? The answer usually lies in the specific emotional content, the relational dynamic, or the broader context — your nervous system is reading signals that may not be obvious on the surface.",
@@ -506,7 +506,7 @@ export const ASSESSMENT_DETAIL: Record<string, Record<string, {
 
     regulated: {
       label: "Well-Regulated",
-      emoji: "⚓",
+      emoji: "",
       subtitle: "You stay mostly in your window — your calm is a real resource",
       about: [
         "Being well-regulated doesn't mean being without feeling — it means your nervous system has developed the capacity to experience a range of emotional intensities while remaining within the window of tolerance: the zone in which you can think, reflect, empathise, and respond thoughtfully rather than react automatically. This capacity is partly temperamental, partly the product of early experiences, and partly the result of learned skills and supportive relationships.",
@@ -540,7 +540,7 @@ export const ASSESSMENT_DETAIL: Record<string, Record<string, {
 
     seen: {
       label: "To Feel Seen",
-      emoji: "👁️",
+      emoji: "",
       subtitle: "You need to feel understood, not just heard",
       about: [
         "The need to feel seen is one of the most fundamental human longings — the wish to be known by another person, not just in your external actions and words, but in your interior experience, your complexities, your particular way of being in the world. Being seen is different from being heard: you can hear the words someone says without tracking what they mean, what they carry, what it costs them to say them. Being seen means someone has tracked all of that.",
@@ -570,7 +570,7 @@ export const ASSESSMENT_DETAIL: Record<string, Record<string, {
 
     safe: {
       label: "To Feel Safe",
-      emoji: "🛖",
+      emoji: "",
       subtitle: "You need to know the relationship is stable beneath your feet",
       about: [
         "The need to feel safe in a relationship is not about comfort-seeking or timidity — it is about one of the most fundamental conditions for human flourishing. Without a basic sense of security in a close relationship, the nervous system cannot fully relax, curiosity and playfulness cannot emerge, and vulnerability becomes too risky. Safety, in relational terms, is the knowledge that you are not in danger: that disagreement won't destroy the connection, that your partner won't leave or retaliate, that the ground beneath the relationship is solid enough to stand on.",
@@ -600,7 +600,7 @@ export const ASSESSMENT_DETAIL: Record<string, Record<string, {
 
     respected: {
       label: "To Feel Respected",
-      emoji: "🏅",
+      emoji: "",
       subtitle: "You need to know your autonomy and worth are honoured",
       about: [
         "The need to feel respected in a relationship is the need to be related to as a person with full standing — not as someone to be managed, corrected, talked down to, or overridden. It's the need to have your perspective taken seriously, your boundaries honoured, your autonomy acknowledged, and your contributions recognised. Respect is not the same as agreement; you don't need a partner to think you're always right. What you need is to be treated as someone whose views matter, whose experience is valid, and whose choices deserve to be engaged with rather than dismissed.",
@@ -630,7 +630,7 @@ export const ASSESSMENT_DETAIL: Record<string, Record<string, {
 
     space: {
       label: "Space to Process",
-      emoji: "🌌",
+      emoji: "",
       subtitle: "You need time and quiet to find out what you actually think and feel",
       about: [
         "Some people process experiences in real time — talking through feelings as they have them, thinking out loud, finding clarity through conversation. Others process internally and asynchronously — they need time alone with their thoughts, away from input and expectation, in order to understand what they actually feel and what they actually want to say. If your core need is space to process, you are probably in the second group, and the expectation of immediate emotional response can feel genuinely disorienting rather than just inconvenient.",

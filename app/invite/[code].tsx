@@ -4,6 +4,7 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Colors, Fonts, Radius } from '../../src/constants/theme';
 import { useAuth } from '../../src/hooks/useAuth';
+import { IconHeart, IconX } from '../../src/components/Icons';
 
 export default function AcceptInvite() {
   const { code } = useLocalSearchParams<{ code: string }>();
@@ -46,7 +47,7 @@ export default function AcceptInvite() {
     return (
       <SafeAreaView style={styles.safe} edges={['top', 'bottom']}>
         <View style={styles.center}>
-          <ActivityIndicator size="large" color={Colors.terracotta} />
+          <ActivityIndicator size="large" color={Colors.sage} />
           <Text style={styles.loadingText}>Connecting you with your partner…</Text>
         </View>
       </SafeAreaView>
@@ -57,7 +58,9 @@ export default function AcceptInvite() {
     return (
       <SafeAreaView style={styles.safe} edges={['top', 'bottom']}>
         <View style={styles.center}>
-          <Text style={{ fontSize: 40, marginBottom: 16 }}>😔</Text>
+          <View style={{ width: 56, height: 56, borderRadius: 28, backgroundColor: Colors.errorBg, alignItems: 'center', justifyContent: 'center', marginBottom: 16 }}>
+            <IconX size={24} color={Colors.errorText} />
+          </View>
           <Text style={styles.title}>Something went wrong</Text>
           <Text style={styles.subtitle}>{errorMsg}</Text>
           <TouchableOpacity style={styles.btn} onPress={() => router.replace('/(tabs)')} activeOpacity={0.85}>
@@ -71,7 +74,9 @@ export default function AcceptInvite() {
   return (
     <SafeAreaView style={styles.safe} edges={['top', 'bottom']}>
       <View style={styles.center}>
-        <Text style={{ fontSize: 48, marginBottom: 16 }}>💞</Text>
+        <View style={{ width: 64, height: 64, borderRadius: 32, backgroundColor: Colors.sagePale, alignItems: 'center', justifyContent: 'center', marginBottom: 16 }}>
+          <IconHeart size={28} color={Colors.sage} />
+        </View>
         <Text style={styles.title}>You are connected</Text>
         <Text style={styles.subtitle}>
           You and your partner are now linked on Tether. You will see each other's Bridge sessions and can grow together.
@@ -85,11 +90,11 @@ export default function AcceptInvite() {
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: Colors.warmWhite },
+  safe: { flex: 1, backgroundColor: Colors.cream },
   center: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 32 },
   loadingText: { fontFamily: Fonts.body, fontSize: 14, color: Colors.midBrown, marginTop: 16, textAlign: 'center' },
   title: { fontFamily: Fonts.display, fontSize: 26, color: Colors.charcoal, textAlign: 'center', marginBottom: 12 },
   subtitle: { fontFamily: Fonts.body, fontSize: 14, color: Colors.midBrown, textAlign: 'center', lineHeight: 22, marginBottom: 32 },
-  btn: { backgroundColor: Colors.terracotta, borderRadius: Radius.full, paddingVertical: 14, paddingHorizontal: 32 },
+  btn: { backgroundColor: Colors.sageDark, borderRadius: Radius.full, paddingVertical: 14, paddingHorizontal: 32 },
   btnText: { fontFamily: Fonts.bodyMedium, fontSize: 15, color: Colors.white },
 });

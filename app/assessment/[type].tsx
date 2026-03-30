@@ -6,13 +6,14 @@ import { Colors, Fonts, Radius } from '../../src/constants/theme';
 import { ASSESSMENT_DETAIL } from '../../src/constants/assessmentDetail';
 import { QUIZ_META } from '../../src/constants/assessmentQuestions';
 import { ChevronLeft, ChevronDown } from '../../src/components/Icon';
+import { IconHeart, IconSparkles, IconWind, IconActivity, IconLeaf } from '../../src/components/Icons';
 
-const TYPE_META: Record<string, { label: string; accentColor: string; description: string }> = {
-  attachment: { label: 'Attachment style', accentColor: Colors.terracotta, description: 'How you relate to closeness and security in relationships' },
-  love: { label: 'Love language', accentColor: Colors.gold, description: 'How you most naturally give and receive love' },
-  conflict: { label: 'Conflict style', accentColor: Colors.sage, description: 'How you respond when things get tense' },
-  window: { label: 'Window of tolerance', accentColor: Colors.blush, description: 'What happens in your body during conflict' },
-  need: { label: 'Core emotional need', accentColor: Colors.sage, description: 'The unspoken need beneath most of your conflicts' },
+const TYPE_META: Record<string, { label: string; accentColor: string; description: string; Icon: React.ComponentType<{ size?: number; color?: string }> }> = {
+  attachment: { label: 'Attachment style', accentColor: Colors.sage, description: 'How you relate to closeness and security in relationships', Icon: IconHeart },
+  love: { label: 'Love language', accentColor: Colors.mauve, description: 'How you most naturally give and receive love', Icon: IconSparkles },
+  conflict: { label: 'Conflict style', accentColor: Colors.blue, description: 'How you respond when things get tense', Icon: IconWind },
+  window: { label: 'Window of tolerance', accentColor: Colors.amber, description: 'What happens in your body during conflict', Icon: IconActivity },
+  need: { label: 'Core emotional need', accentColor: Colors.sage, description: 'The unspoken need beneath most of your conflicts', Icon: IconLeaf },
 };
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
@@ -24,10 +25,10 @@ function Section({ title, children }: { title: string; children: React.ReactNode
   );
 }
 
-function Bullet({ text, color, icon }: { text: string; color: string; icon: string }) {
+function Bullet({ text, color }: { text: string; color: string }) {
   return (
     <View style={s.bulletRow}>
-      <Text style={[s.bulletIcon, { color }]}>{icon}</Text>
+      <View style={[s.bulletDot, { backgroundColor: color }]} />
       <Text style={s.bulletText}>{text}</Text>
     </View>
   );
@@ -69,7 +70,9 @@ export default function AssessmentDetail() {
 
         {/* Hero */}
         <View style={[s.hero, { borderColor: meta.accentColor + '40' }]}>
-          <Text style={s.heroEmoji}>{detail.emoji}</Text>
+          <View style={[s.heroIconWrap, { backgroundColor: meta.accentColor + '18' }]}>
+            <meta.Icon size={28} color={meta.accentColor} />
+          </View>
           <Text style={s.heroLabel}>{detail.label}</Text>
           <Text style={s.heroSubtitle}>{detail.subtitle}</Text>
           <Text style={s.accuracyCopy}>Based on your quick onboarding assessment.</Text>
@@ -125,7 +128,7 @@ export default function AssessmentDetail() {
         {/* Strengths */}
         <Section title="Your strengths">
           {detail.strengths.map((str, i) => (
-            <Bullet key={i} text={str} color={Colors.sage} icon="✦" />
+            <Bullet key={i} text={str} color={Colors.sage} />
           ))}
         </Section>
 
@@ -133,7 +136,7 @@ export default function AssessmentDetail() {
         <Section title="Growth edges">
           <Text style={s.growthIntro}>Framed as invitations, not criticisms.</Text>
           {detail.growthEdges.map((edge, i) => (
-            <Bullet key={i} text={edge} color={meta.accentColor} icon="▸" />
+            <Bullet key={i} text={edge} color={meta.accentColor} />
           ))}
         </Section>
 
@@ -159,8 +162,8 @@ const s = StyleSheet.create({
   errorText: { fontFamily: Fonts.body, color: Colors.midBrown },
 
   hero: { marginHorizontal: 20, marginBottom: 8, backgroundColor: Colors.warmWhite, borderWidth: 1.5, borderRadius: Radius.xl, padding: 24, alignItems: 'center' },
-  heroEmoji: { fontSize: 44, marginBottom: 10 },
-  heroLabel: { fontFamily: Fonts.display, fontSize: 22, color: Colors.charcoal, marginBottom: 6, textAlign: 'center' },
+  heroIconWrap: { width: 56, height: 56, borderRadius: 28, alignItems: 'center', justifyContent: 'center', marginBottom: 12 },
+  heroLabel: { fontFamily: Fonts.displayLight, fontSize: 24, color: Colors.charcoal, marginBottom: 6, textAlign: 'center' },
   heroSubtitle: { fontFamily: Fonts.body, fontSize: 14, color: Colors.midBrown, textAlign: 'center', marginBottom: 0 },
   accuracyCopy: { fontFamily: Fonts.body, fontSize: 12, color: Colors.midBrown, textAlign: 'center', marginTop: 10, marginBottom: 14 },
   fullAssessmentBtn: { borderRadius: Radius.full, paddingVertical: 11, paddingHorizontal: 22, alignItems: 'center' },
@@ -183,7 +186,7 @@ const s = StyleSheet.create({
   patternText: { fontFamily: Fonts.body, fontSize: 14, color: Colors.charcoal, lineHeight: 21, flex: 1 },
 
   bulletRow: { flexDirection: 'row', gap: 10, marginBottom: 10, alignItems: 'flex-start' },
-  bulletIcon: { fontFamily: Fonts.bodyMedium, fontSize: 14, marginTop: 2, width: 16, flexShrink: 0 },
+  bulletDot: { width: 6, height: 6, borderRadius: 3, marginTop: 7, flexShrink: 0 },
   bulletText: { fontFamily: Fonts.body, fontSize: 14, color: Colors.charcoal, lineHeight: 21, flex: 1 },
 
   growthIntro: { fontFamily: Fonts.body, fontSize: 13, color: Colors.midBrown, marginBottom: 10 },

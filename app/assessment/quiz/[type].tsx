@@ -13,6 +13,15 @@ import { ATTACHMENT_LABELS, LOVE_LABELS, CONFLICT_LABELS, WINDOW_LABELS, NEED_LA
 import { useAuth } from '../../../src/hooks/useAuth';
 import { useAppState } from '../../../src/hooks/useAppState';
 import { ChevronLeft } from '../../../src/components/Icon';
+import { IconHeart, IconSparkles, IconWind, IconActivity, IconLeaf } from '../../../src/components/Icons';
+
+const TYPE_ICONS: Record<string, React.ComponentType<{ size?: number; color?: string }>> = {
+  attachment: IconHeart,
+  love: IconSparkles,
+  conflict: IconWind,
+  window: IconActivity,
+  need: IconLeaf,
+};
 
 const RESULT_LABEL_MAP: Record<string, Record<string, string>> = {
   attachment: ATTACHMENT_LABELS,
@@ -126,7 +135,9 @@ export default function AssessmentQuiz() {
         </View>
         <ScrollView contentContainerStyle={s.introContent}>
           <View style={[s.introHero, { borderColor: accentColor + '40' }]}>
-            <Text style={s.introEmoji}>{ASSESSMENT_DETAIL[type]?.[Object.keys(ASSESSMENT_DETAIL[type] ?? {})[0]]?.emoji ?? '🔍'}</Text>
+            <View style={[s.introIconWrap, { backgroundColor: accentColor + '18' }]}>
+              {(() => { const I = TYPE_ICONS[type]; return I ? <I size={28} color={accentColor} /> : null; })()}
+            </View>
             <Text style={s.introTitle}>{meta.title}</Text>
             <Text style={s.introSub}>{meta.subtitle}</Text>
           </View>
@@ -174,7 +185,9 @@ export default function AssessmentQuiz() {
       <SafeAreaView style={s.safe} edges={['top']}>
         <ScrollView contentContainerStyle={s.resultContent}>
           <View style={[s.resultHero, { borderColor: accentColor + '50' }]}>
-            <Text style={s.resultEmoji}>{detail?.emoji ?? '✦'}</Text>
+            <View style={[s.resultIconWrap, { backgroundColor: accentColor + '18' }]}>
+              {(() => { const I = TYPE_ICONS[type]; return I ? <I size={28} color={accentColor} /> : null; })()}
+            </View>
             <Text style={[s.resultBadge, { color: accentColor, backgroundColor: accentColor + '18' }]}>
               {result.confidence === 'high' ? 'Clear result' : result.confidence === 'medium' ? 'Moderate result' : 'Mixed result. Consider retaking.'}
             </Text>
@@ -319,7 +332,7 @@ const s = StyleSheet.create({
   introTopBar: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 20, paddingVertical: 14 },
   introContent: { padding: 24, paddingBottom: 48 },
   introHero: { backgroundColor: Colors.warmWhite, borderWidth: 1.5, borderRadius: Radius.xl, padding: 28, alignItems: 'center', marginBottom: 20 },
-  introEmoji: { fontSize: 48, marginBottom: 12 },
+  introIconWrap: { width: 56, height: 56, borderRadius: 28, alignItems: 'center', justifyContent: 'center', marginBottom: 12 },
   introTitle: { fontFamily: Fonts.display, fontSize: 22, color: Colors.charcoal, marginBottom: 8, textAlign: 'center' },
   introSub: { fontFamily: Fonts.body, fontSize: 14, color: Colors.midBrown, textAlign: 'center', lineHeight: 21 },
   introMeta: { flexDirection: 'row', backgroundColor: Colors.warmWhite, borderWidth: 1, borderColor: Colors.sand, borderRadius: Radius.lg, padding: 16, marginBottom: 20, alignItems: 'center' },
@@ -361,7 +374,7 @@ const s = StyleSheet.create({
   // Result
   resultContent: { padding: 24, paddingBottom: 48 },
   resultHero: { backgroundColor: Colors.warmWhite, borderWidth: 1.5, borderRadius: Radius.xl, padding: 24, alignItems: 'center', marginBottom: 20 },
-  resultEmoji: { fontSize: 48, marginBottom: 10 },
+  resultIconWrap: { width: 56, height: 56, borderRadius: 28, alignItems: 'center', justifyContent: 'center', marginBottom: 10 },
   resultBadge: { fontFamily: Fonts.bodyMedium, fontSize: 11, borderRadius: Radius.full, paddingHorizontal: 12, paddingVertical: 5, marginBottom: 12 },
   resultTitle: { fontFamily: Fonts.display, fontSize: 22, color: Colors.charcoal, marginBottom: 6, textAlign: 'center' },
   resultSubtitle: { fontFamily: Fonts.body, fontSize: 14, color: Colors.midBrown, textAlign: 'center', lineHeight: 21 },
