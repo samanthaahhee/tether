@@ -26,33 +26,33 @@ const ATTACH_OPTIONS: OptionData[] = [
   { value: 'secure', emoji: '😌', title: 'They are probably just busy', desc: 'I feel fine. I trust they will respond when they can. I do not feel unsettled.' },
   { value: 'anxious', emoji: '😰', title: 'Have I done something wrong?', desc: 'I notice myself checking my phone. I might send a follow-up or feel low-level anxiety until I hear back.' },
   { value: 'avoidant', emoji: '😶', title: 'I actually appreciate the space', desc: 'I do not feel bothered. I might even feel relieved to have time to myself.' },
-  { value: 'disorganised', emoji: '🌀', title: 'It depends — sometimes fine, sometimes I spiral', desc: 'My reaction shifts. Sometimes okay; other times a small silence can feel like something is seriously wrong.' },
+  { value: 'disorganised', emoji: '🌀', title: 'It depends: sometimes fine, sometimes I spiral', desc: 'My reaction shifts. Sometimes I am okay; other times a small silence can feel like something is seriously wrong.' },
 ];
 
 const CONFLICT_OPTIONS: OptionData[] = [
-  { value: 'criticise', emoji: '🗣️', title: 'Keep talking — say everything I am feeling', desc: 'I want to be heard. The more dismissed I feel, the louder or more intense I might get.' },
+  { value: 'criticise', emoji: '🗣️', title: 'Keep talking: say everything I am feeling', desc: 'I want to be heard. The more dismissed I feel, the louder or more intense I might get.' },
   { value: 'defensive', emoji: '🛡️', title: 'Explain my side and counter what they are saying', desc: 'I feel the need to be understood and to correct what feels unfair. I build my case.' },
-  { value: 'stonewall', emoji: '🧊', title: 'Go quiet and withdraw until I have calmed down', desc: 'I shut down. I need to process alone — I cannot think clearly when emotions are high.' },
-  { value: 'peacekeep', emoji: '🕊️', title: 'Apologise or change subject to stop the tension', desc: 'I will do almost anything to lower the temperature, even if it means swallowing what I feel.' },
+  { value: 'stonewall', emoji: '🧊', title: 'Go quiet and withdraw until I have calmed down', desc: 'I shut down. I need to process alone. I cannot think clearly when emotions are high.' },
+  { value: 'peacekeep', emoji: '🕊️', title: 'Apologise or change the subject to stop the tension', desc: 'I will do almost anything to lower the temperature, even if it means swallowing what I feel.' },
 ];
 
 const WINDOW_OPTIONS: OptionData[] = [
-  { value: 'hyper', emoji: '🔥', title: 'I heat up — heart races, voice rises, I feel flooded', desc: 'My body surges. I feel like I need to say everything immediately or the moment will pass.' },
-  { value: 'hypo', emoji: '🧊', title: 'I shut down — I go blank, numb, cannot find words', desc: 'My mind empties. I freeze up, feel distant, or dissociate slightly.' },
-  { value: 'mixed', emoji: '🌀', title: 'Both — it depends on the situation', desc: 'Sometimes I boil over, sometimes I go quiet. The same argument can produce very different reactions.' },
-  { value: 'regulated', emoji: '😌', title: 'I stay mostly regulated — I can keep thinking clearly', desc: 'I feel uncomfortable but I do not lose the thread. I can listen without completely flooding.' },
+  { value: 'hyper', emoji: '🔥', title: 'I heat up: heart races, voice rises, I feel flooded', desc: 'My body surges. I feel like I need to say everything immediately or the moment will pass.' },
+  { value: 'hypo', emoji: '🧊', title: 'I shut down: I go blank, numb, cannot find words', desc: 'My mind empties. I freeze up, feel distant, or go very quiet.' },
+  { value: 'mixed', emoji: '🌀', title: 'It depends on the situation', desc: 'Sometimes I boil over, sometimes I go quiet. The same argument can produce very different reactions.' },
+  { value: 'regulated', emoji: '😌', title: 'I stay mostly regulated and can keep thinking clearly', desc: 'I feel uncomfortable but I do not lose the thread. I can listen without completely flooding.' },
 ];
 
 const LOVE_OPTIONS: OptionData[] = [
-  { value: 'words', emoji: '💬', title: 'Them saying I love you — we are okay', desc: 'Hearing the words out loud. Being told explicitly that they still care.' },
-  { value: 'acts', emoji: '🛠️', title: 'Them doing something helpful without being asked', desc: 'Making dinner, sorting something I was stressed about — action speaks louder than words.' },
-  { value: 'touch', emoji: '🤝', title: 'A proper hug that lasts longer than usual', desc: 'Physical closeness. I need to feel their body near mine — that is when the tension breaks.' },
-  { value: 'time', emoji: '⏳', title: 'Sitting together with their full attention', desc: 'Phones away, just us. Even if we do not talk about what happened — presence is everything.' },
+  { value: 'words', emoji: '💬', title: 'Them saying: I love you, we are okay', desc: 'Hearing the words out loud. Being told explicitly that they still care.' },
+  { value: 'acts', emoji: '🛠️', title: 'Them doing something helpful without being asked', desc: 'Making dinner, sorting something I was stressed about. Action speaks louder than words.' },
+  { value: 'touch', emoji: '🤝', title: 'A proper hug that lasts longer than usual', desc: 'Physical closeness. I need to feel their body near mine. That is when the tension breaks.' },
+  { value: 'time', emoji: '⏳', title: 'Sitting together with their full attention', desc: 'Phones away, just us. Even if we do not talk about what happened, presence is everything.' },
   { value: 'gifts', emoji: '🎁', title: 'A small gesture that shows they thought of me', desc: 'A note, something they picked up, a playlist. It is about knowing I was in their mind.' },
 ];
 
 const NEED_OPTIONS: OptionData[] = [
-  { value: 'seen', emoji: '👁️', title: 'I need to feel seen and understood', desc: 'I do not need fixing — I need to know my feelings make sense and that they genuinely get it.' },
+  { value: 'seen', emoji: '👁️', title: 'I need to feel seen and understood', desc: 'I do not need fixing. I need to know my feelings make sense and that they genuinely get it.' },
   { value: 'safe', emoji: '🛡️', title: 'I need to feel safe and secure', desc: 'I need to know we are not going to fall apart. Stability and reassurance that we are still okay.' },
   { value: 'respected', emoji: '🌿', title: 'I need to feel respected and valued', desc: 'My perspective matters, my efforts are noticed, I am not taken for granted.' },
   { value: 'space', emoji: '🌬️', title: 'I need space to process without pressure', desc: 'I cannot think when someone is pushing for resolution. I need to come to things in my own time.' },
@@ -155,7 +155,7 @@ export default function PartnerOnboarding() {
               <Text style={{ fontSize: 56, textAlign: 'center', marginBottom: 20 }}>🤝</Text>
               <Text style={styles.handoffTitle}>Hand the phone to your partner</Text>
               <Text style={styles.handoffSub}>
-                This takes about 3 minutes. Your partner will answer a few questions about themselves — their honest instincts, not what they think they should say.
+                This takes about 3 minutes. Your partner will answer a few questions about themselves: their honest instincts, not what they think they should say.
               </Text>
               <View style={styles.handoffHint}>
                 <Text style={styles.hintIcon}>🔒</Text>
@@ -179,7 +179,7 @@ export default function PartnerOnboarding() {
             <View style={styles.stepWrap}>
               <Text style={styles.stepTag}>Step 1 of 6</Text>
               <Text style={styles.stepH}>Let us start with you</Text>
-              <Text style={styles.stepSub}>Your partner is filling this in — answer honestly. This helps your partner understand how you experience your relationship.</Text>
+              <Text style={styles.stepSub}>Answer honestly. This helps your partner understand how you experience your relationship.</Text>
               <TextInput
                 value={name}
                 onChangeText={setName}
@@ -196,9 +196,9 @@ export default function PartnerOnboarding() {
           {/* Step 2: Attachment */}
           {step === 2 && (
             <View style={styles.stepWrap}>
-              <Text style={styles.stepTag}>Step 2 of 6 — How you connect</Text>
+              <Text style={styles.stepTag}>Step 2 of 6: How you connect</Text>
               <Text style={styles.stepH}>Your partner has not replied to your messages for a few hours. What goes through your mind?</Text>
-              <Text style={styles.stepSub}>Pick the response that feels most honestly true — even if you wish it were not.</Text>
+              <Text style={styles.stepSub}>Pick the response that feels most honestly true, even if you wish it were not.</Text>
               {ATTACH_OPTIONS.map((o) => (
                 <OptionCard key={o.value} option={o} selected={picks.attach === o.value} onPress={() => pick('attach', o.value)} />
               ))}
@@ -211,9 +211,9 @@ export default function PartnerOnboarding() {
           {/* Step 3: Conflict style */}
           {step === 3 && (
             <View style={styles.stepWrap}>
-              <Text style={styles.stepTag}>Step 3 of 6 — During conflict</Text>
+              <Text style={styles.stepTag}>Step 3 of 6: During conflict</Text>
               <Text style={styles.stepH}>You and your partner are in the middle of a tense argument. What do you feel the strongest urge to do?</Text>
-              <Text style={styles.stepSub}>Your gut instinct — not what you think you should do.</Text>
+              <Text style={styles.stepSub}>Your gut instinct, not what you think you should do.</Text>
               {CONFLICT_OPTIONS.map((o) => (
                 <OptionCard key={o.value} option={o} selected={picks.conflict === o.value} onPress={() => pick('conflict', o.value)} />
               ))}
@@ -226,7 +226,7 @@ export default function PartnerOnboarding() {
           {/* Step 4: Window of tolerance */}
           {step === 4 && (
             <View style={styles.stepWrap}>
-              <Text style={styles.stepTag}>Step 4 of 6 — Your body in conflict</Text>
+              <Text style={styles.stepTag}>Step 4 of 6: Your body in conflict</Text>
               <Text style={styles.stepH}>When an argument escalates, what happens in your body first?</Text>
               <Text style={styles.stepSub}>This helps your partner understand when you need a pause and what kind of support helps most.</Text>
               {WINDOW_OPTIONS.map((o) => (
@@ -241,7 +241,7 @@ export default function PartnerOnboarding() {
           {/* Step 5: Love language */}
           {step === 5 && (
             <View style={styles.stepWrap}>
-              <Text style={styles.stepTag}>Step 5 of 6 — How you feel loved</Text>
+              <Text style={styles.stepTag}>Step 5 of 6: How you feel loved</Text>
               <Text style={styles.stepH}>After a difficult few days, what would make you feel most reconnected to your partner?</Text>
               <Text style={styles.stepSub}>Imagine the thing that would genuinely shift how you feel.</Text>
               {LOVE_OPTIONS.map((o) => (
@@ -256,9 +256,9 @@ export default function PartnerOnboarding() {
           {/* Step 6: Core need */}
           {step === 6 && (
             <View style={styles.stepWrap}>
-              <Text style={styles.stepTag}>Step 6 of 6 — What you most need</Text>
+              <Text style={styles.stepTag}>Step 6 of 6: What you most need</Text>
               <Text style={styles.stepH}>When you are hurting in a relationship, which feels most true?</Text>
-              <Text style={styles.stepSub}>The need that is usually unspoken — the thing beneath the conflict.</Text>
+              <Text style={styles.stepSub}>The need that is usually unspoken. The thing beneath the conflict.</Text>
               {NEED_OPTIONS.map((o) => (
                 <OptionCard key={o.value} option={o} selected={picks.need === o.value} onPress={() => pick('need', o.value)} />
               ))}
@@ -272,7 +272,7 @@ export default function PartnerOnboarding() {
               <Text style={styles.stepTag}>Profile complete</Text>
               <Text style={[styles.stepH, { textAlign: 'center' }]}>Thank you, {name}</Text>
               <Text style={[styles.stepSub, { textAlign: 'center' }]}>
-                Your partner can now see your emotional patterns in the app — to understand you better, not to judge you.
+                Your partner can now see your emotional patterns in the app, to understand you better, not to judge you.
               </Text>
               <View style={styles.summaryGrid}>
                 {[

@@ -28,10 +28,10 @@ const STEP_COLORS: Record<ModeKey, string> = {
 };
 
 const WELCOMES: Record<ModeKey, (name: string) => string> = {
-  vent: (name) => 'Hello' + (name ? ', ' + name : '') + '. This is your private space — your partner will never see or hear anything you share here. You can type or use the microphone to speak freely. There are no wrong words. What is weighing on you right now?',
-  understand: () => 'When you are ready, let us look gently at what has been happening. Often the surface argument is pointing to something deeper — a fear, a need, a longing to feel close. What would you like to explore?',
-  prepare: () => 'Let us build something useful together. Whether you want to write a message to your partner, prepare for a difficult conversation, or find a way to repair — what would be most helpful?',
-  bridge: () => 'You have done incredible work getting here. Now let us compose a message to your partner using what you have discovered about your feelings and needs.',
+  vent: (name) => 'Hello' + (name ? ', ' + name : '') + '. This is your private space. Your partner will never see or hear anything you share here. You can type or use the microphone to speak freely. There are no wrong words. What is weighing on you right now?',
+  understand: () => 'When you are ready, let us look gently at what has been happening. Often the surface argument points to something deeper: a fear, a need, a longing to feel close. What would you like to explore?',
+  prepare: () => 'Let us build something useful together. Whether you want to write a message to your partner, prepare for a difficult conversation, or find a way to repair, what would be most helpful?',
+  bridge: () => 'You have done the hard work of getting here. Now let us compose a message to your partner using what you have discovered about your feelings and needs.',
 };
 
 const MIN_MESSAGES_TO_ADVANCE = 3;
@@ -126,16 +126,16 @@ function NvcCompose({ session, dispatch: d }: { session: Session; dispatch: any 
   };
 
   const fields = [
-    { key: 'obs', label: 'Observation — what happened?', placeholder: 'A specific event without judgment...', multiline: true },
+    { key: 'obs', label: 'Observation: what happened?', placeholder: 'A specific event without judgment...', multiline: true },
     { key: 'feel', label: 'Feeling', placeholder: 'e.g. hurt, scared, lonely...', multiline: false },
     { key: 'need', label: 'Need', placeholder: 'e.g. reassurance, connection...', multiline: false },
-    { key: 'request', label: 'Request — one specific ask', placeholder: 'e.g. could we talk for 15 min tonight?', multiline: false },
+    { key: 'request', label: 'One specific request', placeholder: 'e.g. could we talk for 15 minutes tonight?', multiline: false },
   ];
 
   return (
     <View style={nvc.card}>
       <Text style={nvc.title}>Compose your message</Text>
-      <Text style={nvc.sub}>Observation — Feeling — Need — Request</Text>
+      <Text style={nvc.sub}>Observation · Feeling · Need · Request</Text>
       {fields.map((f) => (
         <View key={f.key} style={{ marginBottom: 12 }}>
           <Text style={nvc.fieldLabel}>{f.label}</Text>
@@ -180,7 +180,7 @@ function SessionListView({ sessions, dispatch: d, onOpenSession, onStartNew }: {
             <View style={sl.startBlob} />
             <Text style={sl.startTag}>NEW SESSION</Text>
             <Text style={sl.startTitle}>Start a new session</Text>
-            <Text style={sl.startBody}>Whatever is happening — begin here. Tether will guide you from venting to resolution, step by step.</Text>
+            <Text style={sl.startBody}>Whatever is happening, start here. Tether guides you from raw emotion to resolution, one step at a time.</Text>
             <View style={sl.startCta}>
               <Text style={sl.startCtaText}>Begin →</Text>
             </View>
@@ -206,7 +206,7 @@ function SessionListView({ sessions, dispatch: d, onOpenSession, onStartNew }: {
                   <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
                     <Text style={sl.sessionDate}>{dateStr}</Text>
                     <View style={sl.statusBadge}>
-                      <Text style={sl.statusText}>Active — {currentStepCfg.label}</Text>
+                      <Text style={sl.statusText}>Active: {currentStepCfg.label}</Text>
                     </View>
                   </View>
                   {s.name ? <Text style={{ fontFamily: Fonts.display, fontSize: 16, color: Colors.charcoal, marginBottom: 4 }}>{s.name}</Text> : null}
@@ -307,7 +307,7 @@ const sl = StyleSheet.create({
 
 const CAPTURE_CONFIG: Record<ModeKey, { question: string; options: { emoji: string; label: string; score: number }[] }> = {
   vent: {
-    question: 'Before moving on — how intense is the emotion right now?',
+    question: 'Before moving on, how intense is the emotion right now?',
     options: [
       { emoji: '😌', label: 'Calm', score: 1 },
       { emoji: '😐', label: 'Unsettled', score: 2 },
@@ -635,7 +635,7 @@ function ActiveSessionView({ session, state, dispatch: d, onBack }: { session: S
               {isRecording && (
                 <View style={styles.recordingBanner}>
                   <View style={styles.recordingDot} />
-                  <Text style={styles.recordingText}>Listening — speak freely, your partner will never hear this</Text>
+                  <Text style={styles.recordingText}>Listening. Speak freely, your partner will never hear this.</Text>
                 </View>
               )}
               <View style={styles.inputRow}>
@@ -706,10 +706,10 @@ function generateReflection(session: Session, profile: any): string {
   const stepsUsed = session.unlockedSteps.length;
 
   return `In this session, you moved through ${stepsUsed} steps of your journey. ` +
-    `Your ${attachLabel} attachment pattern was likely activated — ` +
-    `the core need underneath was to feel ${needLabel}. ` +
+    `Your ${attachLabel} attachment pattern was likely activated. ` +
+    `The core need underneath was to feel ${needLabel}. ` +
     `You processed your emotions, explored what was really happening, and took action toward repair. ` +
-    `This is meaningful growth — each session like this builds emotional resilience and deepens your understanding of yourself in relationship.`;
+    `This is meaningful growth. Each session like this builds emotional resilience and deepens your understanding of yourself in relationship.`;
 }
 
 export default function SessionsTab() {

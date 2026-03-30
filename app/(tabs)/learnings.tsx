@@ -77,7 +77,7 @@ export default function GrowthTab() {
       const code = await generateInvite();
       const link = `tether://invite/${code}`;
       await Share.share({
-        message: `Join me on Tether — a relationship wellness app. Use my invite link to create your account:\n\n${link}\n\nOr enter code: ${code}`,
+        message: `Join me on Tether, a relationship wellness app. Use my invite link to create your account:\n\n${link}\n\nOr enter code: ${code}`,
         title: 'Join me on Tether',
       });
     } finally {
@@ -115,7 +115,7 @@ export default function GrowthTab() {
             {/* ── SECTION A: Know yourself ── */}
             <View style={styles.sectionHeader}>
               <Text style={styles.sectionHeaderTitle}>Know yourself</Text>
-              <Text style={styles.sectionHeaderSub}>Your emotional blueprint — tap any card to go deeper.</Text>
+              <Text style={styles.sectionHeaderSub}>Your emotional blueprint. Tap any card to go deeper.</Text>
             </View>
 
             <View style={styles.section}>
@@ -161,7 +161,7 @@ export default function GrowthTab() {
                   <Text style={{ fontFamily: Fonts.bodyMedium, fontSize: 10, letterSpacing: 0.7, textTransform: 'uppercase', color: Colors.sage, marginBottom: 6 }}>Core need</Text>
                   <Text style={{ fontFamily: Fonts.display, fontSize: 17, color: Colors.charcoal, marginBottom: 5 }}>{NEED_LABELS[need] || 'Not set'}</Text>
                   <Text style={{ fontFamily: Fonts.body, fontSize: 13, color: Colors.warmBrown, lineHeight: 19 }}>
-                    This is the thread underneath most of your conflicts — the unspoken thing you most need your partner to understand.
+                    This is the thread underneath most of your conflicts. The unspoken thing you most need your partner to understand.
                   </Text>
                   <Text style={{ fontFamily: Fonts.bodyMedium, fontSize: 12, color: Colors.sage, marginTop: 10 }}>Explore in depth →</Text>
                 </TouchableOpacity>
@@ -272,7 +272,7 @@ export default function GrowthTab() {
 
               {pp ? (
                 <>
-                  <Text style={styles.sectionIntro}>Their emotional patterns — filled in by them on their own device.</Text>
+                  <Text style={styles.sectionIntro}>Their emotional patterns, filled in by them on their own device.</Text>
                   <PatternCard
                     label="Attachment style"
                     value={ATTACHMENT_LABELS[pp.attachment] || 'Not set'}
@@ -302,7 +302,7 @@ export default function GrowthTab() {
                       <Text style={{ fontFamily: Fonts.bodyMedium, fontSize: 10, letterSpacing: 0.7, textTransform: 'uppercase', color: Colors.sage, marginBottom: 6 }}>Core need</Text>
                       <Text style={{ fontFamily: Fonts.display, fontSize: 17, color: Colors.charcoal, marginBottom: 5 }}>{NEED_LABELS[pp.need] || 'Not set'}</Text>
                       <Text style={{ fontFamily: Fonts.body, fontSize: 13, color: Colors.warmBrown, lineHeight: 19 }}>
-                        This is the thread underneath most of their conflicts — the unspoken thing they most need you to understand.
+                        This is the thread underneath most of their conflicts. The unspoken thing they most need you to understand.
                       </Text>
                     </View>
                   )}

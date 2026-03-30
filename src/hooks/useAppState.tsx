@@ -38,6 +38,7 @@ export interface Session {
   messages: Record<ModeKey, Message[]>;
   nvcDraft?: { obs: string; feel: string; need: string; request: string };
   reflection?: string;
+  summary?: string;
   startDate: string;
   resolvedDate?: string;
 }
@@ -48,6 +49,14 @@ export interface EmotionalCapture {
   date: string;
   fromStep: ModeKey;
   score: number; // 1–5
+}
+
+export interface UserMemory {
+  narrative: string;       // full narrative injected into AI system prompt
+  sessionCount: number;    // how many sessions this is based on
+  lastUpdated: string;     // ISO date
+  growthMoments: string[]; // notable positive shifts observed
+  recurringThemes: string[]; // patterns that keep coming back
 }
 
 export interface Learnings {
@@ -66,6 +75,7 @@ interface AppState {
   sessions: Session[];
   activeSessionId: string | null;
   learnings: Learnings;
+  userMemory: UserMemory | null;
   loaded: boolean;
 }
 
@@ -87,7 +97,9 @@ type Action =
   | { type: 'ADD_PARTNER_OBSERVATION'; observation: string }
   | { type: 'ADD_RELATIONSHIP_PATTERN'; pattern: string }
   | { type: 'RENAME_SESSION'; sessionId: string; name: string }
-  | { type: 'ADD_EMOTIONAL_CAPTURE'; capture: EmotionalCapture };
+  | { type: 'ADD_EMOTIONAL_CAPTURE'; capture: EmotionalCapture }
+  | { type: 'UPDATE_SESSION_SUMMARY'; sessionId: string; summary: string }
+  | { type: 'UPDATE_USER_MEMORY'; memory: UserMemory };
 
 const defaultProfile: UserProfile = {
   name: '',
@@ -119,6 +131,7 @@ const initialState: AppState = {
   sessions: [],
   activeSessionId: null,
   learnings: { reflections: [], partnerObservations: [], relationshipPatterns: [], emotionalCaptures: [] },
+  userMemory: null,
   loaded: false,
 };
 
@@ -152,6 +165,7 @@ function reducer(state: AppState, action: Action): AppState {
         sessions: saved.sessions || [],
         activeSessionId: saved.activeSessionId || null,
         learnings: { reflections: [], partnerObservations: [], relationshipPatterns: [], emotionalCaptures: [], ...(saved.learnings || {}) },
+        userMemory: saved.userMemory || null,
         partnerProfile: saved.partnerProfile || defaultPartnerProfile,
         loaded: true,
       };
@@ -265,6 +279,18 @@ function reducer(state: AppState, action: Action): AppState {
           name: action.name,
         })),
       };
+
+    case 'UPDATE_SESSION_SUMMARY':
+      return {
+        ...state,
+        sessions: updateSession(state.sessions, action.sessionId, (s) => ({
+          ...s,
+          summary: action.summary,
+        })),
+      };
+
+    case 'UPDATE_USER_MEMORY':
+      return { ...state, userMemory: action.memory };
 
     case 'ADD_EMOTIONAL_CAPTURE':
       return {

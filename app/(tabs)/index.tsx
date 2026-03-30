@@ -51,14 +51,14 @@ export default function HomeTab() {
           <View style={styles.startCardBlob} />
           <Text style={styles.startTag}>{activeSession ? 'CONTINUE SESSION' : 'START HERE'}</Text>
           <Text style={styles.startTitle}>{activeSession ? 'Continue your session' : 'Start a new session'}</Text>
-          <Text style={styles.startBody}>{activeSession ? 'You have an active session. Pick up where you left off.' : 'Whatever is happening — begin here. Tether will guide you from venting to resolution, step by step.'}</Text>
+          <Text style={styles.startBody}>{activeSession ? 'You have an active session. Pick up where you left off.' : 'Whatever is happening, start here. Tether guides you from raw emotion to resolution, one step at a time.'}</Text>
           <View style={styles.startBtn}>
             <Text style={styles.startBtnText}>{activeSession ? 'Continue →' : 'Begin →'}</Text>
           </View>
         </TouchableOpacity>
 
         <View style={styles.section}>
-          <Text style={styles.sectionLabel}>YOUR JOURNEY — FOLLOW THESE STEPS</Text>
+          <Text style={styles.sectionLabel}>YOUR JOURNEY</Text>
           {JOURNEY_STEPS.map((step, i) => (
             <TouchableOpacity key={step.mode} onPress={startSession} activeOpacity={0.8} style={styles.journeyRow}>
               <View style={styles.journeyLeft}>

@@ -141,7 +141,7 @@ export default function ToolsTab() {
 
         <View style={styles.header}>
           <Text style={styles.title}>Tools</Text>
-          <Text style={styles.subtitle}>Accessible anytime — for difficult moments or daily practice.</Text>
+          <Text style={styles.subtitle}>For difficult moments or daily practice. Always here.</Text>
         </View>
 
         {/* Breathing Exercises */}

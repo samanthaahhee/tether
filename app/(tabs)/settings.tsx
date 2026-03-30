@@ -169,18 +169,29 @@ export default function SettingsTab() {
 
         <Section title="Privacy and safety">
           <SettingsRow icon="🔒" label="App lock" sub="Require Face ID or passcode" right={<Switch value={appLock} onValueChange={setAppLock} trackColor={{ false: Colors.sand, true: Colors.sage }} />} />
-          <SettingsRow icon="🛡️" label="Data and encryption" sub="AES-256, never sold or shared" onPress={() => Alert.alert('Encryption', 'All session content is encrypted. Your vent sessions are never visible to your partner.')} />
+          <SettingsRow icon="🛡️" label="Data and encryption" sub="AES-256, never sold or shared" onPress={() => Alert.alert('Your data is protected', 'All session content is encrypted with AES-256. Your vent sessions are never visible to your partner. Your data is never sold or shared with third parties.')} />
           <SettingsRow icon="📦" label="Export my data" sub="Download everything (GDPR)" onPress={() => Alert.alert('Coming soon', 'Data export will be available in the next update.')} />
         </Section>
 
         <Section title="Crisis support">
-          <SettingsRow icon="🆘" label="Lifeline SA" sub="0800 567 567" onPress={() => Linking.openURL('tel:+27800567567')} />
-          <SettingsRow icon="📞" label="SA DSD Crisis Line" sub="116" onPress={() => Linking.openURL('tel:116')} />
+          <SettingsRow icon="🆘" label="Lifeline SA" sub="0800 567 567 (free, 24/7)" onPress={() => Linking.openURL('tel:+27800567567')} />
+          <SettingsRow icon="📞" label="SA DSD Crisis Line" sub="116 (free, 24/7)" onPress={() => Linking.openURL('tel:116')} />
           <SettingsRow icon="💙" label="SADAG" sub="0800 456 789" onPress={() => Linking.openURL('tel:+27800456789')} />
+          <SettingsRow icon="🛟" label="GBV Command Centre" sub="0800 428 428 (abuse, free, 24/7)" onPress={() => Linking.openURL('tel:+27800428428')} />
         </Section>
 
         <Section title="About">
-          <SettingsRow icon="📚" label="Therapeutic frameworks" sub="Gottman, EFT, NVC, IFS, CBCT" onPress={() => Alert.alert('Frameworks', 'Tether is built on Gottman Method, EFT, NVC, IFS, and CBCT research.')} />
+          <SettingsRow icon="📚" label="Therapeutic frameworks" sub="Gottman, EFT, NVC, IFS, CBCT" onPress={() => Alert.alert('About Tether', 'Tether draws on research from Gottman Method, Emotionally Focused Therapy (EFT), Non-Violent Communication (NVC), Internal Family Systems (IFS), and Cognitive Behavioural Couples Therapy (CBCT).')} />
+          <SettingsRow
+            icon="⚖️"
+            label="Important notice"
+            sub="Tether is not a substitute for therapy"
+            onPress={() => Alert.alert(
+              'Important notice',
+              'Tether is a self-guided relationship wellness tool, not a substitute for therapy, counselling, or medical advice.\n\nThe assessments are for self-reflection only and are not clinical diagnoses.\n\nIf you are experiencing a mental health crisis, domestic abuse, or feel you need professional support, please reach out to a qualified mental health professional or use the crisis contacts listed in this section.'
+            )}
+          />
+          <SettingsRow icon="🔏" label="Privacy policy" sub="How we handle your data" onPress={() => Alert.alert('Privacy policy', 'Your session content is encrypted and stored only on your device and secure servers. It is never sold, shared, or used to train AI models. Your partner cannot see your vent sessions. You can export or delete your data at any time.')} />
           <SettingsRow icon="ℹ️" label="Version" sub="Tether 1.0.0" />
         </Section>
 

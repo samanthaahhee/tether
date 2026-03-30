@@ -146,7 +146,7 @@ export default function AssessmentQuiz() {
           <View style={s.introTips}>
             <Text style={s.introTipTitle}>For the most accurate results</Text>
             <Text style={s.introTip}>• Answer based on how you actually behave, not how you'd like to</Text>
-            <Text style={s.introTip}>• Go with your gut — first instinct is usually most honest</Text>
+            <Text style={s.introTip}>• Go with your gut. Your first instinct is usually most honest.</Text>
             <Text style={s.introTip}>• There are no right or wrong answers</Text>
           </View>
           <TouchableOpacity style={[s.startBtn, { backgroundColor: accentColor }]} onPress={() => setPhase('quiz')} activeOpacity={0.85}>
@@ -173,7 +173,7 @@ export default function AssessmentQuiz() {
           <View style={[s.resultHero, { borderColor: accentColor + '50' }]}>
             <Text style={s.resultEmoji}>{detail?.emoji ?? '✦'}</Text>
             <Text style={[s.resultBadge, { color: accentColor, backgroundColor: accentColor + '18' }]}>
-              {result.confidence === 'high' ? 'Clear result' : result.confidence === 'medium' ? 'Moderate result' : 'Mixed result — consider retaking'}
+              {result.confidence === 'high' ? 'Clear result' : result.confidence === 'medium' ? 'Moderate result' : 'Mixed result. Consider retaking.'}
             </Text>
             <Text style={s.resultTitle}>{primaryLabel}</Text>
             <Text style={s.resultSubtitle}>{detail?.subtitle}</Text>
