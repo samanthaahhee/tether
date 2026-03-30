@@ -361,7 +361,7 @@ function ActiveSessionView({ session, state, dispatch: d, onBack }: { session: S
   const cfg = MODE_CONFIG[step];
   const messages = session.messages[step] || [];
 
-  const { send, loading, floodingDetected } = useClaude({
+  const { send, summarise, generateMemoryUpdate, generateCheckIn, loading, floodingDetected } = useClaude({
     systemPrompt: cfg.systemPrompt,
     userProfile: {
       name: state.profile.name,
@@ -371,6 +371,7 @@ function ActiveSessionView({ session, state, dispatch: d, onBack }: { session: S
       window: state.profile.window,
       need: state.profile.need,
     },
+    userMemory: state.userMemory,
   });
 
   const userMsgCount = useMemo(() => messages.filter((m) => m.role === 'user').length, [messages]);
@@ -380,8 +381,19 @@ function ActiveSessionView({ session, state, dispatch: d, onBack }: { session: S
 
   useEffect(() => {
     if (messages.length === 0) {
-      const welcome = WELCOMES[step](state.profile.name);
-      d({ type: 'ADD_SESSION_MESSAGE', sessionId: session.id, step, message: { role: 'ai', text: welcome, id: Date.now().toString() } });
+      // For vent step with existing memory, generate a personalised check-in first
+      if (step === 'vent' && state.userMemory) {
+        const lastSession = state.sessions.find((s) => s.status === 'resolved' && s.summary);
+        generateCheckIn(state.userMemory, lastSession?.summary).then((checkIn) => {
+          const opening = checkIn
+            ? checkIn + '\n\n' + WELCOMES[step](state.profile.name)
+            : WELCOMES[step](state.profile.name);
+          d({ type: 'ADD_SESSION_MESSAGE', sessionId: session.id, step, message: { role: 'ai', text: opening, id: Date.now().toString() } });
+        });
+      } else {
+        const welcome = WELCOMES[step](state.profile.name);
+        d({ type: 'ADD_SESSION_MESSAGE', sessionId: session.id, step, message: { role: 'ai', text: welcome, id: Date.now().toString() } });
+      }
     }
   }, [step]);
 
@@ -413,8 +425,14 @@ function ActiveSessionView({ session, state, dispatch: d, onBack }: { session: S
       role: m.role === 'ai' ? 'assistant' as const : 'user' as const,
       content: m.text,
     }));
-    const reply = await send(text, history);
+    const reply = await send(text, history, session.summary);
     d({ type: 'ADD_SESSION_MESSAGE', sessionId: session.id, step, message: { role: 'ai', text: reply, id: (Date.now() + 1).toString() } });
+
+    // Update rolling summary in the background — fire and forget, non-blocking
+    const updatedHistory = [...history, { role: 'user' as const, content: text }, { role: 'assistant' as const, content: reply }];
+    summarise(updatedHistory, session.summary).then((newSummary) => {
+      if (newSummary) d({ type: 'UPDATE_SESSION_SUMMARY', sessionId: session.id, summary: newSummary });
+    });
   };
 
   const toggleRecording = () => {
@@ -494,6 +512,14 @@ function ActiveSessionView({ session, state, dispatch: d, onBack }: { session: S
     const reflection = generateReflection(session, state.profile);
     d({ type: 'RESOLVE_SESSION', sessionId: session.id, reflection });
     d({ type: 'ADD_REFLECTION', reflection: { sessionId: session.id, text: reflection, date: new Date().toISOString() } });
+
+    // Update cross-session memory in background — fire and forget
+    if (session.summary) {
+      generateMemoryUpdate(session.summary, state.userMemory).then((memory) => {
+        if (memory) d({ type: 'UPDATE_USER_MEMORY', memory });
+      });
+    }
+
     onBack();
   };
 
