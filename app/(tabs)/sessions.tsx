@@ -38,18 +38,50 @@ function MicIcon() {
   );
 }
 
+// Full color theme per step — drives every UI element in the session
+const STEP_THEME: Record<ModeKey, {
+  color: string;       // primary text/icon color (dark)
+  mid: string;         // medium shade for borders, outlines
+  light: string;       // light shade for subtle backgrounds
+  pale: string;        // palest shade for full-screen bg
+  gradient: [string, string, string]; // gradient stops
+}> = {
+  vent: {
+    color: '#636E3F',    // sage-600
+    mid: '#B5BC8A',      // sage-200
+    light: '#D4D8B8',    // sage-100
+    pale: '#F0F1E6',     // sage-50
+    gradient: ['#F0F1E6', '#F7F8F0', '#FDFBF7'],
+  },
+  understand: {
+    color: '#735EA0',    // mauve-600
+    mid: '#C3B5DC',      // mauve-200
+    light: '#DDD4EC',    // mauve-100
+    pale: '#F2EEF7',     // mauve-50
+    gradient: ['#F2EEF7', '#F8F5FC', '#FDFBF7'],
+  },
+  prepare: {
+    color: '#329799',    // blue-600
+    mid: '#8ED9DA',      // blue-200
+    light: '#C0EBEB',    // blue-100
+    pale: '#EAF7F7',     // blue-50
+    gradient: ['#EAF7F7', '#F3FBFB', '#FDFBF7'],
+  },
+  bridge: {
+    color: '#9E7420',    // amber-600
+    mid: '#ECC97A',      // amber-200
+    light: '#F5E0B5',    // amber-100
+    pale: '#FBF4E6',     // amber-50
+    gradient: ['#FBF4E6', '#FDF9F0', '#FDFBF7'],
+  },
+};
+
+// Keep flat lookups for the progress bar
 const STEP_COLORS: Record<ModeKey, string> = {
   vent: '#636E3F',
   understand: '#735EA0',
   prepare: '#329799',
   bridge: '#9E7420',
-};
-
-const STEP_GRADIENTS: Record<ModeKey, [string, string, string]> = {
-  vent: ['#F0F1E6', '#F7F8F0', '#FDFBF7'],
-  understand: ['#F2EEF7', '#F8F5FC', '#FDFBF7'],
-  prepare: ['#EAF7F7', '#F3FBFB', '#FDFBF7'],
-  bridge: ['#FBF4E6', '#FDF9F0', '#FDFBF7'],
 };
 
 const WELCOMES: Record<ModeKey, (name: string) => string> = {
@@ -81,21 +113,22 @@ const ti = StyleSheet.create({
   dot: { width: 7, height: 7, borderRadius: 3.5, backgroundColor: Colors.sandDark },
 });
 
-function StepProgressBar({ session, bgColor, borderColor, onGoToStep }: { session: Session; bgColor: string; borderColor: string; onGoToStep: (step: ModeKey) => void }) {
+function StepProgressBar({ session, activeTheme, onGoToStep }: { session: Session; activeTheme: typeof STEP_THEME[ModeKey]; onGoToStep: (step: ModeKey) => void }) {
   return (
-    <View style={[sp.container, { backgroundColor: bgColor, borderBottomColor: borderColor }]}>
+    <View style={[sp.container, { borderBottomColor: activeTheme.light }]}>
       {SESSION_STEPS.map((step, i) => {
-        const cfg = MODE_CONFIG[step];
         const isCompleted = session.unlockedSteps.includes(step) && step !== session.currentStep;
         const isCurrent = step === session.currentStep;
         const isLocked = !session.unlockedSteps.includes(step);
         const isTappable = !isLocked && !isCurrent;
-        const color = STEP_COLORS[step];
 
         return (
           <React.Fragment key={step}>
             {i > 0 && (
-              <View style={[sp.line, { backgroundColor: isLocked ? Colors.sand : color, opacity: isLocked ? 0.4 : 0.6 }]} />
+              <View style={[sp.line, {
+                backgroundColor: isLocked ? activeTheme.light : isCompleted ? activeTheme.color : activeTheme.mid,
+                opacity: isLocked ? 0.5 : 1,
+              }]} />
             )}
             <TouchableOpacity
               style={{ alignItems: 'center', gap: 4 }}
@@ -105,18 +138,22 @@ function StepProgressBar({ session, bgColor, borderColor, onGoToStep }: { sessio
             >
               <View style={[
                 sp.node,
-                isCompleted && { backgroundColor: color, borderColor: color },
-                isCurrent && { backgroundColor: 'transparent', borderColor: color, borderWidth: 2.5 },
-                isLocked && { backgroundColor: 'transparent', borderColor: Colors.sand },
+                isCompleted && { backgroundColor: activeTheme.color, borderColor: activeTheme.color },
+                isCurrent && { backgroundColor: 'transparent', borderColor: activeTheme.color, borderWidth: 2.5 },
+                isLocked && { backgroundColor: 'transparent', borderColor: activeTheme.light },
               ]}>
                 <Text style={[sp.nodeNum, {
-                  color: isCompleted ? Colors.white : isCurrent ? color : Colors.sandDark,
-                  opacity: isLocked ? 0.35 : 1,
+                  color: isCompleted ? Colors.white : isCurrent ? activeTheme.color : activeTheme.light,
+                  opacity: isLocked ? 0.6 : 1,
                   fontFamily: isCurrent ? Fonts.bodyMedium : Fonts.body,
                 }]}>{i + 1}</Text>
               </View>
-              <Text style={[sp.label, isCurrent && { color, fontFamily: Fonts.bodyMedium }, isLocked && { opacity: 0.35 }]}>
-                {cfg.label}
+              <Text style={[sp.label, {
+                color: isCurrent ? activeTheme.color : isCompleted ? activeTheme.color : activeTheme.light,
+                fontFamily: isCurrent ? Fonts.bodyMedium : Fonts.body,
+                opacity: isLocked ? 0.6 : 1,
+              }]}>
+                {MODE_CONFIG[step].label}
               </Text>
             </TouchableOpacity>
           </React.Fragment>
@@ -241,25 +278,25 @@ const nr = StyleSheet.create({
   sub: { fontFamily: Fonts.body, fontSize: 13, color: Colors.midBrown, marginBottom: 20 },
 
   // Guide cards
-  guideCard: { flexDirection: 'row', gap: 12, backgroundColor: Colors.cream, borderWidth: 1, borderColor: Colors.sand, borderRadius: Radius.md, padding: 14, marginBottom: 10, alignItems: 'flex-start' },
-  guideNum: { fontFamily: Fonts.display, fontSize: 18, color: Colors.sage, width: 22, flexShrink: 0 },
+  guideCard: { flexDirection: 'row', gap: 12, backgroundColor: '#FDFBF7', borderWidth: 1, borderColor: '#F5E0B5', borderRadius: Radius.md, padding: 14, marginBottom: 10, alignItems: 'flex-start' },
+  guideNum: { fontFamily: Fonts.display, fontSize: 18, color: '#9E7420', width: 22, flexShrink: 0 },
   guideTitle: { fontFamily: Fonts.bodyMedium, fontSize: 13, color: Colors.charcoal, marginBottom: 6 },
   guideBody: { fontFamily: Fonts.displayItalic, fontSize: 13, color: Colors.charcoal, lineHeight: 20, marginBottom: 6 },
   guideTip: { fontFamily: Fonts.body, fontSize: 11, color: Colors.midBrown, lineHeight: 16 },
 
   reminderHeading: { fontFamily: Fonts.bodyMedium, fontSize: 12, color: Colors.warmBrown, letterSpacing: 0.4, textTransform: 'uppercase', marginTop: 14, marginBottom: 8 },
   reminderRow: { flexDirection: 'row', gap: 8, marginBottom: 16 },
-  reminderChip: { backgroundColor: Colors.creamDark, borderWidth: 1, borderColor: Colors.sand, borderRadius: Radius.full, paddingHorizontal: 14, paddingVertical: 8 },
-  reminderChipText: { fontFamily: Fonts.bodyMedium, fontSize: 12, color: Colors.warmBrown },
-  reminderSet: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', backgroundColor: Colors.goldPale, borderWidth: 1, borderColor: '#D4B46A', borderRadius: Radius.md, padding: 12, marginBottom: 16 },
+  reminderChip: { backgroundColor: '#FBF4E6', borderWidth: 1, borderColor: '#F5E0B5', borderRadius: Radius.full, paddingHorizontal: 14, paddingVertical: 8 },
+  reminderChipText: { fontFamily: Fonts.bodyMedium, fontSize: 12, color: '#9E7420' },
+  reminderSet: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', backgroundColor: '#FBF4E6', borderWidth: 1, borderColor: '#F5E0B5', borderRadius: Radius.md, padding: 12, marginBottom: 16 },
   reminderSetText: { fontFamily: Fonts.bodyMedium, fontSize: 13, color: Colors.charcoal },
   reminderChange: { fontFamily: Fonts.bodyMedium, fontSize: 12, color: Colors.midBrown },
 
   // Shared
-  primaryBtn: { backgroundColor: Colors.sage, borderRadius: Radius.full, paddingVertical: 14, alignItems: 'center', marginTop: 4 },
+  primaryBtn: { backgroundColor: '#9E7420', borderRadius: Radius.full, paddingVertical: 14, alignItems: 'center', marginTop: 4 },
   primaryBtnText: { fontFamily: Fonts.bodyMedium, fontSize: 14, color: Colors.white },
   sentRow: { marginTop: 4, gap: 10 },
-  sentConfirm: { fontFamily: Fonts.bodyMedium, fontSize: 13, color: Colors.sage, textAlign: 'center', paddingVertical: 4 },
+  sentConfirm: { fontFamily: Fonts.bodyMedium, fontSize: 13, color: '#9E7420', textAlign: 'center', paddingVertical: 4 },
   resolveBtn: { backgroundColor: Colors.charcoal, borderRadius: Radius.full, paddingVertical: 14, alignItems: 'center' },
   resolveBtnText: { fontFamily: Fonts.bodyMedium, fontSize: 14, color: Colors.white },
 });
@@ -429,6 +466,7 @@ function ActiveSessionView({ session, state, dispatch: d, onBack }: { session: S
   const flatRef = useRef<FlatList>(null);
   const step = session.currentStep;
   const cfg = MODE_CONFIG[step];
+  const theme = STEP_THEME[step];
   const messages = session.messages[step] || [];
 
   const { send, summarise, generateMemoryUpdate, generateCheckIn, loading, floodingDetected } = useClaude({
@@ -591,7 +629,7 @@ function ActiveSessionView({ session, state, dispatch: d, onBack }: { session: S
 
   const goBack = onBack;
 
-  const gradient = STEP_GRADIENTS[step];
+  const gradient = theme.gradient;
 
   return (
     <LinearGradient colors={gradient} style={{ flex: 1 }}>
@@ -630,17 +668,17 @@ function ActiveSessionView({ session, state, dispatch: d, onBack }: { session: S
 
           {/* Step identity */}
           <View style={styles.sessionStepIdentity}>
-            {(() => { const I = STEP_ICON_MAP[cfg.emoji]; return I ? <I size={24} color={cfg.color} /> : null; })()}
+            {(() => { const I = STEP_ICON_MAP[cfg.emoji]; return I ? <I size={24} color={theme.color} /> : null; })()}
             <Text style={styles.sessionStepName}>{cfg.label}</Text>
           </View>
 
           {/* Progress nodes */}
-          <StepProgressBar session={session} bgColor={Colors.warmWhite} borderColor={Colors.sand} onGoToStep={(s) => d({ type: 'GO_TO_STEP', sessionId: session.id, step: s })} />
+          <StepProgressBar session={session} activeTheme={theme} onGoToStep={(s) => d({ type: 'GO_TO_STEP', sessionId: session.id, step: s })} />
         </View>
 
         {floodingDetected && step === 'vent' && (
-          <View style={styles.floodBanner}>
-            <Text style={styles.floodText}>💛 You seem very activated. A short pause can help.</Text>
+          <View style={[styles.floodBanner, { backgroundColor: theme.pale, borderBottomColor: theme.light }]}>
+            <Text style={[styles.floodText, { color: theme.color }]}>You seem very activated. A short pause can help.</Text>
           </View>
         )}
 
@@ -657,17 +695,17 @@ function ActiveSessionView({ session, state, dispatch: d, onBack }: { session: S
             showsVerticalScrollIndicator={false}
             renderItem={({ item }) => (
               <View style={[styles.msgRow, item.role === 'user' && styles.msgRowUser]}>
-                <View style={[styles.msgAvatar, item.role === 'user' && styles.msgAvatarUser]}>
-                  {item.role === 'ai' ? <IconLeaf size={14} color={Colors.sage} /> : <Text style={{ fontSize: 13 }}>{state.profile.name?.[0] || '?'}</Text>}
+                <View style={[styles.msgAvatar, item.role === 'user' && { backgroundColor: theme.light }]}>
+                  {item.role === 'ai' ? <IconLeaf size={14} color={theme.color} /> : <Text style={{ fontSize: 13, color: theme.color }}>{state.profile.name?.[0] || '?'}</Text>}
                 </View>
-                <View style={[styles.msgBubble, item.role === 'user' && styles.msgBubbleUser]}>
+                <View style={[styles.msgBubble, item.role === 'user' && { backgroundColor: theme.color, borderWidth: 0, borderBottomLeftRadius: 16, borderBottomRightRadius: 4 }]}>
                   <Text style={[styles.msgText, item.role === 'user' && { color: Colors.white }]}>{item.text}</Text>
                 </View>
               </View>
             )}
             ListFooterComponent={loading ? (
               <View style={styles.msgRow}>
-                <View style={styles.msgAvatar}><IconLeaf size={14} color={Colors.sage} /></View>
+                <View style={styles.msgAvatar}><IconLeaf size={14} color={theme.color} /></View>
                 <View style={styles.msgBubble}><TypingIndicator /></View>
               </View>
             ) : null}
@@ -675,8 +713,8 @@ function ActiveSessionView({ session, state, dispatch: d, onBack }: { session: S
         )}
 
         {canAdvance && (
-          <TouchableOpacity style={styles.advanceBanner} onPress={advanceStep} activeOpacity={0.85}>
-            <Text style={styles.advanceText}>Ready for the next step? Move to {MODE_CONFIG[SESSION_STEPS[SESSION_STEPS.indexOf(step) + 1]].label} →</Text>
+          <TouchableOpacity style={[styles.advanceBanner, { backgroundColor: theme.pale, borderColor: theme.light }]} onPress={advanceStep} activeOpacity={0.85}>
+            <Text style={[styles.advanceText, { color: theme.color }]}>Ready for the next step? Move to {MODE_CONFIG[SESSION_STEPS[SESSION_STEPS.indexOf(step) + 1]].label} →</Text>
           </TouchableOpacity>
         )}
 
@@ -685,8 +723,8 @@ function ActiveSessionView({ session, state, dispatch: d, onBack }: { session: S
             {userMsgCount === 0 && cfg.quickActions.length > 0 && (
               <View style={styles.qaWrap}>
                 {cfg.quickActions.map((qa) => (
-                  <TouchableOpacity key={qa} onPress={() => setInput(qa)} style={styles.qaPill}>
-                    <Text style={styles.qaText}>{qa}</Text>
+                  <TouchableOpacity key={qa} onPress={() => setInput(qa)} style={[styles.qaPill, { borderColor: theme.light }]}>
+                    <Text style={[styles.qaText, { color: theme.color }]}>{qa}</Text>
                   </TouchableOpacity>
                 ))}
               </View>
@@ -705,14 +743,14 @@ function ActiveSessionView({ session, state, dispatch: d, onBack }: { session: S
                   onChangeText={setInput}
                   placeholder={step === 'vent' ? "Type or tap the mic to speak freely..." : "Share what is on your heart..."}
                   placeholderTextColor={Colors.lightBrown}
-                  style={styles.input}
+                  style={[styles.input, { borderColor: theme.light }]}
                   multiline
                   blurOnSubmit={false}
                 />
                 {speechAvailable && (
                   <TouchableOpacity
                     onPress={toggleRecording}
-                    style={[styles.micBtn, isRecording && { backgroundColor: Colors.terracotta }]}
+                    style={[styles.micBtn, isRecording && { backgroundColor: theme.color }]}
                     activeOpacity={0.8}
                   >
                     {isRecording
@@ -724,7 +762,7 @@ function ActiveSessionView({ session, state, dispatch: d, onBack }: { session: S
                 <TouchableOpacity
                   onPress={sendMessage}
                   disabled={loading || !input.trim()}
-                  style={[styles.sendBtn, { backgroundColor: loading || !input.trim() ? Colors.sand : Colors.terracotta }]}
+                  style={[styles.sendBtn, { backgroundColor: loading || !input.trim() ? Colors.sand : theme.color }]}
                   activeOpacity={0.8}
                 >
                   {loading
@@ -896,19 +934,18 @@ const styles = StyleSheet.create({
   sessionStepCounter: { fontFamily: Fonts.bodyMedium, fontSize: 12, minWidth: 56, textAlign: 'right' },
   sessionStepIdentity: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingHorizontal: 16, paddingTop: 10, paddingBottom: 2 },
   sessionStepName: { fontFamily: Fonts.display, fontSize: 22, color: Colors.charcoal },
-  floodBanner: { backgroundColor: Colors.terracottaPale, borderBottomWidth: 1, borderBottomColor: Colors.terracottaLight, padding: 10, paddingHorizontal: 16 },
+  floodBanner: { borderBottomWidth: 1, padding: 10, paddingHorizontal: 16 },
   floodText: { fontFamily: Fonts.body, fontSize: 13, color: Colors.warmBrown },
   msgList: { paddingHorizontal: 16, paddingVertical: 14, gap: 12, flexGrow: 1 },
   msgRow: { flexDirection: 'row', alignItems: 'flex-end', gap: 8, maxWidth: '88%' },
   msgRowUser: { flexDirection: 'row-reverse', alignSelf: 'flex-end', maxWidth: '88%' },
-  msgAvatar: { width: 28, height: 28, borderRadius: 14, backgroundColor: Colors.terracottaPale, alignItems: 'center', justifyContent: 'center', flexShrink: 0 },
-  msgAvatarUser: { backgroundColor: Colors.sagePale },
+  msgAvatar: { width: 28, height: 28, borderRadius: 14, backgroundColor: Colors.creamDark, alignItems: 'center', justifyContent: 'center', flexShrink: 0 },
   msgBubble: { backgroundColor: Colors.warmWhite, borderWidth: 1, borderColor: Colors.sand, borderRadius: 16, borderBottomLeftRadius: 4, padding: 12, maxWidth: '85%' },
-  msgBubbleUser: { backgroundColor: Colors.terracotta, borderWidth: 0, borderBottomLeftRadius: 16, borderBottomRightRadius: 4 },
+  // msgBubbleUser now set inline via theme.color
   msgText: { fontFamily: Fonts.body, fontSize: 14, color: Colors.charcoal, lineHeight: 21 },
   qaWrap: { flexDirection: 'row', paddingHorizontal: 12, paddingBottom: 6, paddingTop: 6, gap: 6, flexWrap: 'wrap' },
-  qaPill: { backgroundColor: Colors.cream, borderWidth: 1, borderColor: Colors.sandDark, borderRadius: Radius.full, paddingHorizontal: 12, paddingVertical: 6 },
-  qaText: { fontFamily: Fonts.body, fontSize: 11, color: Colors.warmBrown },
+  qaPill: { backgroundColor: Colors.white, borderWidth: 1.5, borderRadius: Radius.full, paddingHorizontal: 14, paddingVertical: 8 },
+  qaText: { fontFamily: Fonts.bodyMedium, fontSize: 12 },
   inputArea: { backgroundColor: Colors.warmWhite, borderTopWidth: 1, borderTopColor: Colors.sand, padding: 12 },
   inputRow: { flexDirection: 'row', alignItems: 'flex-end', gap: 8 },
   input: { flex: 1, backgroundColor: Colors.cream, borderWidth: 1.5, borderColor: Colors.sand, borderRadius: 14, paddingHorizontal: 14, paddingVertical: 11, fontFamily: Fonts.body, fontSize: 15, color: Colors.charcoal, maxHeight: 110, minHeight: 44 },
@@ -916,9 +953,9 @@ const styles = StyleSheet.create({
   recordingBanner: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 4, paddingBottom: 8 },
   recordingDot: { width: 8, height: 8, borderRadius: 4, backgroundColor: '#E25555' },
   recordingText: { fontFamily: Fonts.body, fontSize: 12, color: Colors.warmBrown, flex: 1 },
-  sendBtn: { width: 44, height: 44, borderRadius: 22, alignItems: 'center', justifyContent: 'center', ...Shadows.terracotta },
-  advanceBanner: { backgroundColor: Colors.sagePale, borderWidth: 1, borderColor: Colors.sageLight, marginHorizontal: 12, marginVertical: 6, borderRadius: Radius.md, padding: 12, alignItems: 'center' },
-  advanceText: { fontFamily: Fonts.bodyMedium, fontSize: 13, color: Colors.sage },
+  sendBtn: { width: 44, height: 44, borderRadius: 22, alignItems: 'center', justifyContent: 'center', ...Shadows.sm },
+  advanceBanner: { borderWidth: 1, marginHorizontal: 12, marginVertical: 6, borderRadius: Radius.md, padding: 12, alignItems: 'center' },
+  advanceText: { fontFamily: Fonts.bodyMedium, fontSize: 13 },
 });
 
 const cap = StyleSheet.create({

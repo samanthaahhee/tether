@@ -76,6 +76,7 @@ interface AppState {
   activeSessionId: string | null;
   learnings: Learnings;
   userMemory: UserMemory | null;
+  crisisCountry: string;
   loaded: boolean;
 }
 
@@ -100,6 +101,7 @@ type Action =
   | { type: 'RENAME_SESSION'; sessionId: string; name: string }
   | { type: 'ADD_EMOTIONAL_CAPTURE'; capture: EmotionalCapture }
   | { type: 'UPDATE_SESSION_SUMMARY'; sessionId: string; summary: string }
+  | { type: 'SET_CRISIS_COUNTRY'; code: string }
   | { type: 'UPDATE_USER_MEMORY'; memory: UserMemory };
 
 const defaultProfile: UserProfile = {
@@ -133,6 +135,7 @@ const initialState: AppState = {
   activeSessionId: null,
   learnings: { reflections: [], partnerObservations: [], relationshipPatterns: [], emotionalCaptures: [] },
   userMemory: null,
+  crisisCountry: 'international',
   loaded: false,
 };
 
@@ -167,6 +170,7 @@ function reducer(state: AppState, action: Action): AppState {
         activeSessionId: saved.activeSessionId || null,
         learnings: { reflections: [], partnerObservations: [], relationshipPatterns: [], emotionalCaptures: [], ...(saved.learnings || {}) },
         userMemory: saved.userMemory || null,
+        crisisCountry: saved.crisisCountry || 'international',
         partnerProfile: saved.partnerProfile || defaultPartnerProfile,
         loaded: true,
       };
@@ -311,6 +315,9 @@ function reducer(state: AppState, action: Action): AppState {
           emotionalCaptures: [action.capture, ...state.learnings.emotionalCaptures].slice(0, 100),
         },
       };
+
+    case 'SET_CRISIS_COUNTRY':
+      return { ...state, crisisCountry: action.code };
 
     default:
       return state;
