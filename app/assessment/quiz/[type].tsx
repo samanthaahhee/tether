@@ -157,13 +157,13 @@ export default function AssessmentQuiz() {
               <Text style={s.introMetaLabel}>private</Text>
             </View>
           </View>
-          <View style={s.introTips}>
-            <Text style={s.introTipTitle}>For the most accurate results</Text>
+          <View style={[s.introTips, { backgroundColor: accentColor + '12', borderColor: accentColor + '30' }]}>
+            <Text style={[s.introTipTitle, { color: accentColor }]}>For the most accurate results</Text>
             <Text style={s.introTip}>• Answer based on how you actually behave, not how you'd like to</Text>
             <Text style={s.introTip}>• Go with your gut. Your first instinct is usually most honest.</Text>
             <Text style={s.introTip}>• There are no right or wrong answers</Text>
           </View>
-          <TouchableOpacity style={[s.startBtn, { backgroundColor: accentColor }]} onPress={() => setPhase('quiz')} activeOpacity={0.85}>
+          <TouchableOpacity style={s.startBtn} onPress={() => setPhase('quiz')} activeOpacity={0.85}>
             <Text style={s.startBtnText}>Start assessment</Text>
           </TouchableOpacity>
         </ScrollView>
@@ -222,7 +222,7 @@ export default function AssessmentQuiz() {
 
           {/* Save button */}
           <TouchableOpacity
-            style={[s.saveBtn, { backgroundColor: accentColor }, saving && { opacity: 0.6 }]}
+            style={[s.saveBtn, saving && { opacity: 0.6 }]}
             onPress={saveResult}
             disabled={saving}
             activeOpacity={0.85}
@@ -340,10 +340,10 @@ const s = StyleSheet.create({
   introMetaNum: { fontFamily: Fonts.display, fontSize: 22, marginBottom: 2 },
   introMetaLabel: { fontFamily: Fonts.body, fontSize: 11, color: Colors.midBrown },
   introMetaDivider: { width: 1, height: 32, backgroundColor: Colors.sand },
-  introTips: { backgroundColor: Colors.sagePale, borderWidth: 1, borderColor: '#A8C4B4', borderRadius: Radius.lg, padding: 16, marginBottom: 24 },
-  introTipTitle: { fontFamily: Fonts.bodyMedium, fontSize: 12, color: '#7E9E8C', marginBottom: 8, letterSpacing: 0.4 },
+  introTips: { borderWidth: 1, borderRadius: Radius.lg, padding: 16, marginBottom: 24 },
+  introTipTitle: { fontFamily: Fonts.bodyMedium, fontSize: 12, marginBottom: 8, letterSpacing: 0.4 },
   introTip: { fontFamily: Fonts.body, fontSize: 13, color: Colors.warmBrown, lineHeight: 21, marginBottom: 4 },
-  startBtn: { borderRadius: Radius.full, paddingVertical: 16, alignItems: 'center' },
+  startBtn: { backgroundColor: Colors.sageDark, borderRadius: Radius.full, paddingVertical: 16, alignItems: 'center' },
   startBtnText: { fontFamily: Fonts.bodyMedium, fontSize: 15, color: Colors.white },
 
   // Quiz
@@ -389,7 +389,7 @@ const s = StyleSheet.create({
   snippetCard: { backgroundColor: Colors.warmWhite, borderLeftWidth: 3, borderWidth: 1, borderColor: Colors.sand, borderRadius: Radius.lg, padding: 16, marginBottom: 24 },
   snippetLabel: { fontFamily: Fonts.bodyMedium, fontSize: 10, letterSpacing: 0.8, marginBottom: 8 },
   snippetText: { fontFamily: Fonts.body, fontSize: 13, color: Colors.charcoal, lineHeight: 21 },
-  saveBtn: { borderRadius: Radius.full, paddingVertical: 16, alignItems: 'center', marginBottom: 12 },
+  saveBtn: { backgroundColor: Colors.sageDark, borderRadius: Radius.full, paddingVertical: 16, alignItems: 'center', marginBottom: 12 },
   saveBtnText: { fontFamily: Fonts.bodyMedium, fontSize: 15, color: Colors.white },
   discardBtn: { alignItems: 'center', paddingVertical: 8 },
   discardText: { fontFamily: Fonts.body, fontSize: 13, color: Colors.midBrown },

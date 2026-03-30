@@ -120,10 +120,10 @@ export default function PartnerOnboarding() {
   };
 
   const rc = {
-    attach: { bg: Colors.terracottaPale, border: Colors.terracottaLight, label: Colors.terracotta },
-    conflict: { bg: Colors.goldPale, border: '#D4B46A', label: Colors.gold },
-    window: { bg: Colors.blushPale, border: Colors.blush, label: Colors.blush },
-    love: { bg: Colors.sagePale, border: Colors.sageLight, label: Colors.sage },
+    attach: { bg: Colors.sagePale, border: Colors.sageLight, label: Colors.sage },
+    conflict: { bg: Colors.bluePale, border: Colors.blueLight, label: Colors.blue },
+    window: { bg: Colors.amberPale, border: Colors.amberLight, label: Colors.amber },
+    love: { bg: Colors.mauvePale, border: Colors.mauveLight, label: Colors.mauve },
   };
 
   return (

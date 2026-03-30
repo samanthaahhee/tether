@@ -19,35 +19,35 @@ export const QUIZ_META: Record<
     subtitle: 'Understand how you connect and bond in close relationships',
     questionCount: 12,
     estimatedMins: 5,
-    accentColor: '#C17F5A', // terracotta
+    accentColor: '#9BBF9E', // sage
   },
   love: {
     title: 'Love Language',
     subtitle: 'Discover how you most naturally give and receive love',
     questionCount: 10,
     estimatedMins: 4,
-    accentColor: '#C4A248', // gold
+    accentColor: '#B49EDE', // mauve
   },
   conflict: {
     title: 'Conflict Style',
     subtitle: 'See how you tend to respond when things get tense',
     questionCount: 8,
     estimatedMins: 4,
-    accentColor: '#D4917A', // blush
+    accentColor: '#8BA4D4', // blue
   },
   window: {
     title: 'Window of Tolerance',
     subtitle: 'Explore how your body responds to stress in relationships',
     questionCount: 6,
     estimatedMins: 3,
-    accentColor: '#7E9E8C', // sage
+    accentColor: '#D2D965', // amber
   },
   need: {
     title: 'Core Relationship Need',
     subtitle: 'Identify what matters most to you when things feel hard',
     questionCount: 8,
     estimatedMins: 4,
-    accentColor: '#C17F5A', // terracotta
+    accentColor: '#9BBF9E', // sage
   },
 };
 

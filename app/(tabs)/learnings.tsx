@@ -129,7 +129,7 @@ export default function GrowthTab() {
                 label="Attachment style"
                 value={ATTACHMENT_LABELS[attachment] || 'Not set'}
                 note={ATTACH_REVEALS[attachment]?.body || 'Complete your profile to unlock attachment insights.'}
-                accentColor={Colors.terracotta}
+                accentColor={Colors.sage}
                 assessmentType={attachment ? 'attachment' : undefined}
                 assessmentValue={attachment}
               />
@@ -137,7 +137,7 @@ export default function GrowthTab() {
                 label="Love language"
                 value={LOVE_LABELS[love] || 'Not set'}
                 note={LOVE_REVEALS[love]?.body || 'Understanding how you receive love explains many conflicts.'}
-                accentColor={Colors.gold}
+                accentColor={Colors.mauve}
                 assessmentType={love ? 'love' : undefined}
                 assessmentValue={love}
               />
@@ -145,7 +145,7 @@ export default function GrowthTab() {
                 label="Conflict style"
                 value={CONFLICT_LABELS[conflict] || 'Not set'}
                 note={CONFLICT_REVEALS[conflict]?.body || 'Your natural response under pressure.'}
-                accentColor={Colors.sage}
+                accentColor={Colors.blue}
                 assessmentType={conflict ? 'conflict' : undefined}
                 assessmentValue={conflict}
               />
@@ -153,7 +153,7 @@ export default function GrowthTab() {
                 label="Body in conflict"
                 value={WINDOW_LABELS[win] || 'Not set'}
                 note={WINDOW_REVEALS[win]?.body || 'How your body responds during conflict.'}
-                accentColor={Colors.blush}
+                accentColor={Colors.amber}
                 assessmentType={win ? 'window' : undefined}
                 assessmentValue={win}
               />
@@ -196,25 +196,25 @@ export default function GrowthTab() {
                     label="Attachment style"
                     value={ATTACHMENT_LABELS[pp.attachment] || 'Not set'}
                     note={ATTACH_REVEALS[pp.attachment]?.body || ''}
-                    accentColor={Colors.terracotta}
+                    accentColor={Colors.sage}
                   />
                   <PatternCard
                     label="Love language"
                     value={LOVE_LABELS[pp.love] || 'Not set'}
                     note={LOVE_REVEALS[pp.love]?.body || ''}
-                    accentColor={Colors.gold}
+                    accentColor={Colors.mauve}
                   />
                   <PatternCard
                     label="Conflict style"
                     value={CONFLICT_LABELS[pp.conflict] || 'Not set'}
                     note={CONFLICT_REVEALS[pp.conflict]?.body || ''}
-                    accentColor={Colors.sage}
+                    accentColor={Colors.blue}
                   />
                   <PatternCard
                     label="Body in conflict"
                     value={WINDOW_LABELS[pp.window] || 'Not set'}
                     note={WINDOW_REVEALS[pp.window]?.body || ''}
-                    accentColor={Colors.blush}
+                    accentColor={Colors.amber}
                   />
                   {pp.need && (
                     <View style={{ backgroundColor: Colors.sagePale, borderWidth: 1, borderColor: Colors.sageLight, borderRadius: Radius.lg, padding: 15, marginBottom: 12 }}>

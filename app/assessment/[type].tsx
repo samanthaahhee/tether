@@ -79,7 +79,7 @@ export default function AssessmentDetail() {
           <TouchableOpacity
             onPress={() => router.push({ pathname: '/assessment/quiz/[type]', params: { type } })}
             activeOpacity={0.85}
-            style={[s.fullAssessmentBtn, { backgroundColor: meta.accentColor }]}
+            style={s.fullAssessmentBtn}
           >
             <Text style={s.fullAssessmentBtnText}>Take the full assessment</Text>
           </TouchableOpacity>
@@ -128,7 +128,7 @@ export default function AssessmentDetail() {
         {/* Strengths */}
         <Section title="Your strengths">
           {detail.strengths.map((str, i) => (
-            <Bullet key={i} text={str} color={Colors.sage} />
+            <Bullet key={i} text={str} color={meta.accentColor} />
           ))}
         </Section>
 
@@ -166,7 +166,7 @@ const s = StyleSheet.create({
   heroLabel: { fontFamily: Fonts.displayLight, fontSize: 24, color: Colors.charcoal, marginBottom: 6, textAlign: 'center' },
   heroSubtitle: { fontFamily: Fonts.body, fontSize: 14, color: Colors.midBrown, textAlign: 'center', marginBottom: 0 },
   accuracyCopy: { fontFamily: Fonts.body, fontSize: 12, color: Colors.midBrown, textAlign: 'center', marginTop: 10, marginBottom: 14 },
-  fullAssessmentBtn: { borderRadius: Radius.full, paddingVertical: 11, paddingHorizontal: 22, alignItems: 'center' },
+  fullAssessmentBtn: { backgroundColor: Colors.sageDark, borderRadius: Radius.full, paddingVertical: 11, paddingHorizontal: 22, alignItems: 'center' },
   fullAssessmentBtnText: { fontFamily: Fonts.bodyMedium, fontSize: 13, color: Colors.white },
 
   section: { marginTop: 24, paddingHorizontal: 20 },

@@ -138,9 +138,9 @@ export default function Onboarding() {
 
   const rc = {
     attach: { bg: Colors.sagePale, border: Colors.sageLight, label: Colors.sage },
-    conflict: { bg: Colors.mauvePale, border: Colors.mauveLight, label: Colors.mauve },
-    window: { bg: Colors.bluePale, border: Colors.blueLight, label: Colors.blue },
-    love: { bg: Colors.amberPale, border: Colors.amberLight, label: Colors.amber },
+    conflict: { bg: Colors.bluePale, border: Colors.blueLight, label: Colors.blue },
+    window: { bg: Colors.amberPale, border: Colors.amberLight, label: Colors.amber },
+    love: { bg: Colors.mauvePale, border: Colors.mauveLight, label: Colors.mauve },
   };
 
   return (
