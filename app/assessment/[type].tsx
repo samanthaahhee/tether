@@ -5,6 +5,7 @@ import { useLocalSearchParams, router } from 'expo-router';
 import { Colors, Fonts, Radius } from '../../src/constants/theme';
 import { ASSESSMENT_DETAIL } from '../../src/constants/assessmentDetail';
 import { QUIZ_META } from '../../src/constants/assessmentQuestions';
+import { ChevronLeft, ChevronDown } from '../../src/components/Icon';
 
 const TYPE_META: Record<string, { label: string; accentColor: string; description: string }> = {
   attachment: { label: 'Attachment style', accentColor: Colors.terracotta, description: 'How you relate to closeness and security in relationships' },
@@ -43,7 +44,8 @@ export default function AssessmentDetail() {
     return (
       <SafeAreaView style={s.safe} edges={['top']}>
         <TouchableOpacity onPress={() => router.back()} style={s.backBtn}>
-          <Text style={s.backText}>← Back</Text>
+          <ChevronLeft size={11} color={Colors.midBrown} style={{ marginTop: 1 }} />
+          <Text style={s.backText}>Back</Text>
         </TouchableOpacity>
         <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
           <Text style={s.errorText}>Assessment not found.</Text>
@@ -56,7 +58,8 @@ export default function AssessmentDetail() {
     <SafeAreaView style={s.safe} edges={['top']}>
       <View style={s.topBar}>
         <TouchableOpacity onPress={() => router.replace('/(tabs)/learnings')} style={s.backBtn} activeOpacity={0.7}>
-          <Text style={s.backText}>← Back</Text>
+          <ChevronLeft size={11} color={Colors.midBrown} style={{ marginTop: 1 }} />
+          <Text style={s.backText}>Back</Text>
         </TouchableOpacity>
         <Text style={[s.typeLabel, { color: meta.accentColor }]}>{meta.label.toUpperCase()}</Text>
         <View style={{ width: 48 }} />
@@ -93,7 +96,10 @@ export default function AssessmentDetail() {
                 {para}
               </Text>
               {expanded !== i && (
-                <Text style={[s.accordionMore, { color: meta.accentColor }]}>Read more</Text>
+                <View style={s.accordionMoreRow}>
+                  <Text style={[s.accordionMore, { color: meta.accentColor }]}>Read more</Text>
+                  <ChevronDown size={9} color={meta.accentColor} style={{ marginLeft: 4, marginTop: 3 }} />
+                </View>
               )}
             </TouchableOpacity>
           ))}
@@ -127,7 +133,7 @@ export default function AssessmentDetail() {
         <Section title="Growth edges">
           <Text style={s.growthIntro}>Framed as invitations, not criticisms.</Text>
           {detail.growthEdges.map((edge, i) => (
-            <Bullet key={i} text={edge} color={meta.accentColor} icon="→" />
+            <Bullet key={i} text={edge} color={meta.accentColor} icon="▸" />
           ))}
         </Section>
 
@@ -145,7 +151,7 @@ export default function AssessmentDetail() {
 const s = StyleSheet.create({
   safe: { flex: 1, backgroundColor: Colors.cream },
   topBar: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, paddingVertical: 14 },
-  backBtn: { paddingVertical: 4, paddingRight: 12 },
+  backBtn: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingVertical: 4, paddingRight: 12 },
   backText: { fontFamily: Fonts.bodyMedium, fontSize: 14, color: Colors.midBrown },
   typeLabel: { fontFamily: Fonts.bodyMedium, fontSize: 10, letterSpacing: 1 },
   scroll: { flex: 1 },
@@ -161,18 +167,19 @@ const s = StyleSheet.create({
   fullAssessmentBtnText: { fontFamily: Fonts.bodyMedium, fontSize: 13, color: Colors.white },
 
   section: { marginTop: 24, paddingHorizontal: 20 },
-  sectionTitle: { fontFamily: Fonts.display, fontSize: 17, color: Colors.charcoal, marginBottom: 12 },
+  sectionTitle: { fontFamily: Fonts.display, fontSize: 18, color: Colors.charcoal, marginBottom: 12 },
   typeDesc: { fontFamily: Fonts.body, fontSize: 13, color: Colors.midBrown, marginBottom: 10 },
 
   accordionRow: { backgroundColor: Colors.warmWhite, borderWidth: 1, borderRadius: Radius.lg, padding: 16, marginBottom: 8 },
   accordionPara: { fontFamily: Fonts.body, fontSize: 14, color: Colors.charcoal, lineHeight: 22 },
-  accordionMore: { fontFamily: Fonts.bodyMedium, fontSize: 12, marginTop: 6 },
+  accordionMoreRow: { flexDirection: 'row', alignItems: 'center', marginTop: 6 },
+  accordionMore: { fontFamily: Fonts.bodyMedium, fontSize: 12 },
 
   inConflictCard: { backgroundColor: Colors.warmWhite, borderLeftWidth: 3, borderWidth: 1, borderColor: Colors.sand, borderRadius: Radius.lg, padding: 16 },
   inConflictText: { fontFamily: Fonts.body, fontSize: 14, color: Colors.charcoal, lineHeight: 22 },
 
   patternRow: { flexDirection: 'row', gap: 12, backgroundColor: Colors.warmWhite, borderWidth: 1, borderColor: Colors.sand, borderRadius: Radius.lg, padding: 14, marginBottom: 8, alignItems: 'flex-start' },
-  patternNum: { fontFamily: Fonts.display, fontSize: 18, width: 22, flexShrink: 0 },
+  patternNum: { fontFamily: Fonts.display, fontSize: 16, width: 22, flexShrink: 0 },
   patternText: { fontFamily: Fonts.body, fontSize: 14, color: Colors.charcoal, lineHeight: 21, flex: 1 },
 
   bulletRow: { flexDirection: 'row', gap: 10, marginBottom: 10, alignItems: 'flex-start' },

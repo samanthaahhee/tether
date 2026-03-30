@@ -9,6 +9,7 @@ import { useClaude } from '../../src/hooks/useClaude';
 import { Colors, Fonts, Radius, Shadows } from '../../src/constants/theme';
 import { MODE_CONFIG, ModeKey, SESSION_STEPS, CRISIS_WORDS } from '../../src/constants/data';
 import { Button } from '../../src/components/UI';
+import { ChevronLeft } from '../../src/components/Icon';
 
 function MicIcon() {
   return (
@@ -533,7 +534,8 @@ function ActiveSessionView({ session, state, dispatch: d, onBack }: { session: S
           {/* Nav row */}
           <View style={styles.sessionHeaderNav}>
             <TouchableOpacity onPress={goBack} style={styles.sessionBackBtn} activeOpacity={0.7}>
-              <Text style={styles.sessionBackText}>← Back</Text>
+              <ChevronLeft size={11} color={Colors.midBrown} style={{ marginTop: 1 }} />
+              <Text style={styles.sessionBackText}>Back</Text>
             </TouchableOpacity>
             <View style={{ flex: 1, alignItems: 'center' }}>
               {editingName ? (
@@ -801,7 +803,7 @@ const styles = StyleSheet.create({
   sectionLabel: { fontFamily: Fonts.bodyMedium, fontSize: 10, letterSpacing: 0.8, textTransform: 'uppercase', color: Colors.midBrown, marginBottom: 14 },
   sessionHeader: { borderBottomWidth: 1 },
   sessionHeaderNav: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingTop: 10, paddingBottom: 4 },
-  sessionBackBtn: { paddingVertical: 4, paddingRight: 8, minWidth: 56 },
+  sessionBackBtn: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingVertical: 4, paddingRight: 8, minWidth: 56 },
   sessionBackText: { fontFamily: Fonts.bodyMedium, fontSize: 14, color: Colors.midBrown },
   sessionNameInput: { fontFamily: Fonts.body, fontSize: 12, color: Colors.charcoal, textAlign: 'center', paddingVertical: 2, minWidth: 120 },
   sessionNameText: { fontFamily: Fonts.body, fontSize: 12, color: Colors.midBrown, textAlign: 'center' },

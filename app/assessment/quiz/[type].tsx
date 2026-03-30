@@ -12,6 +12,7 @@ import { ASSESSMENT_DETAIL } from '../../../src/constants/assessmentDetail';
 import { ATTACHMENT_LABELS, LOVE_LABELS, CONFLICT_LABELS, WINDOW_LABELS, NEED_LABELS } from '../../../src/constants/data';
 import { useAuth } from '../../../src/hooks/useAuth';
 import { useAppState } from '../../../src/hooks/useAppState';
+import { ChevronLeft } from '../../../src/components/Icon';
 
 const RESULT_LABEL_MAP: Record<string, Record<string, string>> = {
   attachment: ATTACHMENT_LABELS,
@@ -50,7 +51,8 @@ export default function AssessmentQuiz() {
     return (
       <SafeAreaView style={s.safe} edges={['top']}>
         <TouchableOpacity onPress={() => router.back()} style={s.backBtn}>
-          <Text style={s.backText}>← Back</Text>
+          <ChevronLeft size={11} color={Colors.midBrown} style={{ marginTop: 1 }} />
+          <Text style={s.backText}>Back</Text>
         </TouchableOpacity>
         <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
           <Text style={s.empty}>Assessment not found.</Text>
@@ -118,7 +120,8 @@ export default function AssessmentQuiz() {
       <SafeAreaView style={s.safe} edges={['top']}>
         <View style={s.introTopBar}>
           <TouchableOpacity onPress={() => router.back()} style={s.backBtn} activeOpacity={0.7}>
-            <Text style={s.backText}>← Back</Text>
+            <ChevronLeft size={11} color={Colors.midBrown} style={{ marginTop: 1 }} />
+          <Text style={s.backText}>Back</Text>
           </TouchableOpacity>
         </View>
         <ScrollView contentContainerStyle={s.introContent}>
@@ -229,7 +232,8 @@ export default function AssessmentQuiz() {
       {/* Header */}
       <View style={s.header}>
         <TouchableOpacity onPress={goBack} style={s.backBtn} activeOpacity={0.7}>
-          <Text style={s.backText}>← Back</Text>
+          <ChevronLeft size={11} color={Colors.midBrown} style={{ marginTop: 1 }} />
+          <Text style={s.backText}>Back</Text>
         </TouchableOpacity>
         <Text style={s.headerMeta}>{currentIndex + 1} / {questions.length}</Text>
       </View>
@@ -307,7 +311,7 @@ export default function AssessmentQuiz() {
 
 const s = StyleSheet.create({
   safe: { flex: 1, backgroundColor: Colors.cream },
-  backBtn: { paddingVertical: 4, paddingRight: 12 },
+  backBtn: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingVertical: 4, paddingRight: 12 },
   backText: { fontFamily: Fonts.bodyMedium, fontSize: 14, color: Colors.midBrown },
   empty: { fontFamily: Fonts.body, color: Colors.midBrown },
 

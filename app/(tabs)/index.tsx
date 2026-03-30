@@ -5,6 +5,7 @@ import { useAppState } from '../../src/hooks/useAppState';
 import { Colors, Fonts, Radius, Shadows } from '../../src/constants/theme';
 import { DAILY_INSIGHTS, ModeKey } from '../../src/constants/data';
 import { useMemo } from 'react';
+import { ChevronRight } from '../../src/components/Icon';
 
 const JOURNEY_STEPS = [
   { mode: 'vent' as ModeKey, num: 'Step 1', name: 'Vent', emoji: '🌊', color: Colors.terracotta, paleBg: Colors.terracottaPale, border: Colors.terracottaLight, desc: 'Speak or type freely in a completely private space. Your partner will never see this. Just let it out.', tag: 'Start here every time' },
@@ -53,7 +54,8 @@ export default function HomeTab() {
           <Text style={styles.startTitle}>{activeSession ? 'Continue your session' : 'Start a new session'}</Text>
           <Text style={styles.startBody}>{activeSession ? 'You have an active session. Pick up where you left off.' : 'Whatever is happening, start here. Tether guides you from raw emotion to resolution, one step at a time.'}</Text>
           <View style={styles.startBtn}>
-            <Text style={styles.startBtnText}>{activeSession ? 'Continue →' : 'Begin →'}</Text>
+            <Text style={styles.startBtnText}>{activeSession ? 'Continue' : 'Begin'}</Text>
+            <ChevronRight size={10} color={Colors.white} style={{ marginLeft: 6, marginTop: 1 }} />
           </View>
         </TouchableOpacity>
 
@@ -101,15 +103,15 @@ const styles = StyleSheet.create({
   greeting: { paddingHorizontal: 20, paddingTop: 24, marginBottom: 20 },
   greetingRow: { flexDirection: 'row', alignItems: 'flex-start' },
   settingsBtn: { padding: 4, marginTop: 2 },
-  greetingTime: { fontFamily: Fonts.bodyMedium, fontSize: 11, letterSpacing: 0.8, textTransform: 'uppercase', color: Colors.terracotta, marginBottom: 4 },
+  greetingTime: { fontFamily: Fonts.bodyMedium, fontSize: 10, letterSpacing: 0.8, textTransform: 'uppercase', color: Colors.terracotta, marginBottom: 4 },
   greetingTitle: { fontFamily: Fonts.display, fontSize: 26, color: Colors.charcoal, lineHeight: 32, marginBottom: 4 },
   greetingSub: { fontFamily: Fonts.body, fontSize: 14, color: Colors.midBrown },
   startCard: { marginHorizontal: 20, marginBottom: 24, backgroundColor: Colors.terracotta, borderRadius: Radius.lg, padding: 20, overflow: 'hidden', ...Shadows.terracotta },
   startCardBlob: { position: 'absolute', top: -40, right: -40, width: 120, height: 120, borderRadius: 60, backgroundColor: 'rgba(255,255,255,0.1)' },
-  startTag: { fontFamily: Fonts.bodyMedium, fontSize: 11, letterSpacing: 0.8, textTransform: 'uppercase', color: 'rgba(255,255,255,0.8)', marginBottom: 8 },
+  startTag: { fontFamily: Fonts.bodyMedium, fontSize: 10, letterSpacing: 0.8, textTransform: 'uppercase', color: 'rgba(255,255,255,0.8)', marginBottom: 8 },
   startTitle: { fontFamily: Fonts.display, fontSize: 22, color: Colors.white, marginBottom: 8 },
   startBody: { fontFamily: Fonts.body, fontSize: 14, color: 'rgba(255,255,255,0.88)', lineHeight: 21, marginBottom: 16 },
-  startBtn: { backgroundColor: 'rgba(255,255,255,0.2)', borderWidth: 1.5, borderColor: 'rgba(255,255,255,0.4)', borderRadius: Radius.full, paddingVertical: 10, paddingHorizontal: 18, alignSelf: 'flex-start' },
+  startBtn: { backgroundColor: 'rgba(255,255,255,0.2)', borderWidth: 1.5, borderColor: 'rgba(255,255,255,0.4)', borderRadius: Radius.full, paddingVertical: 10, paddingHorizontal: 18, alignSelf: 'flex-start', flexDirection: 'row', alignItems: 'center' },
   startBtnText: { fontFamily: Fonts.bodyMedium, fontSize: 13, color: Colors.white },
   section: { paddingHorizontal: 20, marginBottom: 24 },
   sectionLabel: { fontFamily: Fonts.bodyMedium, fontSize: 10, letterSpacing: 0.8, textTransform: 'uppercase', color: Colors.midBrown, marginBottom: 16 },
@@ -122,7 +124,7 @@ const styles = StyleSheet.create({
   journeyName: { fontFamily: Fonts.display, fontSize: 18, color: Colors.charcoal, marginBottom: 4 },
   journeyDesc: { fontFamily: Fonts.body, fontSize: 13, color: Colors.midBrown, lineHeight: 19, marginBottom: 8 },
   journeyTag: { borderRadius: Radius.full, paddingHorizontal: 10, paddingVertical: 4, alignSelf: 'flex-start' },
-  journeyTagText: { fontFamily: Fonts.bodyMedium, fontSize: 11 },
+  journeyTagText: { fontFamily: Fonts.bodyMedium, fontSize: 10 },
   insightCard: { marginHorizontal: 20, backgroundColor: Colors.sagePale, borderWidth: 1, borderColor: Colors.sageLight, borderRadius: Radius.lg, padding: 16, flexDirection: 'row', gap: 12 },
   insightText: { flex: 1, fontFamily: Fonts.body, fontSize: 13, color: Colors.warmBrown, lineHeight: 20 },
 });

@@ -36,6 +36,27 @@ export const Radius = {
   full: 999,
 };
 
+// ── Typography scale ────────────────────────────────────────────────────────
+// Use these tokens instead of raw fontSize values to keep hierarchy consistent.
+export const Typography = {
+  // One per screen — the page title
+  screenTitle:   { fontFamily: 'Lora_500Medium',      fontSize: 26 } as const,
+  // Major section headers — "Know yourself", "Breathing exercises"
+  sectionTitle:  { fontFamily: 'Lora_500Medium',      fontSize: 18 } as const,
+  // Card and subsection titles — pattern card values, card names
+  cardTitle:     { fontFamily: 'Lora_500Medium',      fontSize: 16 } as const,
+  // Primary body copy — messages, reflections, assessment paragraphs
+  body:          { fontFamily: 'DMSans_400Regular',   fontSize: 14, lineHeight: 22 } as const,
+  // Secondary / supporting copy — notes, intros, descriptions
+  bodySmall:     { fontFamily: 'DMSans_400Regular',   fontSize: 13, lineHeight: 20 } as const,
+  // ALL-CAPS labels, tags, metadata chips
+  label:         { fontFamily: 'DMSans_500Medium',    fontSize: 10, textTransform: 'uppercase' as const, letterSpacing: 0.8 } as const,
+  // Captions, sub-labels, secondary metadata
+  caption:       { fontFamily: 'DMSans_400Regular',   fontSize: 12 } as const,
+  // Buttons and interactive labels
+  button:        { fontFamily: 'DMSans_500Medium',    fontSize: 14 } as const,
+};
+
 export const Shadows = {
   sm: {
     shadowColor: '#2C2825',

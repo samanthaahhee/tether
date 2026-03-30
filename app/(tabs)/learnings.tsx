@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, StyleSheet, Share, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Colors, Fonts, Radius } from '../../src/constants/theme';
+import { ChevronRight } from '../../src/components/Icon';
 import { useAppState } from '../../src/hooks/useAppState';
 import { useAuth } from '../../src/hooks/useAuth';
 import { router } from 'expo-router';
@@ -25,7 +26,10 @@ function PatternCard({ label, value, note, accentColor, assessmentType, assessme
       <Text style={pc.value}>{value}</Text>
       <Text style={pc.note}>{note}</Text>
       {assessmentType && (
-        <Text style={[pc.deepenLink, { color: accentColor }]}>Explore in depth →</Text>
+        <View style={pc.deepenRow}>
+          <Text style={[pc.deepenLink, { color: accentColor }]}>Explore in depth</Text>
+          <ChevronRight size={9} color={accentColor} style={{ marginTop: 2 }} />
+        </View>
       )}
     </TouchableOpacity>
   );
@@ -34,9 +38,10 @@ function PatternCard({ label, value, note, accentColor, assessmentType, assessme
 const pc = StyleSheet.create({
   card: { backgroundColor: Colors.warmWhite, borderWidth: 1, borderColor: Colors.sand, borderRadius: Radius.lg, borderTopWidth: 3, padding: 15, marginBottom: 12 },
   label: { fontFamily: Fonts.bodyMedium, fontSize: 10, letterSpacing: 0.7, textTransform: 'uppercase', marginBottom: 6 },
-  value: { fontFamily: Fonts.display, fontSize: 17, color: Colors.charcoal, marginBottom: 5 },
+  value: { fontFamily: Fonts.display, fontSize: 16, color: Colors.charcoal, marginBottom: 5 },
   note: { fontFamily: Fonts.body, fontSize: 13, color: Colors.midBrown, lineHeight: 19 },
-  deepenLink: { fontFamily: Fonts.bodyMedium, fontSize: 12, marginTop: 10 },
+  deepenRow: { flexDirection: 'row', alignItems: 'center', gap: 5, marginTop: 10 },
+  deepenLink: { fontFamily: Fonts.bodyMedium, fontSize: 12 },
 });
 
 function PlaceholderCard({ icon, title, body }: { icon: string; title: string; body: string }) {
@@ -51,7 +56,7 @@ function PlaceholderCard({ icon, title, body }: { icon: string; title: string; b
 
 const ph = StyleSheet.create({
   card: { backgroundColor: Colors.creamDark, borderWidth: 1, borderColor: Colors.sand, borderRadius: Radius.lg, padding: 16, marginBottom: 12, alignItems: 'center' },
-  title: { fontFamily: Fonts.display, fontSize: 15, color: Colors.charcoal, marginBottom: 4, textAlign: 'center' },
+  title: { fontFamily: Fonts.display, fontSize: 16, color: Colors.charcoal, marginBottom: 4, textAlign: 'center' },
   body: { fontFamily: Fonts.body, fontSize: 13, color: Colors.midBrown, lineHeight: 19, textAlign: 'center' },
 });
 
@@ -159,11 +164,14 @@ export default function GrowthTab() {
                   style={{ backgroundColor: Colors.sagePale, borderWidth: 1, borderColor: Colors.sageLight, borderRadius: Radius.lg, padding: 15, marginBottom: 12 }}
                 >
                   <Text style={{ fontFamily: Fonts.bodyMedium, fontSize: 10, letterSpacing: 0.7, textTransform: 'uppercase', color: Colors.sage, marginBottom: 6 }}>Core need</Text>
-                  <Text style={{ fontFamily: Fonts.display, fontSize: 17, color: Colors.charcoal, marginBottom: 5 }}>{NEED_LABELS[need] || 'Not set'}</Text>
+                  <Text style={{ fontFamily: Fonts.display, fontSize: 16, color: Colors.charcoal, marginBottom: 5 }}>{NEED_LABELS[need] || 'Not set'}</Text>
                   <Text style={{ fontFamily: Fonts.body, fontSize: 13, color: Colors.warmBrown, lineHeight: 19 }}>
                     This is the thread underneath most of your conflicts. The unspoken thing you most need your partner to understand.
                   </Text>
-                  <Text style={{ fontFamily: Fonts.bodyMedium, fontSize: 12, color: Colors.sage, marginTop: 10 }}>Explore in depth →</Text>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5, marginTop: 10 }}>
+                    <Text style={{ fontFamily: Fonts.bodyMedium, fontSize: 12, color: Colors.sage }}>Explore in depth</Text>
+                    <ChevronRight size={9} color={Colors.sage} style={{ marginTop: 1 }} />
+                  </View>
                 </TouchableOpacity>
               )}
             </View>
@@ -300,7 +308,7 @@ export default function GrowthTab() {
                   {pp.need && (
                     <View style={{ backgroundColor: Colors.sagePale, borderWidth: 1, borderColor: Colors.sageLight, borderRadius: Radius.lg, padding: 15, marginBottom: 12 }}>
                       <Text style={{ fontFamily: Fonts.bodyMedium, fontSize: 10, letterSpacing: 0.7, textTransform: 'uppercase', color: Colors.sage, marginBottom: 6 }}>Core need</Text>
-                      <Text style={{ fontFamily: Fonts.display, fontSize: 17, color: Colors.charcoal, marginBottom: 5 }}>{NEED_LABELS[pp.need] || 'Not set'}</Text>
+                      <Text style={{ fontFamily: Fonts.display, fontSize: 16, color: Colors.charcoal, marginBottom: 5 }}>{NEED_LABELS[pp.need] || 'Not set'}</Text>
                       <Text style={{ fontFamily: Fonts.body, fontSize: 13, color: Colors.warmBrown, lineHeight: 19 }}>
                         This is the thread underneath most of their conflicts. The unspoken thing they most need you to understand.
                       </Text>
@@ -382,7 +390,7 @@ export default function GrowthTab() {
 
 const pt = StyleSheet.create({
   setupCard: { backgroundColor: Colors.creamDark, borderWidth: 1, borderColor: Colors.sand, borderRadius: Radius.lg, padding: 20, alignItems: 'center', marginBottom: 12 },
-  setupTitle: { fontFamily: Fonts.display, fontSize: 17, color: Colors.charcoal, textAlign: 'center', marginBottom: 8 },
+  setupTitle: { fontFamily: Fonts.display, fontSize: 16, color: Colors.charcoal, textAlign: 'center', marginBottom: 8 },
   setupBody: { fontFamily: Fonts.body, fontSize: 13, color: Colors.midBrown, lineHeight: 20, textAlign: 'center', marginBottom: 16 },
   setupBtn: { backgroundColor: Colors.blush, borderRadius: Radius.full, paddingHorizontal: 20, paddingVertical: 10 },
   setupBtnText: { fontFamily: Fonts.bodyMedium, fontSize: 13, color: Colors.white },
@@ -428,7 +436,7 @@ const ej = StyleSheet.create({
   item: { backgroundColor: Colors.warmWhite, borderWidth: 1, borderColor: Colors.sand, borderRadius: Radius.lg, padding: 12, alignItems: 'center', gap: 4, minWidth: 64 },
   emoji: { fontSize: 22 },
   dot: { width: 6, height: 6, borderRadius: 3 },
-  stepLabel: { fontFamily: Fonts.bodyMedium, fontSize: 9, textTransform: 'uppercase', letterSpacing: 0.5 },
+  stepLabel: { fontFamily: Fonts.bodyMedium, fontSize: 10, textTransform: 'uppercase', letterSpacing: 0.5 },
   date: { fontFamily: Fonts.body, fontSize: 10, color: Colors.lightBrown },
 });
 
@@ -438,7 +446,7 @@ const jn = StyleSheet.create({
   statNum: { fontFamily: Fonts.display, fontSize: 26, color: Colors.charcoal, marginBottom: 2 },
   statLabel: { fontFamily: Fonts.body, fontSize: 10, color: Colors.midBrown, textAlign: 'center', lineHeight: 14 },
   growthCard: { backgroundColor: Colors.sagePale, borderWidth: 1, borderColor: Colors.sageLight, borderRadius: Radius.lg, padding: 16, marginBottom: 16 },
-  growthTitle: { fontFamily: Fonts.display, fontSize: 15, color: Colors.charcoal, marginBottom: 2 },
+  growthTitle: { fontFamily: Fonts.display, fontSize: 16, color: Colors.charcoal, marginBottom: 2 },
   growthSub: { fontFamily: Fonts.body, fontSize: 12, color: Colors.midBrown, marginBottom: 12 },
   growthItem: { flexDirection: 'row', alignItems: 'flex-start', gap: 10, marginBottom: 8 },
   growthDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: Colors.sage, marginTop: 6, flexShrink: 0 },
@@ -453,7 +461,7 @@ const styles = StyleSheet.create({
   title: { fontFamily: Fonts.display, fontSize: 26, color: Colors.charcoal, marginBottom: 6 },
   subtitle: { fontFamily: Fonts.body, fontSize: 14, color: Colors.midBrown },
   sectionHeader: { paddingHorizontal: 20, paddingTop: 8, paddingBottom: 14, borderTopWidth: 1, borderTopColor: Colors.sand, marginTop: 8 },
-  sectionHeaderTitle: { fontFamily: Fonts.display, fontSize: 20, color: Colors.charcoal, marginBottom: 4 },
+  sectionHeaderTitle: { fontFamily: Fonts.display, fontSize: 18, color: Colors.charcoal, marginBottom: 4 },
   sectionHeaderSub: { fontFamily: Fonts.body, fontSize: 13, color: Colors.midBrown },
   section: { paddingHorizontal: 20, marginBottom: 20 },
   sectionTitle: { fontFamily: Fonts.display, fontSize: 18, color: Colors.charcoal, marginBottom: 6 },
