@@ -367,14 +367,11 @@ function SessionListView({ sessions, dispatch: d, onOpenSession, onStartNew }: {
         {/* New Session CTA card — white card matching Figma */}
         <View style={{ paddingHorizontal: 16, paddingTop: 16, marginBottom: 24 }}>
           <View style={sl.startCard}>
-            <Text style={sl.startTag}>NEW SESSION</Text>
+            <Text style={sl.startTag}>SHARE YOUR FEELINGS</Text>
             <Text style={sl.startTitle}>Start a new session</Text>
             <Text style={sl.startBody}>Whatever is happening, start here.{'\n'}Your partner will never see what you say or hear how you feel. This is a safe place to say whats on your mind.</Text>
-            <TouchableOpacity style={sl.startInputBar} onPress={onStartNew} activeOpacity={0.85}>
-              <Text style={sl.startInputText}>Start typing or begin recording</Text>
-              <View style={sl.startMicBtn}>
-                <IconVoice size={24} color="#ffffff" />
-              </View>
+            <TouchableOpacity style={sl.startBtn} onPress={onStartNew} activeOpacity={0.85}>
+              <Text style={sl.startBtnText}>Let's get started</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -539,10 +536,9 @@ const sl = StyleSheet.create({
   startCard: { backgroundColor: '#ffffff', borderWidth: 1, borderColor: '#dedde8', borderRadius: 20, padding: 24, overflow: 'hidden', ...Shadows.xs },
   startTag: { fontFamily: 'Inter_400Regular', fontSize: 12, color: '#211e28', textAlign: 'center', letterSpacing: 0.036, marginBottom: 8 },
   startTitle: { fontFamily: 'InstrumentSans_600SemiBold', fontSize: 22, color: '#211e28', textAlign: 'center', marginBottom: 12 },
-  startBody: { fontFamily: 'Inter_400Regular', fontSize: 14, color: '#80798c', textAlign: 'center', lineHeight: 21, marginBottom: 12 },
-  startInputBar: { backgroundColor: '#ffffff', borderWidth: 1, borderColor: '#dedde8', borderRadius: 9999, height: 48, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingLeft: 24 },
-  startInputText: { fontFamily: 'Inter_400Regular', fontSize: 13, color: '#80798c', letterSpacing: 0.026 },
-  startMicBtn: { backgroundColor: '#96d35f', width: 48, height: 48, borderRadius: 9999, alignItems: 'center', justifyContent: 'center' },
+  startBody: { fontFamily: 'Inter_400Regular', fontSize: 14, color: '#80798c', textAlign: 'center', lineHeight: 21, marginBottom: 16 },
+  startBtn: { backgroundColor: '#96d35f', borderRadius: 9999, height: 48, alignItems: 'center', justifyContent: 'center' },
+  startBtnText: { fontFamily: 'Inter_600SemiBold', fontSize: 16, color: '#001c14' },
   // Sessions heading
   sessionsHeading: { fontFamily: 'InstrumentSans_600SemiBold', fontSize: 16, color: '#211e28' },
   // Session cards

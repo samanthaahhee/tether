@@ -289,21 +289,32 @@ function ExpandableCard({ icon, title, children }: { icon: React.ReactNode; titl
 }
 
 const ex = StyleSheet.create({
-  card: { backgroundColor: '#ffffff', borderWidth: 1, borderColor: '#dedde8', borderRadius: 16, marginBottom: 12, overflow: 'hidden' },
+  card: { backgroundColor: '#fbf9ff', borderWidth: 1, borderColor: '#dedde8', borderRadius: 16, marginBottom: 12, overflow: 'hidden' },
   header: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 24, paddingVertical: 16 },
   title: { fontFamily: 'InstrumentSans_600SemiBold', fontSize: 16, color: '#211e28', flex: 1 },
   arrow: { fontFamily: 'Inter_400Regular', fontSize: 20, color: '#80798c' },
-  body: { paddingHorizontal: 24, paddingBottom: 24, borderTopWidth: 1, borderTopColor: '#dedde8', paddingTop: 24, gap: 12 },
+  body: { paddingHorizontal: 16, paddingBottom: 16, borderTopWidth: 1, borderTopColor: '#dedde8', paddingTop: 16, gap: 8 },
 });
 
 export default function ToolsTab() {
+  const scrollRef = useRef<ScrollView>(null);
+  const sectionPositions = useRef<Record<string, number>>({});
+  const route = require('expo-router').useLocalSearchParams() as { scrollTo?: string };
+
+  useEffect(() => {
+    if (route.scrollTo && sectionPositions.current[route.scrollTo]) {
+      setTimeout(() => {
+        scrollRef.current?.scrollTo({ y: sectionPositions.current[route.scrollTo!], animated: true });
+      }, 300);
+    }
+  }, [route.scrollTo]);
 
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
-      <ScrollView style={styles.scroll} contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+      <ScrollView ref={scrollRef} style={styles.scroll} contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
 
         {/* Breathing Techniques */}
-        <View style={styles.section}>
+        <View style={styles.section} onLayout={(e) => { sectionPositions.current['breathing'] = e.nativeEvent.layout.y; }}>
           <View style={styles.sectionRow}>
             <Text style={styles.sectionTitle}>Breathing Techniques</Text>
             <Text style={styles.viewAll}>View all</Text>
@@ -314,7 +325,7 @@ export default function ToolsTab() {
         </View>
 
         {/* Grounding Techniques */}
-        <View style={styles.section}>
+        <View style={styles.section} onLayout={(e) => { sectionPositions.current['grounding'] = e.nativeEvent.layout.y; }}>
           <Text style={styles.sectionTitle}>Grounding Techniques</Text>
           {TOOLS_CONTENT.grounding.map((g) => {
             const gTheme = GROUNDING_THEMES[g.id] || GROUNDING_THEMES['54321'];
@@ -416,11 +427,11 @@ const pb = StyleSheet.create({
   avoidCard: { backgroundColor: '#eeebf4', borderRadius: 10, padding: 12, marginBottom: 10 },
   avoidWord: { fontFamily: Fonts.bodyMedium, fontSize: 14, color: '#211e28', marginBottom: 4 },
   avoidWhy: { fontFamily: Fonts.body, fontSize: 13, color: '#80798c', lineHeight: 19 },
-  avoidCardNew: { backgroundColor: '#ffffff', borderWidth: 1, borderColor: '#dedde8', borderRadius: 16, padding: 16, marginBottom: 10 },
-  avoidHeader: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 8 },
+  avoidCardNew: { backgroundColor: '#ffffff', borderWidth: 1, borderColor: '#dedde8', borderRadius: 12, padding: 14, marginBottom: 8 },
+  avoidHeader: { flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 6 },
   avoidX: { fontSize: 14, color: '#f90330', fontWeight: '700' },
   avoidWordNew: { fontFamily: 'Inter_600SemiBold', fontSize: 14, color: '#f90330' },
-  avoidWhyNew: { fontFamily: 'Inter_400Regular', fontSize: 14, color: '#80798c', lineHeight: 21 },
+  avoidWhyNew: { fontFamily: 'Inter_400Regular', fontSize: 14, color: '#211e28', lineHeight: 21 },
 });
 
 const styles = StyleSheet.create({

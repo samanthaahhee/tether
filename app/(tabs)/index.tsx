@@ -1,12 +1,13 @@
-import { ScrollView, View, Text, TouchableOpacity, FlatList, StyleSheet, useWindowDimensions, TextInput, Image } from 'react-native';
+import { ScrollView, View, Text, TouchableOpacity, FlatList, StyleSheet, useWindowDimensions, TextInput, Image, Modal, Animated } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAppState } from '../../src/hooks/useAppState';
 import { Colors, Fonts, Radius, Shadows } from '../../src/constants/theme';
 import { ModeKey } from '../../src/constants/data';
-import { useState } from 'react';
-import { IconSettings, IconWind, IconSearch, IconLeaf, IconHeart, IconVoice } from '../../src/components/Icons';
+import { useState, useRef, useEffect } from 'react';
+import { IconSettings, IconWind, IconSearch, IconLeaf, IconHeart, IconVoice, IconX } from '../../src/components/Icons';
+import { ChevronLeft, ChevronRight } from '../../src/components/Icon';
 
 // ── Figma: "Your Guide" carousel cards ──────────────────────────────────────
 const JOURNEY_STEPS = [
@@ -25,10 +26,117 @@ const STEP_ICONS: Record<string, React.ComponentType<{ size?: number; color?: st
 
 // ── Quick-access tag chips ──────────────────────────────────────────────────
 const TAGS = [
-  { label: 'Grounding Techniques', route: '/(tabs)/tools' },
-  { label: 'Breathing exercises', route: '/(tabs)/tools' },
-  { label: 'Affirmation', route: '/(tabs)/tools' },
+  { label: 'Grounding Techniques', route: '/(tabs)/tools', scrollTo: 'grounding' },
+  { label: 'Breathing exercises', route: '/(tabs)/tools', scrollTo: 'breathing' },
+  { label: 'Affirmation', route: null, scrollTo: null },
 ];
+
+// ── Affirmations data ────────────────────────────────────────────────────────
+const AFFIRMATIONS = [
+  {
+    category: 'GROWTH',
+    title: 'My potential is limitless.',
+    body: 'I am constantly evolving and learning. I welcome new opportunities with an open heart, knowing that my future is shaped by my positive actions today.',
+    gradient: ['#ffffff', '#ffffff', '#dce3fd'] as [string, string, string],
+  },
+  {
+    category: 'YOUR SELF-WORTH',
+    title: 'I am enough.',
+    body: 'I release the need for perfection and embrace my inherent value. I do not need to do more or be more to deserve respect, love, and success.',
+    gradient: ['#ffffff', '#ffffff', '#f3e6fb'] as [string, string, string],
+  },
+  {
+    category: 'RESILIENCE',
+    title: 'I have the power to overcome any challenge.',
+    body: 'Every difficulty I face is an opportunity to grow stronger. I trust my ability to navigate tough times with grace and emerge more capable than before.',
+    gradient: ['#ffffff', '#ffffff', '#d8f5ea'] as [string, string, string],
+  },
+  {
+    category: 'SELF-COMPASSION',
+    title: 'I deserve kindness from myself.',
+    body: 'I treat myself with the same compassion I would offer a dear friend. My mistakes do not define me. They are part of my journey toward becoming who I am meant to be.',
+    gradient: ['#ffffff', '#ffffff', '#fde8cc'] as [string, string, string],
+  },
+  {
+    category: 'CONNECTION',
+    title: 'I am worthy of deep love.',
+    body: 'I open my heart to give and receive love fully. My vulnerability is not weakness. It is the bridge that connects me to the people who matter most.',
+    gradient: ['#ffffff', '#ffffff', '#f3e6fb'] as [string, string, string],
+  },
+];
+
+function AffirmationsModal({ visible, onClose }: { visible: boolean; onClose: () => void }) {
+  const [idx, setIdx] = useState(0);
+  const fadeAnim = useRef(new Animated.Value(1)).current;
+
+  const switchCard = (newIdx: number) => {
+    Animated.timing(fadeAnim, { toValue: 0, duration: 150, useNativeDriver: true }).start(() => {
+      setIdx(newIdx);
+      Animated.timing(fadeAnim, { toValue: 1, duration: 250, useNativeDriver: true }).start();
+    });
+  };
+
+  const prev = () => switchCard(idx > 0 ? idx - 1 : AFFIRMATIONS.length - 1);
+  const next = () => switchCard(idx < AFFIRMATIONS.length - 1 ? idx + 1 : 0);
+
+  const aff = AFFIRMATIONS[idx];
+
+  return (
+    <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
+      <View style={af.overlay}>
+        <Animated.View style={[af.cardWrap, { opacity: fadeAnim }]}>
+          {/* Close button */}
+          <TouchableOpacity style={af.closeX} onPress={onClose} activeOpacity={0.7}>
+            <IconX size={18} color="#80798c" />
+          </TouchableOpacity>
+
+          <LinearGradient colors={aff.gradient} locations={[0, 0.65, 1]} start={{ x: 0.5, y: 0 }} end={{ x: 0.5, y: 1 }} style={af.card}>
+            <View style={af.textBlock}>
+              <Text style={af.category}>{aff.category}</Text>
+              <Text style={af.title}>{aff.title}</Text>
+              <Text style={af.body}>{aff.body}</Text>
+            </View>
+            <Image source={require('../../assets/mascot-prepare.png')} style={af.mascot} resizeMode="contain" />
+          </LinearGradient>
+        </Animated.View>
+
+        {/* Navigation */}
+        <View style={af.nav}>
+          <TouchableOpacity style={af.navArrow} onPress={prev} activeOpacity={0.8}>
+            <Text style={{ fontSize: 18, color: '#211e28' }}>←</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={af.feelBtn} onPress={onClose} activeOpacity={0.8}>
+            <Text style={af.feelBtnText}>I feel better</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={af.navArrow} onPress={next} activeOpacity={0.8}>
+            <Text style={{ fontSize: 18, color: '#211e28' }}>→</Text>
+          </TouchableOpacity>
+        </View>
+
+        <TouchableOpacity onPress={onClose} activeOpacity={0.8}>
+          <Text style={af.closeText}>Close</Text>
+        </TouchableOpacity>
+      </View>
+    </Modal>
+  );
+}
+
+const af = StyleSheet.create({
+  overlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.8)', alignItems: 'center', justifyContent: 'center', paddingHorizontal: 32 },
+  cardWrap: { width: '100%', maxWidth: 340 },
+  closeX: { position: 'absolute', top: 10, right: 10, zIndex: 10, padding: 8 },
+  card: { borderWidth: 1, borderColor: '#dedde8', borderRadius: 16, paddingHorizontal: 28, paddingVertical: 42, gap: 28, overflow: 'hidden', ...Shadows.sm },
+  textBlock: { gap: 8 },
+  category: { fontFamily: 'Inter_500Medium', fontSize: 11, color: '#211e28', letterSpacing: 0.88, textTransform: 'uppercase' as const },
+  title: { fontFamily: 'InstrumentSans_700Bold', fontSize: 18, color: '#211e28', lineHeight: 24 },
+  body: { fontFamily: 'Inter_400Regular', fontSize: 14, color: '#80798c', lineHeight: 21 },
+  mascot: { width: 100, height: 120, alignSelf: 'center' },
+  nav: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 16, marginTop: 21 },
+  navArrow: { width: 44, height: 44, borderRadius: 22, borderWidth: 1.5, borderColor: '#dedde8', backgroundColor: '#ffffff', alignItems: 'center', justifyContent: 'center' },
+  feelBtn: { backgroundColor: '#f7f5fd', borderWidth: 1.5, borderColor: '#dedde8', borderRadius: 9999, height: 44, paddingHorizontal: 24, alignItems: 'center', justifyContent: 'center' },
+  feelBtnText: { fontFamily: 'Inter_600SemiBold', fontSize: 16, color: '#000000' },
+  closeText: { fontFamily: 'Inter_600SemiBold', fontSize: 16, color: '#ffffff', marginTop: 21 },
+});
 
 const CAROUSEL_GAP = 12;
 const CAROUSEL_LEFT = 16;
@@ -42,6 +150,7 @@ export default function HomeTab() {
 
   const activeSession = state.sessions.find((s) => s.id === state.activeSessionId);
   const [journeyIdx, setJourneyIdx] = useState(0);
+  const [showAffirmations, setShowAffirmations] = useState(false);
 
   const snapInterval = CARD_WIDTH + CAROUSEL_GAP;
 
@@ -78,7 +187,18 @@ export default function HomeTab() {
               {/* Tag chips */}
               <View style={s.tagsRow}>
                 {TAGS.map((tag) => (
-                  <TouchableOpacity key={tag.label} style={s.tag} onPress={() => router.push(tag.route as any)} activeOpacity={0.7}>
+                  <TouchableOpacity
+                    key={tag.label}
+                    style={s.tag}
+                    onPress={() => {
+                      if (tag.label === 'Affirmation') {
+                        setShowAffirmations(true);
+                      } else if (tag.route && tag.scrollTo) {
+                        router.push({ pathname: tag.route as any, params: { scrollTo: tag.scrollTo } });
+                      }
+                    }}
+                    activeOpacity={0.7}
+                  >
                     <Text style={s.tagText}>{tag.label}</Text>
                   </TouchableOpacity>
                 ))}
@@ -170,6 +290,7 @@ export default function HomeTab() {
         </View>
 
       </ScrollView>
+      <AffirmationsModal visible={showAffirmations} onClose={() => setShowAffirmations(false)} />
     </SafeAreaView>
   );
 }
