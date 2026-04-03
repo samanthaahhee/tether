@@ -11,9 +11,9 @@ const BREATHING_ICONS: Record<string, React.ComponentType<{ size?: number; color
   '478': IconMoon,
 };
 
-const BREATHING_THEMES: Record<string, { accent: string; cardGrad: [string, string]; bg: [string, string]; circle: [string, string, string]; text: string }> = {
-  'box': { accent: Colors.sage, cardGrad: ['#E4F0E5', '#FDFBF7'], bg: ['#4A7A4E', '#2D4F30'], circle: ['#C8E0CA', '#9BBF9E', '#6E9B72'], text: '#E4F0E5' },
-  '478': { accent: Colors.blue, cardGrad: ['#E8EEF8', '#FDFBF7'], bg: ['#3A5490', '#243660'], circle: ['#C5D3EC', '#8BA4D4', '#5B78B5'], text: '#E8EEF8' },
+const BREATHING_THEMES: Record<string, { accent: string; cardGrad: [string, string, string]; tag: string; bg: [string, string]; circle: [string, string, string]; text: string }> = {
+  'box': { accent: '#af30dc', cardGrad: ['#ffffff', '#ffffff', '#ece0f5'], tag: 'Calm your nerves', bg: ['#679647', '#497032'], circle: ['#b8f37e', '#96d35f', '#81b756'], text: '#edf0e8' },
+  '478': { accent: '#e96300', cardGrad: ['#ffffff', '#ffffff', '#f5e6d6'], tag: 'Prepare your nerves', bg: ['#9615b5', '#79028e'], circle: ['#ebb0ff', '#bd57f2', '#af30dc'], text: '#edf0e8' },
 };
 
 const GROUNDING_ICONS: Record<string, React.ComponentType<{ size?: number; color?: string }>> = {
@@ -21,9 +21,9 @@ const GROUNDING_ICONS: Record<string, React.ComponentType<{ size?: number; color
   'bodyscan': IconUser,
 };
 
-const GROUNDING_THEMES: Record<string, { accent: string; cardGrad: [string, string]; bg: [string, string, string]; text: string }> = {
-  '54321': { accent: Colors.midBrown, cardGrad: [Colors.creamDark, Colors.warmWhite], bg: ['#3A3630', '#2A2520', '#201D18'], text: '#DDD9D0' },
-  'bodyscan': { accent: Colors.midBrown, cardGrad: [Colors.creamDark, Colors.warmWhite], bg: ['#3A3630', '#2A2520', '#201D18'], text: '#DDD9D0' },
+const GROUNDING_THEMES: Record<string, { accent: string; cardGrad: [string, string, string]; tag: string; duration: string; bg: [string, string, string]; text: string }> = {
+  '54321': { accent: '#4ea989', cardGrad: ['#ffffff', '#ffffff', '#ddeee0'], tag: 'Quieten the noise', duration: '4 MINS', bg: ['#3A3630', '#2A2520', '#201D18'], text: '#DDD9D0' },
+  'bodyscan': { accent: '#f67700', cardGrad: ['#ffffff', '#ffffff', '#dde3f5'], tag: 'Release Tension', duration: '4 MINS', bg: ['#3A3630', '#2A2520', '#201D18'], text: '#DDD9D0' },
 };
 
 const REPAIR_ICONS: Record<string, React.ComponentType<{ size?: number; color?: string }>> = {
@@ -94,14 +94,27 @@ function BreathingExercise({ exercise }: { exercise: typeof TOOLS_CONTENT.breath
 
   return (
     <>
-      <LinearGradient colors={bTheme.cardGrad} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={br.card}>
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 6 }}>
-          {(() => { const I = BREATHING_ICONS[exercise.id]; return I ? <I size={20} color={bTheme.accent} /> : null; })()}
-          <Text style={br.name}>{exercise.name}</Text>
+      <LinearGradient
+        colors={bTheme.cardGrad}
+        locations={[0, 0.65, 1]}
+        start={{ x: 0.5, y: 0 }}
+        end={{ x: 0.5, y: 1 }}
+        style={br.card}
+      >
+        {/* Top row: duration + tag badge */}
+        <View style={br.topRow}>
+          <Text style={br.duration}>2 MINS</Text>
+          <View style={br.tagBadge}>
+            <Text style={br.tagText}>{bTheme.tag}</Text>
+          </View>
         </View>
+        {/* Title */}
+        <Text style={br.name}>{exercise.name}</Text>
+        {/* Description */}
         <Text style={br.desc}>{exercise.desc}</Text>
-        <TouchableOpacity onPress={() => setActive(true)} style={br.startBtn} activeOpacity={0.8}>
-          <Text style={br.startText}>Start exercise</Text>
+        {/* Arrow button */}
+        <TouchableOpacity onPress={() => setActive(true)} style={br.arrowBtn} activeOpacity={0.8}>
+          <Text style={br.arrowText}>→</Text>
         </TouchableOpacity>
       </LinearGradient>
 
@@ -133,19 +146,23 @@ function BreathingExercise({ exercise }: { exercise: typeof TOOLS_CONTENT.breath
 }
 
 const br = StyleSheet.create({
-  card: { borderWidth: 1, borderColor: Colors.sand, borderRadius: Radius.lg, padding: 16, marginBottom: 12, overflow: 'hidden' },
-  name: { fontFamily: Fonts.display, fontSize: 16, color: Colors.charcoal },
-  desc: { fontFamily: Fonts.body, fontSize: 13, color: Colors.midBrown, lineHeight: 19, marginBottom: 14 },
-  startBtn: { backgroundColor: Colors.warmWhite, borderWidth: 1.5, borderColor: Colors.sand, borderRadius: Radius.full, paddingVertical: 12, alignItems: 'center' },
-  startText: { fontFamily: Fonts.bodyMedium, fontSize: 13, color: Colors.charcoal },
+  card: { borderWidth: 1, borderColor: '#dedde8', borderRadius: 16, paddingHorizontal: 32, paddingVertical: 28, marginBottom: 10, overflow: 'hidden', gap: 8 },
+  topRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  duration: { fontFamily: 'Inter_500Medium', fontSize: 11, color: '#211e28', textTransform: 'uppercase', letterSpacing: 0.88 },
+  tagBadge: { backgroundColor: '#e3e8fa', borderWidth: 1, borderColor: '#92a6f4', borderRadius: 9999, paddingHorizontal: 8, paddingVertical: 3 },
+  tagText: { fontFamily: 'Inter_600SemiBold', fontSize: 11, color: '#5877ee', letterSpacing: 0.055 },
+  name: { fontFamily: 'InstrumentSans_600SemiBold', fontSize: 16, color: '#211e28' },
+  desc: { fontFamily: 'Inter_400Regular', fontSize: 14, color: '#80798c', lineHeight: 21 },
+  arrowBtn: { width: 44, height: 44, borderRadius: 22, borderWidth: 1.5, borderColor: '#dedde8', backgroundColor: '#ffffff', alignItems: 'center', justifyContent: 'center' },
+  arrowText: { fontSize: 18, color: '#211e28' },
   // Full screen
   fullScreen: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 32 },
-  fullTitle: { fontFamily: Fonts.displayLight, fontSize: 28, color: '#E4F0E5', marginBottom: 4 },
-  fullCycle: { fontFamily: Fonts.body, fontSize: 13, color: '#9BBF9E', marginBottom: 40 },
+  fullTitle: { fontFamily: Fonts.displayLight, fontSize: 28, color: '#edf0e8', marginBottom: 4 },
+  fullCycle: { fontFamily: Fonts.body, fontSize: 13, color: '#96d35f', marginBottom: 40 },
   circleWrap: { width: 220, height: 220, alignItems: 'center', justifyContent: 'center', marginBottom: 40 },
   circleOuter: { width: 200, height: 200 },
   circleGradient: { width: 200, height: 200, borderRadius: 100, alignItems: 'center', justifyContent: 'center' },
-  fullCircleText: { fontFamily: Fonts.display, fontSize: 20, color: '#FDFBF7', textAlign: 'center' },
+  fullCircleText: { fontFamily: Fonts.display, fontSize: 20, color: '#edf0e8', textAlign: 'center' },
   fullStopBtn: { backgroundColor: 'rgba(255,255,255,0.15)', borderWidth: 1.5, borderColor: 'rgba(255,255,255,0.25)', borderRadius: 100, paddingHorizontal: 32, paddingVertical: 14 },
   fullStopText: { fontFamily: Fonts.bodyMedium, fontSize: 14, color: '#F0F1E6' },
 });
@@ -196,14 +213,17 @@ function GroundingCard({ technique: g, theme: gTheme, Icon }: {
 
   return (
     <>
-      <LinearGradient colors={gTheme.cardGrad} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={gr.card}>
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 6 }}>
-          {Icon && <Icon size={20} color={gTheme.accent} />}
-          <Text style={gr.name}>{g.name}</Text>
+      <LinearGradient colors={gTheme.cardGrad} locations={[0, 0.65, 1]} start={{ x: 0.5, y: 0 }} end={{ x: 0.5, y: 1 }} style={gr.card}>
+        <View style={gr.topRow}>
+          <Text style={gr.duration}>{gTheme.duration}</Text>
+          <View style={gr.tagBadge}>
+            <Text style={gr.tagText}>{gTheme.tag}</Text>
+          </View>
         </View>
+        <Text style={gr.name}>{g.name}</Text>
         <Text style={gr.desc}>{g.desc}</Text>
         <TouchableOpacity onPress={() => setActive(true)} style={gr.startBtn} activeOpacity={0.8}>
-          <Text style={gr.startText}>Begin</Text>
+          <Text style={gr.startText}>→</Text>
         </TouchableOpacity>
       </LinearGradient>
 
@@ -233,19 +253,23 @@ function GroundingCard({ technique: g, theme: gTheme, Icon }: {
 }
 
 const gr = StyleSheet.create({
-  card: { borderWidth: 1, borderColor: Colors.sand, borderRadius: Radius.lg, padding: 16, marginBottom: 12, overflow: 'hidden' },
-  name: { fontFamily: Fonts.display, fontSize: 16, color: Colors.charcoal },
-  desc: { fontFamily: Fonts.body, fontSize: 13, color: Colors.midBrown, lineHeight: 19, marginBottom: 14 },
-  startBtn: { backgroundColor: Colors.warmWhite, borderWidth: 1.5, borderColor: Colors.sand, borderRadius: Radius.full, paddingVertical: 12, alignItems: 'center' },
-  startText: { fontFamily: Fonts.bodyMedium, fontSize: 13, color: Colors.charcoal },
+  card: { borderWidth: 1, borderColor: '#dedde8', borderRadius: 16, paddingHorizontal: 32, paddingVertical: 28, marginBottom: 10, overflow: 'hidden', gap: 8 },
+  topRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  duration: { fontFamily: 'Inter_500Medium', fontSize: 11, color: '#211e28', textTransform: 'uppercase', letterSpacing: 0.88 },
+  tagBadge: { backgroundColor: '#e3e8fa', borderWidth: 1, borderColor: '#92a6f4', borderRadius: 9999, paddingHorizontal: 8, paddingVertical: 3 },
+  tagText: { fontFamily: 'Inter_600SemiBold', fontSize: 11, color: '#5877ee', letterSpacing: 0.055 },
+  name: { fontFamily: 'InstrumentSans_600SemiBold', fontSize: 16, color: '#211e28' },
+  desc: { fontFamily: 'Inter_400Regular', fontSize: 14, color: '#80798c', lineHeight: 21 },
+  startBtn: { width: 44, height: 44, borderRadius: 22, borderWidth: 1.5, borderColor: '#dedde8', backgroundColor: '#ffffff', alignItems: 'center', justifyContent: 'center' },
+  startText: { fontSize: 18, color: '#211e28' },
   fullScreen: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 32 },
   fullTitle: { fontFamily: Fonts.displayLight, fontSize: 28, marginBottom: 4, textAlign: 'center' },
   fullProgress: { fontFamily: Fonts.body, fontSize: 13, opacity: 0.6, marginBottom: 40, textAlign: 'center' },
   stepCard: { backgroundColor: 'rgba(255,255,255,0.12)', borderRadius: Radius.xl, padding: 32, alignItems: 'center', width: '100%', marginBottom: 40 },
   stepNum: { fontFamily: Fonts.displayLight, fontSize: 48, color: 'rgba(255,255,255,0.3)', marginBottom: 12 },
-  stepText: { fontFamily: Fonts.body, fontSize: 17, color: '#FDFBF7', textAlign: 'center', lineHeight: 26 },
+  stepText: { fontFamily: Fonts.body, fontSize: 17, color: '#edf0e8', textAlign: 'center', lineHeight: 26 },
   nextBtn: { backgroundColor: 'rgba(255,255,255,0.2)', borderWidth: 1.5, borderColor: 'rgba(255,255,255,0.3)', borderRadius: 100, paddingHorizontal: 40, paddingVertical: 14, marginBottom: 16 },
-  nextText: { fontFamily: Fonts.bodyMedium, fontSize: 15, color: '#FDFBF7' },
+  nextText: { fontFamily: Fonts.bodyMedium, fontSize: 15, color: '#edf0e8' },
   closeBtn: { paddingVertical: 8 },
   closeText: { fontFamily: Fonts.body, fontSize: 13, opacity: 0.6 },
 });
@@ -265,11 +289,11 @@ function ExpandableCard({ icon, title, children }: { icon: React.ReactNode; titl
 }
 
 const ex = StyleSheet.create({
-  card: { backgroundColor: Colors.warmWhite, borderWidth: 1, borderColor: Colors.sand, borderRadius: Radius.lg, marginBottom: 12, overflow: 'hidden' },
-  header: { flexDirection: 'row', alignItems: 'center', gap: 10, padding: 16 },
-  title: { fontFamily: Fonts.display, fontSize: 16, color: Colors.charcoal, flex: 1 },
-  arrow: { fontFamily: Fonts.display, fontSize: 20, color: Colors.midBrown },
-  body: { paddingHorizontal: 16, paddingBottom: 16, borderTopWidth: 1, borderTopColor: Colors.creamDark, paddingTop: 12 },
+  card: { backgroundColor: '#ffffff', borderWidth: 1, borderColor: '#dedde8', borderRadius: 16, marginBottom: 12, overflow: 'hidden' },
+  header: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 24, paddingVertical: 16 },
+  title: { fontFamily: 'InstrumentSans_600SemiBold', fontSize: 16, color: '#211e28', flex: 1 },
+  arrow: { fontFamily: 'Inter_400Regular', fontSize: 20, color: '#80798c' },
+  body: { paddingHorizontal: 24, paddingBottom: 24, borderTopWidth: 1, borderTopColor: '#dedde8', paddingTop: 24, gap: 12 },
 });
 
 export default function ToolsTab() {
@@ -278,14 +302,12 @@ export default function ToolsTab() {
     <SafeAreaView style={styles.safe} edges={['top']}>
       <ScrollView style={styles.scroll} contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
 
-        <View style={styles.header}>
-          <Text style={styles.title}>Tools</Text>
-          <Text style={styles.subtitle}>For difficult moments or daily practice. Always here.</Text>
-        </View>
-
-        {/* Breathing Exercises */}
+        {/* Breathing Techniques */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Breathing exercises</Text>
+          <View style={styles.sectionRow}>
+            <Text style={styles.sectionTitle}>Breathing Techniques</Text>
+            <Text style={styles.viewAll}>View all</Text>
+          </View>
           {TOOLS_CONTENT.breathing.map((b) => (
             <BreathingExercise key={b.id} exercise={b} />
           ))}
@@ -293,7 +315,7 @@ export default function ToolsTab() {
 
         {/* Grounding Techniques */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Grounding techniques</Text>
+          <Text style={styles.sectionTitle}>Grounding Techniques</Text>
           {TOOLS_CONTENT.grounding.map((g) => {
             const gTheme = GROUNDING_THEMES[g.id] || GROUNDING_THEMES['54321'];
             const GIcon = GROUNDING_ICONS[g.id];
@@ -303,32 +325,34 @@ export default function ToolsTab() {
           })}
         </View>
 
-        {/* Phrase Bank */}
+        {/* Speak with kindness */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Phrase bank</Text>
+          <Text style={styles.sectionTitle}>Speak with kindness</Text>
 
-          <ExpandableCard icon={<IconLeaf size={20} color={Colors.sage} />} title="Soft start-ups">
-            <Text style={gt.desc}>Replace criticism with gentle openings. Say this, not that.</Text>
+          <ExpandableCard icon={<IconLeaf size={20} color="#4ea989" />} title="Gratitude Practice">
             {TOOLS_CONTENT.phrases.softStartups.map((p, i) => (
               <View key={i} style={pb.pair}>
-                <View style={pb.badRow}>
-                  <Text style={pb.badLabel}>Instead of:</Text>
-                  <Text style={pb.badText}>{p.bad}</Text>
+                <View style={pb.itemGroup}>
+                  <Text style={pb.badLabel}>INSTEAD OF:</Text>
+                  <Text style={pb.itemText}>{p.bad}</Text>
                 </View>
-                <View style={pb.goodRow}>
-                  <Text style={pb.goodLabel}>Try:</Text>
-                  <Text style={pb.goodText}>{p.good}</Text>
+                <View style={pb.itemGroup}>
+                  <Text style={pb.goodLabel}>TRY:</Text>
+                  <Text style={pb.itemText}>{p.good}</Text>
                 </View>
+                {i < TOOLS_CONTENT.phrases.softStartups.length - 1 && <View style={pb.separator} />}
               </View>
             ))}
           </ExpandableCard>
 
-          <ExpandableCard icon={<IconX size={20} color={Colors.lightBrown} />} title="Words to avoid">
-            <Text style={gt.desc}>These common phrases escalate conflict. Here is why and what to say instead.</Text>
+          <ExpandableCard icon={<IconHeart size={20} color="#bd57f2" />} title="Words to avoid">
             {TOOLS_CONTENT.phrases.wordsToAvoid.map((w, i) => (
-              <View key={i} style={pb.avoidCard}>
-                <Text style={pb.avoidWord}>{w.word}</Text>
-                <Text style={pb.avoidWhy}>{w.why}</Text>
+              <View key={i} style={pb.avoidCardNew}>
+                <View style={pb.avoidHeader}>
+                  <Text style={pb.avoidX}>✕</Text>
+                  <Text style={pb.avoidWordNew}>{w.word}</Text>
+                </View>
+                <Text style={pb.avoidWhyNew}>{w.why}</Text>
               </View>
             ))}
           </ExpandableCard>
@@ -336,8 +360,7 @@ export default function ToolsTab() {
 
         {/* Quick Repair Attempts */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Quick repair attempts</Text>
-          <Text style={gt.desc}>Pre-written messages you can use during or after a conflict. Tap to view.</Text>
+          <Text style={styles.sectionTitle}>Quick Repair Attempts</Text>
           <View style={ra.grid}>
             {REPAIR_ATTEMPTS.map((r) => (
               <RepairCard key={r.name} repair={r} />
@@ -350,12 +373,22 @@ export default function ToolsTab() {
   );
 }
 
+const REPAIR_COLORS: Record<string, string> = {
+  'Olive branch': '#4ea989',
+  'Accountability': '#96d35f',
+  'Pause request': '#4ea989',
+  'Soft start': '#f67700',
+  'I hear you': '#92a6f4',
+  'Be together': '#bd57f2',
+};
+
 function RepairCard({ repair }: { repair: typeof REPAIR_ATTEMPTS[0] }) {
   const [expanded, setExpanded] = useState(false);
+  const I = REPAIR_ICONS[repair.name];
+  const color = REPAIR_COLORS[repair.name] || '#4ea989';
   return (
     <TouchableOpacity style={ra.card} onPress={() => setExpanded(!expanded)} activeOpacity={0.8}>
-      {(() => { const I = REPAIR_ICONS[repair.name]; return I ? <I size={22} color={Colors.sage} /> : null; })()}
-      <View style={{ height: 6 }} />
+      {I ? <I size={22} color={color} /> : null}
       <Text style={ra.name}>{repair.name}</Text>
       {expanded && <Text style={ra.msg}>{repair.msg}</Text>}
     </TouchableOpacity>
@@ -363,10 +396,10 @@ function RepairCard({ repair }: { repair: typeof REPAIR_ATTEMPTS[0] }) {
 }
 
 const ra = StyleSheet.create({
-  grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10, marginTop: 10 },
-  card: { width: '47%', backgroundColor: Colors.warmWhite, borderWidth: 1, borderColor: Colors.sand, borderRadius: Radius.lg, padding: 14, alignItems: 'center' },
-  name: { fontFamily: Fonts.bodyMedium, fontSize: 12, color: Colors.charcoal, textAlign: 'center' },
-  msg: { fontFamily: Fonts.body, fontSize: 12, color: Colors.warmBrown, lineHeight: 18, marginTop: 8, textAlign: 'center' },
+  grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
+  card: { width: '47%', backgroundColor: '#ffffff', borderWidth: 1, borderColor: '#dedde8', borderRadius: 16, padding: 14, alignItems: 'center' },
+  name: { fontFamily: 'InstrumentSans_600SemiBold', fontSize: 16, color: '#211e28', textAlign: 'center' },
+  msg: { fontFamily: 'Inter_400Regular', fontSize: 12, color: '#80798c', lineHeight: 18, marginTop: 8, textAlign: 'center' },
 });
 
 const gt = StyleSheet.create({
@@ -374,25 +407,28 @@ const gt = StyleSheet.create({
 });
 
 const pb = StyleSheet.create({
-  pair: { marginBottom: 16, borderBottomWidth: 1, borderBottomColor: Colors.creamDark, paddingBottom: 16 },
-  badRow: { marginBottom: 8 },
-  badLabel: { fontFamily: Fonts.bodyMedium, fontSize: 10, color: Colors.blush, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 3 },
-  badText: { fontFamily: Fonts.body, fontSize: 13, color: Colors.warmBrown, lineHeight: 19, fontStyle: 'italic' },
-  goodRow: {},
-  goodLabel: { fontFamily: Fonts.bodyMedium, fontSize: 10, color: Colors.sage, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 3 },
-  goodText: { fontFamily: Fonts.body, fontSize: 13, color: Colors.charcoal, lineHeight: 19 },
-  avoidCard: { backgroundColor: Colors.creamDark, borderRadius: Radius.md, padding: 12, marginBottom: 10 },
-  avoidWord: { fontFamily: Fonts.bodyMedium, fontSize: 14, color: Colors.charcoal, marginBottom: 4 },
-  avoidWhy: { fontFamily: Fonts.body, fontSize: 13, color: Colors.warmBrown, lineHeight: 19 },
+  pair: { gap: 8, marginBottom: 12 },
+  itemGroup: { gap: 4 },
+  badLabel: { fontFamily: 'Inter_600SemiBold', fontSize: 11, color: '#f67700', letterSpacing: 0.055, textTransform: 'uppercase' },
+  goodLabel: { fontFamily: 'Inter_600SemiBold', fontSize: 11, color: '#166534', letterSpacing: 0.055, textTransform: 'uppercase' },
+  itemText: { fontFamily: 'Inter_400Regular', fontSize: 14, color: '#80798c', lineHeight: 21 },
+  separator: { height: 1, backgroundColor: '#dedde8', marginTop: 12 },
+  avoidCard: { backgroundColor: '#eeebf4', borderRadius: 10, padding: 12, marginBottom: 10 },
+  avoidWord: { fontFamily: Fonts.bodyMedium, fontSize: 14, color: '#211e28', marginBottom: 4 },
+  avoidWhy: { fontFamily: Fonts.body, fontSize: 13, color: '#80798c', lineHeight: 19 },
+  avoidCardNew: { backgroundColor: '#ffffff', borderWidth: 1, borderColor: '#dedde8', borderRadius: 16, padding: 16, marginBottom: 10 },
+  avoidHeader: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 8 },
+  avoidX: { fontSize: 14, color: '#f90330', fontWeight: '700' },
+  avoidWordNew: { fontFamily: 'Inter_600SemiBold', fontSize: 14, color: '#f90330' },
+  avoidWhyNew: { fontFamily: 'Inter_400Regular', fontSize: 14, color: '#80798c', lineHeight: 21 },
 });
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: Colors.cream },
+  safe: { flex: 1, backgroundColor: '#fbf9ff' },
   scroll: { flex: 1 },
-  content: { paddingBottom: 32 },
-  header: { padding: 20, paddingBottom: 12 },
-  title: { fontFamily: Fonts.display, fontSize: 26, color: Colors.charcoal, marginBottom: 6 },
-  subtitle: { fontFamily: Fonts.body, fontSize: 14, color: Colors.midBrown },
-  section: { paddingHorizontal: 20, marginBottom: 24 },
-  sectionTitle: { fontFamily: Fonts.display, fontSize: 18, color: Colors.charcoal, marginBottom: 12 },
+  content: { paddingTop: 16, paddingBottom: 32 },
+  section: { paddingHorizontal: 16, marginBottom: 24 },
+  sectionRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 },
+  sectionTitle: { fontFamily: 'InstrumentSans_600SemiBold', fontSize: 16, color: '#211e28', marginBottom: 8 },
+  viewAll: { fontFamily: 'Inter_400Regular', fontSize: 14, color: '#80798c' },
 });

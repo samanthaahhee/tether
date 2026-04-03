@@ -1,10 +1,10 @@
 import { useEffect } from 'react';
 import { View } from 'react-native';
 import { Slot, router, useSegments } from 'expo-router';
-import { useFonts, Lora_500Medium, Lora_400Regular_Italic } from '@expo-google-fonts/lora';
-import { Questrial_400Regular } from '@expo-google-fonts/questrial';
-import { Fraunces_300Light, Fraunces_400Regular, Fraunces_300Light_Italic, Fraunces_400Regular_Italic } from '@expo-google-fonts/fraunces';
-import { DMSans_400Regular, DMSans_500Medium } from '@expo-google-fonts/dm-sans';
+import { useFonts } from 'expo-font';
+import { Poppins_300Light, Poppins_300Light_Italic, Poppins_400Regular, Poppins_400Regular_Italic, Poppins_500Medium, Poppins_600SemiBold } from '@expo-google-fonts/poppins';
+import { Inter_400Regular, Inter_500Medium, Inter_600SemiBold } from '@expo-google-fonts/inter';
+import { InstrumentSans_400Regular, InstrumentSans_500Medium, InstrumentSans_600SemiBold, InstrumentSans_700Bold } from '@expo-google-fonts/instrument-sans';
 import { AppStateProvider } from '../src/hooks/useAppState';
 import { AuthProvider, useAuth } from '../src/hooks/useAuth';
 
@@ -46,21 +46,25 @@ function RouteGuard() {
 
 export default function RootLayout() {
   const [fontsLoaded] = useFonts({
-    Lora_500Medium,
-    Lora_400Regular_Italic,
-    Questrial_400Regular,
-    Fraunces_300Light,
-    Fraunces_400Regular,
-    Fraunces_300Light_Italic,
-    Fraunces_400Regular_Italic,
-    DMSans_400Regular,
-    DMSans_500Medium,
+    Poppins_300Light,
+    Poppins_300Light_Italic,
+    Poppins_400Regular,
+    Poppins_400Regular_Italic,
+    Poppins_500Medium,
+    Poppins_600SemiBold,
+    Inter_400Regular,
+    Inter_500Medium,
+    Inter_600SemiBold,
+    InstrumentSans_400Regular,
+    InstrumentSans_500Medium,
+    InstrumentSans_600SemiBold,
+    InstrumentSans_700Bold,
   });
 
   if (!fontsLoaded) return null;
 
   return (
-    <View style={{ flex: 1, backgroundColor: '#FAF7F0' }}>
+    <View style={{ flex: 1, backgroundColor: '#f7f5fd' }}>
     <AppStateProvider>
       <AuthProvider>
         <RouteGuard />

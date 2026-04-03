@@ -9,15 +9,15 @@ export default function TabLayout() {
         headerShown: false,
         sceneStyle: { backgroundColor: Colors.cream },
         tabBarStyle: {
-          backgroundColor: Colors.warmWhite,
+          backgroundColor: '#ffffff',
           borderTopColor: Colors.sand,
           borderTopWidth: 1,
           height: 80,
           paddingBottom: 20,
           paddingTop: 8,
         },
-        tabBarActiveTintColor: Colors.sageDark,
-        tabBarInactiveTintColor: Colors.lightBrown,
+        tabBarActiveTintColor: '#211e28',
+        tabBarInactiveTintColor: '#80798c',
         tabBarLabelStyle: {
           fontFamily: Fonts.bodyMedium,
           fontSize: 9,

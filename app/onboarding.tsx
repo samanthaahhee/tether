@@ -287,7 +287,7 @@ const styles = StyleSheet.create({
   scroll: { paddingBottom: 40 },
   stepWrap: { paddingHorizontal: 20, paddingTop: 12, gap: 10 },
   stepTag: { fontFamily: Fonts.bodyMedium, fontSize: 11, letterSpacing: 0.8, textTransform: 'uppercase', color: Colors.sage },
-  stepH: { fontFamily: Fonts.displayLight, fontSize: 26, color: Colors.charcoal, lineHeight: 32, marginBottom: 2 },
+  stepH: { fontFamily: Fonts.displaySemiBold, fontSize: 26, color: Colors.charcoal, lineHeight: 32, marginBottom: 2 },
   stepSub: { fontFamily: Fonts.body, fontSize: 14, color: Colors.midBrown, lineHeight: 21, marginBottom: 8 },
   nameInput: { width: '100%', padding: 16, borderRadius: Radius.md, borderWidth: 1.5, borderColor: Colors.sand, backgroundColor: Colors.cream, fontFamily: Fonts.body, fontSize: 16, color: Colors.charcoal, marginBottom: 4 },
   hintBox: { backgroundColor: Colors.sagePale, borderWidth: 1, borderColor: Colors.sageLight, borderRadius: Radius.sm, padding: 12, flexDirection: 'row', alignItems: 'flex-start', gap: 10, marginTop: 8 },

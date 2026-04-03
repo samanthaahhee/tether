@@ -1,5 +1,5 @@
-import React, { useState, useMemo } from 'react';
-import { View, Text, TouchableOpacity, ScrollView, StyleSheet, Switch, Alert, Linking, Share, ActivityIndicator, Modal, TextInput, FlatList } from 'react-native';
+import React, { useState, useMemo, useRef, useEffect } from 'react';
+import { View, Text, TouchableOpacity, ScrollView, StyleSheet, Animated, Alert, Linking, Share, ActivityIndicator, Modal, TextInput, FlatList } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { Colors, Fonts, Radius } from '../../src/constants/theme';
@@ -10,6 +10,26 @@ import { useAppState } from '../../src/hooks/useAppState';
 import { ATTACHMENT_LABELS, LOVE_LABELS, CONFLICT_LABELS, WINDOW_LABELS, NEED_LABELS } from '../../src/constants/data';
 import { PartnerProfile } from '../../src/hooks/useAppState';
 import { useAuth } from '../../src/hooks/useAuth';
+
+function Toggle({ value, onValueChange }: { value: boolean; onValueChange: (v: boolean) => void }) {
+  const anim = useRef(new Animated.Value(value ? 1 : 0)).current;
+
+  useEffect(() => {
+    Animated.timing(anim, { toValue: value ? 1 : 0, duration: 200, useNativeDriver: false }).start();
+  }, [value]);
+
+  const trackBg = anim.interpolate({ inputRange: [0, 1], outputRange: ['#d4d2de', '#96d35f'] });
+  const thumbLeft = anim.interpolate({ inputRange: [0, 1], outputRange: [3, 27] });
+  const thumbColor = anim.interpolate({ inputRange: [0, 1], outputRange: ['#9e9aab', '#ffffff'] });
+
+  return (
+    <TouchableOpacity activeOpacity={0.8} onPress={() => onValueChange(!value)}>
+      <Animated.View style={{ width: 52, height: 30, borderRadius: 15, backgroundColor: trackBg, justifyContent: 'center' }}>
+        <Animated.View style={{ width: 24, height: 24, borderRadius: 12, backgroundColor: thumbColor, position: 'absolute', left: thumbLeft, shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.15, shadowRadius: 2, elevation: 2 }} />
+      </Animated.View>
+    </TouchableOpacity>
+  );
+}
 
 function SettingsRow({ icon, label, sub, onPress, right }: { icon: React.ReactNode; label: string; sub?: string; onPress?: () => void; right?: React.ReactNode }) {
   return (
@@ -175,12 +195,12 @@ export default function SettingsTab() {
         </Section>
 
         <Section title="Notifications">
-          <SettingsRow icon={<IconSun size={18} color={Colors.midBrown} />} label="Daily check-in reminder" sub="9:00 AM" right={<Switch value={notifDaily} onValueChange={setNotifDaily} trackColor={{ false: Colors.sand, true: Colors.sage }} />} />
-          <SettingsRow icon={<IconBell size={18} color={Colors.midBrown} />} label="Session alerts" sub="When a session is completed" right={<Switch value={notifBridge} onValueChange={setNotifBridge} trackColor={{ false: Colors.sand, true: Colors.sage }} />} />
+          <SettingsRow icon={<IconSun size={18} color={Colors.midBrown} />} label="Daily check-in reminder" sub="9:00 AM" right={<Toggle value={notifDaily} onValueChange={setNotifDaily} />} />
+          <SettingsRow icon={<IconBell size={18} color={Colors.midBrown} />} label="Session alerts" sub="When a session is completed" right={<Toggle value={notifBridge} onValueChange={setNotifBridge} />} />
         </Section>
 
         <Section title="Privacy and safety">
-          <SettingsRow icon={<IconLock size={18} color={Colors.midBrown} />} label="App lock" sub="Require Face ID or passcode" right={<Switch value={appLock} onValueChange={setAppLock} trackColor={{ false: Colors.sand, true: Colors.sage }} />} />
+          <SettingsRow icon={<IconLock size={18} color={Colors.midBrown} />} label="App lock" sub="Require Face ID or passcode" right={<Toggle value={appLock} onValueChange={setAppLock} />} />
           <SettingsRow icon={<IconShield size={18} color={Colors.midBrown} />} label="Data and encryption" sub="AES-256, never sold or shared" onPress={() => Alert.alert('Your data is protected', 'All session content is encrypted with AES-256. Your vent sessions are never visible to your partner. Your data is never sold or shared with third parties.')} />
           <SettingsRow icon={<IconBox size={18} color={Colors.midBrown} />} label="Export my data" sub="Download everything (GDPR)" onPress={() => Alert.alert('Coming soon', 'Data export will be available in the next update.')} />
         </Section>
@@ -294,7 +314,7 @@ const styles = StyleSheet.create({
   scroll: { flex: 1 },
   content: { paddingBottom: 40 },
   header: { padding: 20, paddingBottom: 8 },
-  title: { fontFamily: Fonts.display, fontSize: 26, color: Colors.charcoal },
+  title: { fontFamily: Fonts.displaySemiBold, fontSize: 26, color: Colors.charcoal },
   section: { paddingHorizontal: 20, marginBottom: 20 },
   sectionTitle: { fontFamily: Fonts.bodyMedium, fontSize: 11, letterSpacing: 0.8, textTransform: 'uppercase', color: Colors.midBrown, marginBottom: 8, paddingLeft: 2 },
   sectionCard: { backgroundColor: Colors.warmWhite, borderWidth: 1, borderColor: Colors.sand, borderRadius: Radius.lg, overflow: 'hidden' },
@@ -320,12 +340,12 @@ const styles = StyleSheet.create({
 const cs = StyleSheet.create({
   countryPicker: { flexDirection: 'row', alignItems: 'center', padding: 14, borderBottomWidth: 1, borderBottomColor: Colors.creamDark },
   countryLabel: { fontFamily: Fonts.bodyMedium, fontSize: 11, letterSpacing: 0.5, textTransform: 'uppercase', color: Colors.midBrown, marginBottom: 2 },
-  countryName: { fontFamily: Fonts.display, fontSize: 16, color: Colors.charcoal },
+  countryName: { fontFamily: Fonts.displaySemiBold, fontSize: 16, color: Colors.charcoal },
   changeText: { fontFamily: Fonts.bodyMedium, fontSize: 12, color: Colors.sage },
   overlay: { flex: 1, justifyContent: 'flex-end', backgroundColor: 'rgba(0,0,0,0.35)' },
   sheet: { backgroundColor: Colors.warmWhite, borderTopLeftRadius: 24, borderTopRightRadius: 24, paddingTop: 20, maxHeight: '80%' },
   sheetHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, marginBottom: 16 },
-  sheetTitle: { fontFamily: Fonts.display, fontSize: 20, color: Colors.charcoal },
+  sheetTitle: { fontFamily: Fonts.displaySemiBold, fontSize: 20, color: Colors.charcoal },
   searchWrap: { flexDirection: 'row', alignItems: 'center', gap: 10, marginHorizontal: 20, marginBottom: 12, backgroundColor: Colors.creamDark, borderRadius: Radius.md, paddingHorizontal: 14, paddingVertical: 10 },
   searchInput: { flex: 1, fontFamily: Fonts.body, fontSize: 15, color: Colors.charcoal },
   countryRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingVertical: 14, paddingHorizontal: 20, borderBottomWidth: 1, borderBottomColor: Colors.creamDark },

@@ -120,7 +120,7 @@ const s = StyleSheet.create({
   safe: { flex: 1, backgroundColor: Colors.cream },
   scroll: { flexGrow: 1, paddingHorizontal: 28, paddingTop: 48, paddingBottom: 32, alignItems: 'center' },
   logoOrb: { width: 56, height: 56, borderRadius: 28, backgroundColor: Colors.sage, alignItems: 'center', justifyContent: 'center', marginBottom: 20, ...Shadows.sm },
-  title: { fontFamily: Fonts.displayLight, fontSize: 28, color: Colors.charcoal, textAlign: 'center', marginBottom: 8 },
+  title: { fontFamily: Fonts.displaySemiBold, fontSize: 28, color: Colors.charcoal, textAlign: 'center', marginBottom: 8 },
   subtitle: { fontFamily: Fonts.body, fontSize: 14, color: Colors.midBrown, textAlign: 'center', lineHeight: 21, marginBottom: 28 },
 
   // Google

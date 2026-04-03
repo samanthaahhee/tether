@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect, useMemo, useCallback } from 'react';
 import {
-  View, Text, TextInput, TouchableOpacity, FlatList, ScrollView,
+  View, Text, TextInput, TouchableOpacity, FlatList, ScrollView, Image,
   StyleSheet, KeyboardAvoidingView, Platform, ActivityIndicator, Alert, Modal, Animated,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -18,7 +18,7 @@ import { Colors, Fonts, Radius, Shadows } from '../../src/constants/theme';
 import { MODE_CONFIG, ModeKey, SESSION_STEPS, CRISIS_WORDS, REPAIR_ATTEMPTS } from '../../src/constants/data';
 import { Button } from '../../src/components/UI';
 import { ChevronLeft } from '../../src/components/Icon';
-import { IconLeaf, IconWind, IconSearch, IconHeart, IconX, IconBookmark, IconMoodLow, IconMoodOkay, IconMoodGood, IconMoodGreat, IconMoodAmazing } from '../../src/components/Icons';
+import { IconLeaf, IconWind, IconSearch, IconHeart, IconX, IconBookmark, IconVoice, IconMoodLow, IconMoodOkay, IconMoodGood, IconMoodGreat, IconMoodAmazing } from '../../src/components/Icons';
 
 const STEP_ICON_MAP: Record<string, React.ComponentType<{ size?: number; color?: string }>> = {
   wind: IconWind,
@@ -39,48 +39,48 @@ function MicIcon() {
 
 // Full color theme per step — drives every UI element in the session
 const STEP_THEME: Record<ModeKey, {
-  color: string;       // primary text/icon color (dark)
-  mid: string;         // medium shade for borders, outlines
-  light: string;       // light shade for subtle backgrounds
-  pale: string;        // palest shade for full-screen bg
-  gradient: [string, string, string]; // gradient stops
+  color: string;       // primary accent color
+  mid: string;         // medium shade for progress nodes
+  light: string;       // light shade for borders/outlines
+  pale: string;        // pastel bg for user bubbles
+  gradient: [string, string, string]; // gradient stops (unused in new design)
 }> = {
   vent: {
-    color: '#6E9B72',    // sage-dark
-    mid: '#9BBF9E',      // sage-400
-    light: '#C8E0CA',    // sage-light
-    pale: '#E4F0E5',     // sage-pale
-    gradient: ['#E4F0E5', '#EFF7F0', '#FDFBF7'],
+    color: '#96d35f',    // lime green (from redesign screenshot)
+    mid: '#96d35f',
+    light: '#dfffbc',
+    pale: '#eaf4cf',     // pastel sage for user bubbles
+    gradient: ['#eaf4cf', '#f7f5fd', '#fbf9ff'],
   },
   understand: {
-    color: '#8B6FC0',    // mauve-dark
-    mid: '#B49EDE',      // mauve-400
-    light: '#DCD0F0',    // mauve-light
-    pale: '#F0ECF8',     // mauve-pale
-    gradient: ['#F0ECF8', '#F6F3FC', '#FDFBF7'],
+    color: '#92a6f4',    // blue/periwinkle
+    mid: '#92a6f4',
+    light: '#c3cefc',
+    pale: '#e7ecff',     // pastel lavender for user bubbles
+    gradient: ['#e7ecff', '#f7f5fd', '#fbf9ff'],
   },
   prepare: {
-    color: '#5B78B5',    // blue-dark
-    mid: '#8BA4D4',      // blue-400
-    light: '#C5D3EC',    // blue-light
-    pale: '#E8EEF8',     // blue-pale
-    gradient: ['#E8EEF8', '#F0F4FB', '#FDFBF7'],
+    color: '#f67700',    // orange for text/accents
+    mid: '#f6b756',      // lighter warm orange for step nodes
+    light: '#ffd692',
+    pale: '#ffe9bf',     // pastel orange for user bubbles
+    gradient: ['#ffe9bf', '#f7f5fd', '#fbf9ff'],
   },
   bridge: {
-    color: '#A8B03A',    // amber-dark
-    mid: '#D2D965',      // amber-400
-    light: '#E8ECB0',    // amber-light
-    pale: '#F5F6E2',     // amber-pale
-    gradient: ['#F5F6E2', '#F9FAF0', '#FDFBF7'],
+    color: '#af30dc',    // purple 500
+    mid: '#d484ff',      // purple 300 for progress nodes
+    light: '#ebb0ff',
+    pale: '#fdeaff',     // pastel purple for user bubbles / button bg
+    gradient: ['#fdeaff', '#f7f5fd', '#fbf9ff'],
   },
 };
 
-// Keep flat lookups for the progress bar
+// Flat color lookups for step dots and progress bar
 const STEP_COLORS: Record<ModeKey, string> = {
-  vent: '#6E9B72',
-  understand: '#8B6FC0',
-  prepare: '#5B78B5',
-  bridge: '#A8B03A',
+  vent: '#5dcca3',
+  understand: '#92a6f4',
+  prepare: '#ffbb55',
+  bridge: '#d484ff',
 };
 
 const WELCOMES: Record<ModeKey, (name: string) => string> = {
@@ -114,60 +114,58 @@ const ti = StyleSheet.create({
 
 function StepProgressBar({ session, activeTheme, onGoToStep }: { session: Session; activeTheme: typeof STEP_THEME[ModeKey]; onGoToStep: (step: ModeKey) => void }) {
   return (
-    <View style={[sp.container, { borderBottomColor: activeTheme.light }]}>
-      {SESSION_STEPS.map((step, i) => {
-        const isCompleted = session.unlockedSteps.includes(step) && step !== session.currentStep;
-        const isCurrent = step === session.currentStep;
-        const isLocked = !session.unlockedSteps.includes(step);
-        const isTappable = !isLocked && !isCurrent;
+    <View style={sp.container}>
+      {/* Top row: nodes + gradient lines, no gaps */}
+      <View style={sp.nodesRow}>
+        {SESSION_STEPS.map((step, i) => {
+          const isCompleted = session.unlockedSteps.includes(step) && step !== session.currentStep;
+          const isCurrent = step === session.currentStep;
+          const isLocked = !session.unlockedSteps.includes(step);
+          const isActive = isCompleted || isCurrent;
+          // Determine the line color: gradient from prev step color to white
+          const prevStep = i > 0 ? SESSION_STEPS[i - 1] : null;
+          const prevCompleted = prevStep ? session.unlockedSteps.includes(prevStep) : false;
+          const lineActive = prevCompleted || isCurrent || isCompleted;
 
-        return (
-          <React.Fragment key={step}>
-            {i > 0 && (
-              <View style={[sp.line, {
-                backgroundColor: isLocked ? activeTheme.light : isCompleted ? activeTheme.color : activeTheme.mid,
-                opacity: isLocked ? 0.5 : 1,
-              }]} />
-            )}
-            <TouchableOpacity
-              style={{ alignItems: 'center', gap: 4 }}
-              activeOpacity={isTappable ? 0.6 : 1}
-              onPress={() => isTappable && onGoToStep(step)}
-              disabled={isLocked}
-            >
-              <View style={[
-                sp.node,
-                isCompleted && { backgroundColor: activeTheme.color, borderColor: activeTheme.color },
-                isCurrent && { backgroundColor: 'transparent', borderColor: activeTheme.color, borderWidth: 2.5 },
-                isLocked && { backgroundColor: 'transparent', borderColor: activeTheme.light },
-              ]}>
-                <Text style={[sp.nodeNum, {
-                  color: isCompleted ? Colors.white : isCurrent ? activeTheme.color : activeTheme.light,
-                  opacity: isLocked ? 0.6 : 1,
-                  fontFamily: isCurrent ? Fonts.bodyMedium : Fonts.body,
-                }]}>{i + 1}</Text>
-              </View>
-              <Text style={[sp.label, {
-                color: isCurrent ? activeTheme.color : isCompleted ? activeTheme.color : activeTheme.light,
-                fontFamily: isCurrent ? Fonts.bodyMedium : Fonts.body,
-                opacity: isLocked ? 0.6 : 1,
-              }]}>
-                {MODE_CONFIG[step].label}
-              </Text>
-            </TouchableOpacity>
-          </React.Fragment>
-        );
-      })}
+          return (
+            <React.Fragment key={step}>
+              {i > 0 && (
+                <LinearGradient
+                  colors={lineActive ? [activeTheme.mid || activeTheme.color, '#ffffff'] : ['#c5c4d2', '#ffffff']}
+                  start={{ x: 0, y: 0.5 }}
+                  end={{ x: 1, y: 0.5 }}
+                  style={sp.line}
+                />
+              )}
+              <TouchableOpacity
+                activeOpacity={(!isLocked && !isCurrent) ? 0.6 : 1}
+                onPress={() => (!isLocked && !isCurrent) && onGoToStep(step)}
+                disabled={isLocked}
+              >
+                <View style={[
+                  sp.node,
+                  isActive && { backgroundColor: activeTheme.mid || activeTheme.color },
+                  isLocked && { backgroundColor: '#eeebf4' },
+                ]}>
+                  <Text style={[sp.nodeNum, {
+                    color: isActive ? '#001c14' : '#80798c',
+                  }]}>{i + 1}</Text>
+                </View>
+              </TouchableOpacity>
+            </React.Fragment>
+          );
+        })}
+      </View>
     </View>
   );
 }
 
 const sp = StyleSheet.create({
-  container: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', paddingTop: 8, paddingBottom: 14, paddingHorizontal: 16 },
-  node: { width: 36, height: 36, borderRadius: 18, borderWidth: 1.5, borderColor: Colors.sand, alignItems: 'center', justifyContent: 'center' },
-  nodeNum: { fontSize: 14 },
-  line: { flex: 1, height: 2, marginHorizontal: 2, borderRadius: 1, marginBottom: 18 },
-  label: { fontFamily: Fonts.body, fontSize: 9, color: Colors.midBrown, textTransform: 'uppercase', letterSpacing: 0.4 },
+  container: { paddingTop: 8, paddingBottom: 14, paddingHorizontal: 16 },
+  nodesRow: { flexDirection: 'row', alignItems: 'center' },
+  node: { width: 40, height: 40, borderRadius: 20, backgroundColor: '#eeebf4', alignItems: 'center', justifyContent: 'center' },
+  nodeNum: { fontFamily: 'Inter_600SemiBold', fontSize: 16, color: '#80798c' },
+  line: { flex: 1, height: 3 },
 });
 
 const REMINDER_OPTIONS = ['Tonight', 'Tomorrow morning', 'This weekend'];
@@ -193,42 +191,46 @@ function NurtureCard({ session, dispatch: d, profile, onResolved }: {
       <Text style={nr.sub}>Four tools to help you open well, stay grounded, and close with care. Take a moment with each one.</Text>
 
       <View style={nr.guideCard}>
-        <Text style={nr.guideNum}>1</Text>
-        <View style={{ flex: 1 }}>
-          <Text style={nr.guideTitle}>Your opening line</Text>
-          <Text style={nr.guideBody}>{openingLine}</Text>
-          <Text style={nr.guideTip}>Soft start: name the situation, not the person.</Text>
+        <View style={{ flexDirection: 'row', gap: 8 }}>
+          <Text style={nr.guideNum}>1</Text>
+          <View style={{ flex: 1, gap: 8 }}>
+            <Text style={nr.guideTitle}>Your opening line</Text>
+            <Text style={nr.guideBody}>{openingLine}</Text>
+          </View>
         </View>
       </View>
 
       <View style={nr.guideCard}>
-        <Text style={nr.guideNum}>2</Text>
-        <View style={{ flex: 1 }}>
-          <Text style={nr.guideTitle}>If things get heated</Text>
-          <Text style={nr.guideBody}>"{repair.msg}"</Text>
-          <Text style={nr.guideTip}>A pause is not abandonment. Name it clearly.</Text>
+        <View style={{ flexDirection: 'row', gap: 8 }}>
+          <Text style={nr.guideNum}>2</Text>
+          <View style={{ flex: 1, gap: 8 }}>
+            <Text style={nr.guideTitle}>If things get heated</Text>
+            <Text style={nr.guideBody}>{repair.msg}</Text>
+          </View>
         </View>
       </View>
 
       <View style={nr.guideCard}>
-        <Text style={nr.guideNum}>3</Text>
-        <View style={{ flex: 1 }}>
-          <Text style={nr.guideTitle}>What you need from this conversation</Text>
-          <Text style={nr.guideBody}>
-            {draft.need
-              ? `You need ${draft.need}. Keep returning to this if the conversation drifts.`
-              : 'Revisit your Understand step to name what you most need your partner to hear.'}
-          </Text>
-          <Text style={nr.guideTip}>Your need is the anchor. Stay connected to it.</Text>
+        <View style={{ flexDirection: 'row', gap: 8 }}>
+          <Text style={nr.guideNum}>3</Text>
+          <View style={{ flex: 1, gap: 8 }}>
+            <Text style={nr.guideTitle}>What you need</Text>
+            <Text style={nr.guideBody}>
+              {draft.need
+                ? `You need ${draft.need}. Keep returning to this.`
+                : 'Revisit your Understand step to name what you most need your partner to hear.'}
+            </Text>
+          </View>
         </View>
       </View>
 
       <View style={nr.guideCard}>
-        <Text style={nr.guideNum}>4</Text>
-        <View style={{ flex: 1 }}>
-          <Text style={nr.guideTitle}>How to close well</Text>
-          <Text style={nr.guideBody}>"Thank you for staying in this with me. It means a lot."</Text>
-          <Text style={nr.guideTip}>End with gratitude, even if you did not resolve everything. The conversation itself is the repair.</Text>
+        <View style={{ flexDirection: 'row', gap: 8 }}>
+          <Text style={nr.guideNum}>4</Text>
+          <View style={{ flex: 1, gap: 8 }}>
+            <Text style={nr.guideTitle}>How to close well</Text>
+            <Text style={nr.guideBody}>Thank you for staying in this with me. It means a lot.</Text>
+          </View>
         </View>
       </View>
 
@@ -270,29 +272,29 @@ function NurtureCard({ session, dispatch: d, profile, onResolved }: {
 
 const nr = StyleSheet.create({
   container: { flex: 1, margin: 16, padding: 20 },
-  heading: { fontFamily: Fonts.display, fontSize: 18, color: Colors.charcoal, marginBottom: 4 },
+  heading: { fontFamily: Fonts.displaySemiBold, fontSize: 18, color: Colors.charcoal, marginBottom: 4 },
   sub: { fontFamily: Fonts.body, fontSize: 13, color: Colors.midBrown, marginBottom: 20 },
 
-  // Guide cards
-  guideCard: { flexDirection: 'row', gap: 12, backgroundColor: '#FDFBF7', borderWidth: 1, borderColor: '#E8ECB0', borderRadius: Radius.md, padding: 14, marginBottom: 10, alignItems: 'flex-start' },
-  guideNum: { fontFamily: Fonts.display, fontSize: 18, color: '#A8B03A', width: 22, flexShrink: 0 },
-  guideTitle: { fontFamily: Fonts.bodyMedium, fontSize: 13, color: Colors.charcoal, marginBottom: 6 },
-  guideBody: { fontFamily: Fonts.displayItalic, fontSize: 13, color: Colors.charcoal, lineHeight: 20, marginBottom: 6 },
-  guideTip: { fontFamily: Fonts.body, fontSize: 11, color: Colors.midBrown, lineHeight: 16 },
+  // Guide cards — white card with purple numbers (matching Figma)
+  guideCard: { backgroundColor: '#ffffff', borderWidth: 1, borderColor: '#dedde8', borderRadius: 16, padding: 16, marginBottom: 10, ...Shadows.xs },
+  guideNum: { fontFamily: 'Inter_600SemiBold', fontSize: 14, color: '#af30dc', width: 17, flexShrink: 0 },
+  guideTitle: { fontFamily: 'Inter_600SemiBold', fontSize: 14, color: '#af30dc', marginBottom: 8 },
+  guideBody: { fontFamily: Fonts.body, fontSize: 14, color: '#211e28', lineHeight: 21 },
+  guideTip: { fontFamily: Fonts.body, fontSize: 11, color: '#80798c', lineHeight: 16 },
 
   reminderHeading: { fontFamily: Fonts.bodyMedium, fontSize: 12, color: Colors.warmBrown, letterSpacing: 0.4, textTransform: 'uppercase', marginTop: 14, marginBottom: 8 },
   reminderRow: { flexDirection: 'row', gap: 8, marginBottom: 16 },
-  reminderChip: { backgroundColor: '#F5F6E2', borderWidth: 1, borderColor: '#E8ECB0', borderRadius: Radius.full, paddingHorizontal: 14, paddingVertical: 8 },
-  reminderChipText: { fontFamily: Fonts.bodyMedium, fontSize: 12, color: '#A8B03A' },
-  reminderSet: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', backgroundColor: '#F5F6E2', borderWidth: 1, borderColor: '#E8ECB0', borderRadius: Radius.md, padding: 12, marginBottom: 16 },
-  reminderSetText: { fontFamily: Fonts.bodyMedium, fontSize: 13, color: Colors.charcoal },
-  reminderChange: { fontFamily: Fonts.bodyMedium, fontSize: 12, color: Colors.midBrown },
+  reminderChip: { backgroundColor: '#fdeaff', borderWidth: 1, borderColor: '#dedde8', borderRadius: Radius.full, paddingHorizontal: 14, paddingVertical: 8 },
+  reminderChipText: { fontFamily: Fonts.bodyMedium, fontSize: 12, color: '#bd57f2' },
+  reminderSet: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', backgroundColor: '#fdeaff', borderWidth: 1, borderColor: '#dedde8', borderRadius: Radius.md, padding: 12, marginBottom: 16 },
+  reminderSetText: { fontFamily: Fonts.bodyMedium, fontSize: 13, color: '#211e28' },
+  reminderChange: { fontFamily: Fonts.bodyMedium, fontSize: 12, color: '#80798c' },
 
-  // Shared
-  primaryBtn: { backgroundColor: '#A8B03A', borderRadius: Radius.full, paddingVertical: 14, alignItems: 'center', marginTop: 4 },
-  primaryBtnText: { fontFamily: Fonts.bodyMedium, fontSize: 14, color: Colors.white },
+  // Shared — purple pastel button matching Figma
+  primaryBtn: { backgroundColor: '#fdeaff', borderRadius: 9999, height: 44, alignItems: 'center', justifyContent: 'center', marginTop: 16 },
+  primaryBtnText: { fontFamily: 'Inter_600SemiBold', fontSize: 16, color: '#af30dc' },
   sentRow: { marginTop: 4, gap: 10 },
-  sentConfirm: { fontFamily: Fonts.bodyMedium, fontSize: 13, color: '#A8B03A', textAlign: 'center', paddingVertical: 4 },
+  sentConfirm: { fontFamily: Fonts.bodyMedium, fontSize: 13, color: '#af30dc', textAlign: 'center', paddingVertical: 4 },
   resolveBtn: { backgroundColor: Colors.charcoal, borderRadius: Radius.full, paddingVertical: 14, alignItems: 'center' },
   resolveBtnText: { fontFamily: Fonts.bodyMedium, fontSize: 14, color: Colors.white },
 });
@@ -362,74 +364,78 @@ function SessionListView({ sessions, dispatch: d, onOpenSession, onStartNew }: {
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
       <ScrollView style={styles.scroll} contentContainerStyle={{ paddingBottom: 32 }} showsVerticalScrollIndicator={false}>
-        <View style={{ padding: 20, paddingBottom: 12 }}>
-          <Text style={styles.headerTitle}>Sessions</Text>
-          <Text style={styles.headerSub}>Each session guides you from emotion to resolution.</Text>
-        </View>
-
-        <View style={{ paddingHorizontal: 20, marginBottom: 24 }}>
-          <TouchableOpacity style={sl.startBtn} onPress={onStartNew} activeOpacity={0.88}>
-            <View style={sl.startBlob} />
+        {/* New Session CTA card — white card matching Figma */}
+        <View style={{ paddingHorizontal: 16, paddingTop: 16, marginBottom: 24 }}>
+          <View style={sl.startCard}>
             <Text style={sl.startTag}>NEW SESSION</Text>
             <Text style={sl.startTitle}>Start a new session</Text>
-            <Text style={sl.startBody}>Whatever is happening, start here. Tether guides you from raw emotion to resolution, one step at a time.</Text>
-            <View style={sl.startCta}>
-              <Text style={sl.startCtaText}>Begin →</Text>
-            </View>
-          </TouchableOpacity>
+            <Text style={sl.startBody}>Whatever is happening, start here.{'\n'}Your partner will never see what you say or hear how you feel. This is a safe place to say whats on your mind.</Text>
+            <TouchableOpacity style={sl.startInputBar} onPress={onStartNew} activeOpacity={0.85}>
+              <Text style={sl.startInputText}>Start typing or begin recording</Text>
+              <View style={sl.startMicBtn}>
+                <IconVoice size={24} color="#ffffff" />
+              </View>
+            </TouchableOpacity>
+          </View>
         </View>
 
-        {/* Filter toggles */}
-        {hasSessions && (
+        {/* Your Sessions heading + filter chips */}
+        <View style={{ paddingHorizontal: 16, marginBottom: 10, gap: 10 }}>
+          <Text style={sl.sessionsHeading}>Your Sessions</Text>
           <View style={sf.bar}>
-            {([['active', 'Active', activeSessions.length], ['resolved', 'Resolved', resolvedSessions.length], ['archived', 'Archived', archivedSessions.length]] as const).map(([key, label, count]) => (
-              count > 0 && (
-                <TouchableOpacity key={key} style={[sf.tab, filter === key && sf.tabActive]} onPress={() => setFilter(key)} activeOpacity={0.7}>
-                  <Text style={[sf.tabText, filter === key && sf.tabTextActive]}>{label} ({count})</Text>
-                </TouchableOpacity>
-              )
+            {([['active', 'Active', activeSessions.length], ['resolved', 'Completed', resolvedSessions.length], ['archived', 'Archived', archivedSessions.length]] as const).map(([key, label, count]) => (
+              <TouchableOpacity key={key} style={[sf.tab, filter === key && sf.tabActive]} onPress={() => setFilter(key)} activeOpacity={0.7}>
+                <Text style={[sf.tabText, filter === key && sf.tabTextActive]}>{filter === key && count > 0 ? `${label} (${count})` : label}</Text>
+              </TouchableOpacity>
             ))}
           </View>
-        )}
+        </View>
 
         {/* Active sessions */}
         {filter === 'active' && activeSessions.length > 0 && (
-          <View style={{ paddingHorizontal: 20, marginBottom: 8 }}>
+          <View style={{ paddingHorizontal: 16, marginBottom: 8 }}>
             {activeSessions.map((s) => {
-              const firstMsg = s.messages.vent?.[1]?.text?.slice(0, 80) || 'Session in progress...';
+              const firstMsg = s.name || s.messages.vent?.[1]?.text?.slice(0, 80) || 'Session in progress...';
               const stepsCompleted = s.unlockedSteps.length;
               const date = new Date(s.startDate);
-              const dateStr = date.toLocaleDateString('en-ZA', { day: 'numeric', month: 'short' });
+              const dateStr = date.toLocaleDateString('en-ZA', { day: 'numeric', month: 'short' }).toUpperCase();
               const currentStepCfg = MODE_CONFIG[s.currentStep];
-              const stepTheme = STEP_THEME[s.currentStep];
+              // Step badge colors from Figma
+              const BADGE_COLORS: Record<string, { bg: string; border: string; text: string }> = {
+                vent: { bg: '#e8f7d6', border: '#96d35f', text: '#5a8a2f' },
+                understand: { bg: '#e3e8fa', border: '#92a6f4', text: '#5877ee' },
+                prepare: { bg: '#fde8cc', border: '#f6b756', text: '#c76800' },
+                bridge: { bg: '#f0dcfa', border: '#d484ff', text: '#9020c0' },
+              };
+              const badge = BADGE_COLORS[s.currentStep] || BADGE_COLORS.vent;
               return (
-                <TouchableOpacity
-                  key={s.id}
-                  style={[sl.sessionCard, { borderColor: Colors.sand, borderWidth: 1 }]}
-                  onPress={() => onOpenSession(s.id)}
-                  activeOpacity={0.8}
-                >
+                <View key={s.id} style={sl.sessionCard}>
+                  {/* Date + badge + menu */}
                   <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
                     <Text style={sl.sessionDate}>{dateStr}</Text>
                     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-                      <View style={[sl.statusBadge, { backgroundColor: stepTheme.pale, borderColor: stepTheme.light }]}>
-                        <Text style={[sl.statusText, { color: stepTheme.color }]}>Active: {currentStepCfg.label}</Text>
+                      <View style={[sl.statusBadge, { backgroundColor: badge.bg, borderColor: badge.border }]}>
+                        <Text style={[sl.statusText, { color: badge.text }]}>{currentStepCfg.label}</Text>
                       </View>
                       <SessionMenu sessionId={s.id} status={s.status} dispatch={d} />
                     </View>
                   </View>
-                  {s.name ? <Text style={{ fontFamily: Fonts.display, fontSize: 16, color: Colors.charcoal, marginBottom: 4 }}>{s.name}</Text> : null}
-                  <Text style={sl.sessionPreview} numberOfLines={2}>{firstMsg}</Text>
-                  <View style={sl.stepDots}>
-                    {SESSION_STEPS.map((step) => (
-                      <View key={step} style={[sl.stepDot, s.unlockedSteps.includes(step) && { backgroundColor: STEP_COLORS[step] }]} />
-                    ))}
+                  {/* Session name */}
+                  <Text style={sl.sessionName}>{firstMsg}</Text>
+                  {/* Step dots */}
+                  <View style={sl.stepDotsRow}>
+                    <View style={sl.stepDots}>
+                      {SESSION_STEPS.map((step) => (
+                        <View key={step} style={[sl.stepDot, s.unlockedSteps.includes(step) && { backgroundColor: STEP_COLORS[step] }]} />
+                      ))}
+                    </View>
                     <Text style={sl.stepCount}>{stepsCompleted}/{SESSION_STEPS.length} steps</Text>
                   </View>
-                  <View style={{ marginTop: 10, backgroundColor: Colors.creamDark, borderRadius: Radius.full, paddingVertical: 8, alignItems: 'center' }}>
-                    <Text style={{ fontFamily: Fonts.bodyMedium, fontSize: 13, color: Colors.midBrown }}>Continue session →</Text>
-                  </View>
-                </TouchableOpacity>
+                  {/* Continue button */}
+                  <TouchableOpacity style={sl.continueBtn} onPress={() => onOpenSession(s.id)} activeOpacity={0.8}>
+                    <Text style={sl.continueBtnText}>Continue session</Text>
+                  </TouchableOpacity>
+                </View>
               );
             })}
           </View>
@@ -439,47 +445,41 @@ function SessionListView({ sessions, dispatch: d, onOpenSession, onStartNew }: {
           const visible = showAllPast ? resolvedSessions : resolvedSessions.slice(0, PAST_SESSIONS_PREVIEW);
           const hidden = resolvedSessions.length - PAST_SESSIONS_PREVIEW;
           return (
-            <View style={{ paddingHorizontal: 20 }}>
+            <View style={{ paddingHorizontal: 16 }}>
               {visible.map((s) => {
-                const firstMsg = s.messages.vent?.[1]?.text?.slice(0, 80) || 'No messages recorded';
+                const firstMsg = s.name || s.messages.vent?.[1]?.text?.slice(0, 80) || 'No messages recorded';
                 const stepsCompleted = s.unlockedSteps.length;
                 const date = new Date(s.startDate);
-                const dateStr = date.toLocaleDateString('en-ZA', { day: 'numeric', month: 'short' });
+                const dateStr = date.toLocaleDateString('en-ZA', { day: 'numeric', month: 'short' }).toUpperCase();
                 return (
-                  <TouchableOpacity
-                    key={s.id}
-                    style={sl.sessionCard}
-                    onPress={() => onOpenSession(s.id)}
-                    activeOpacity={0.8}
-                  >
+                  <View key={s.id} style={sl.sessionCard}>
                     <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
                       <Text style={sl.sessionDate}>{dateStr}</Text>
                       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-                        <View style={[sl.statusBadge, { backgroundColor: Colors.sagePale, borderColor: Colors.sageLight }]}>
-                          <Text style={[sl.statusText, { color: Colors.sage }]}>Resolved</Text>
+                        <View style={[sl.statusBadge, { backgroundColor: '#e8f7d6', borderColor: '#96d35f' }]}>
+                          <Text style={[sl.statusText, { color: '#5a8a2f' }]}>Completed</Text>
                         </View>
                         <SessionMenu sessionId={s.id} status={s.status} dispatch={d} />
                       </View>
                     </View>
-                    {s.name ? <Text style={{ fontFamily: Fonts.display, fontSize: 16, color: Colors.charcoal, marginBottom: 4 }}>{s.name}</Text> : null}
-                    <Text style={sl.sessionPreview} numberOfLines={2}>{firstMsg}</Text>
-                    <View style={sl.stepDots}>
-                      {SESSION_STEPS.map((step) => (
-                        <View key={step} style={[sl.stepDot, s.unlockedSteps.includes(step) && { backgroundColor: STEP_COLORS[step] }]} />
-                      ))}
+                    <Text style={sl.sessionName}>{firstMsg}</Text>
+                    <View style={sl.stepDotsRow}>
+                      <View style={sl.stepDots}>
+                        {SESSION_STEPS.map((step) => (
+                          <View key={step} style={[sl.stepDot, s.unlockedSteps.includes(step) && { backgroundColor: STEP_COLORS[step] }]} />
+                        ))}
+                      </View>
                       <Text style={sl.stepCount}>{stepsCompleted}/{SESSION_STEPS.length} steps</Text>
                     </View>
-                    {s.reflection && (
-                      <Text style={{ fontFamily: Fonts.body, fontSize: 12, color: Colors.sage, marginTop: 8, fontStyle: 'italic' }} numberOfLines={2}>
-                        {s.reflection}
-                      </Text>
-                    )}
-                  </TouchableOpacity>
+                    <TouchableOpacity style={sl.continueBtn} onPress={() => onOpenSession(s.id)} activeOpacity={0.8}>
+                      <Text style={sl.continueBtnText}>Continue session</Text>
+                    </TouchableOpacity>
+                  </View>
                 );
               })}
               {!showAllPast && hidden > 0 && (
                 <TouchableOpacity onPress={() => setShowAllPast(true)} style={sl.showMoreBtn} activeOpacity={0.7}>
-                  <Text style={sl.showMoreText}>Show {hidden} more past session{hidden !== 1 ? 's' : ''}</Text>
+                  <Text style={sl.showMoreText}>Show {hidden} more</Text>
                 </TouchableOpacity>
               )}
               {showAllPast && resolvedSessions.length > PAST_SESSIONS_PREVIEW && (
@@ -493,30 +493,27 @@ function SessionListView({ sessions, dispatch: d, onOpenSession, onStartNew }: {
 
         {/* Archived sessions */}
         {filter === 'archived' && archivedSessions.length > 0 && (
-          <View style={{ paddingHorizontal: 20 }}>
+          <View style={{ paddingHorizontal: 16 }}>
             {archivedSessions.map((s) => {
-              const firstMsg = s.messages.vent?.[1]?.text?.slice(0, 80) || 'No messages recorded';
+              const firstMsg = s.name || s.messages.vent?.[1]?.text?.slice(0, 80) || 'No messages recorded';
               const date = new Date(s.startDate);
-              const dateStr = date.toLocaleDateString('en-ZA', { day: 'numeric', month: 'short' });
+              const dateStr = date.toLocaleDateString('en-ZA', { day: 'numeric', month: 'short' }).toUpperCase();
               return (
-                <TouchableOpacity
-                  key={s.id}
-                  style={[sl.sessionCard, { opacity: 0.7 }]}
-                  onPress={() => onOpenSession(s.id)}
-                  activeOpacity={0.8}
-                >
+                <View key={s.id} style={[sl.sessionCard, { opacity: 0.7 }]}>
                   <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
                     <Text style={sl.sessionDate}>{dateStr}</Text>
                     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-                      <View style={[sl.statusBadge, { backgroundColor: Colors.stone50, borderColor: Colors.stone200 }]}>
-                        <Text style={[sl.statusText, { color: Colors.lightBrown }]}>Archived</Text>
+                      <View style={[sl.statusBadge, { backgroundColor: '#eeebf4', borderColor: '#dedde8' }]}>
+                        <Text style={[sl.statusText, { color: '#80798c' }]}>Archived</Text>
                       </View>
                       <SessionMenu sessionId={s.id} status={s.status} dispatch={d} />
                     </View>
                   </View>
-                  {s.name ? <Text style={{ fontFamily: Fonts.display, fontSize: 16, color: Colors.charcoal, marginBottom: 4 }}>{s.name}</Text> : null}
-                  <Text style={sl.sessionPreview} numberOfLines={2}>{firstMsg}</Text>
-                </TouchableOpacity>
+                  <Text style={sl.sessionName}>{firstMsg}</Text>
+                  <TouchableOpacity style={sl.continueBtn} onPress={() => onOpenSession(s.id)} activeOpacity={0.8}>
+                    <Text style={sl.continueBtnText}>Continue session</Text>
+                  </TouchableOpacity>
+                </View>
               );
             })}
           </View>
@@ -527,31 +524,41 @@ function SessionListView({ sessions, dispatch: d, onOpenSession, onStartNew }: {
 }
 
 const sf = StyleSheet.create({
-  bar: { flexDirection: 'row', paddingHorizontal: 20, marginBottom: 16, gap: 8 },
-  tab: { paddingHorizontal: 14, paddingVertical: 7, borderRadius: Radius.full, backgroundColor: Colors.warmWhite, borderWidth: 1.5, borderColor: Colors.sand },
-  tabActive: { backgroundColor: Colors.sagePale, borderColor: Colors.sageLight },
-  tabText: { fontFamily: Fonts.bodyMedium, fontSize: 12, color: Colors.lightBrown },
-  tabTextActive: { color: Colors.sageDark },
+  bar: { flexDirection: 'row', gap: 12 },
+  tab: { paddingHorizontal: 16, height: 44, justifyContent: 'center', borderRadius: 9999, borderWidth: 1, borderColor: '#dedde8' },
+  tabActive: { backgroundColor: '#96d35f', borderColor: '#96d35f' },
+  tabText: { fontFamily: 'Inter_600SemiBold', fontSize: 13, color: '#211e28', letterSpacing: 0.026 },
+  tabTextActive: { color: '#211e28' },
 });
 
 const sl = StyleSheet.create({
-  startBtn: { backgroundColor: Colors.sageDark, borderRadius: Radius.lg, padding: 20, overflow: 'hidden', ...Shadows.sm },
-  startBlob: { position: 'absolute', top: -40, right: -40, width: 120, height: 120, borderRadius: 60, backgroundColor: 'rgba(255,255,255,0.1)' },
-  startTag: { fontFamily: Fonts.bodyMedium, fontSize: 11, letterSpacing: 0.8, color: 'rgba(255,255,255,0.8)', marginBottom: 8 },
-  startTitle: { fontFamily: Fonts.displayLight, fontSize: 22, color: Colors.white, marginBottom: 8 },
-  startBody: { fontFamily: Fonts.body, fontSize: 14, color: 'rgba(255,255,255,0.88)', lineHeight: 21, marginBottom: 16 },
-  startCta: { backgroundColor: 'rgba(255,255,255,0.2)', borderWidth: 1.5, borderColor: 'rgba(255,255,255,0.4)', borderRadius: Radius.full, paddingVertical: 10, paddingHorizontal: 18, alignSelf: 'flex-start' },
-  startCtaText: { fontFamily: Fonts.bodyMedium, fontSize: 13, color: Colors.white },
-  sessionCard: { backgroundColor: Colors.warmWhite, borderWidth: 1, borderColor: Colors.sand, borderRadius: Radius.lg, padding: 16, marginBottom: 12 },
-  sessionDate: { fontFamily: Fonts.bodyMedium, fontSize: 12, color: Colors.midBrown },
-  statusBadge: { backgroundColor: Colors.terracottaPale, borderWidth: 1, borderColor: Colors.terracottaLight, borderRadius: Radius.full, paddingHorizontal: 10, paddingVertical: 3 },
-  statusText: { fontFamily: Fonts.bodyMedium, fontSize: 10, color: Colors.terracotta, textTransform: 'uppercase', letterSpacing: 0.4 },
-  sessionPreview: { fontFamily: Fonts.body, fontSize: 13, color: Colors.warmBrown, lineHeight: 19, marginBottom: 10 },
-  stepDots: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  stepDot: { width: 8, height: 8, borderRadius: 4, backgroundColor: Colors.sand },
-  stepCount: { fontFamily: Fonts.body, fontSize: 11, color: Colors.lightBrown, marginLeft: 4 },
+  // Page header
+  pageTitle: { fontFamily: 'InstrumentSans_600SemiBold', fontSize: 22, color: '#211e28', textAlign: 'center' },
+  pageSub: { fontFamily: 'Inter_400Regular', fontSize: 14, color: '#80798c', textAlign: 'center', lineHeight: 21 },
+  // New session CTA card
+  startCard: { backgroundColor: '#ffffff', borderWidth: 1, borderColor: '#dedde8', borderRadius: 20, padding: 24, overflow: 'hidden', ...Shadows.xs },
+  startTag: { fontFamily: 'Inter_400Regular', fontSize: 12, color: '#211e28', textAlign: 'center', letterSpacing: 0.036, marginBottom: 8 },
+  startTitle: { fontFamily: 'InstrumentSans_600SemiBold', fontSize: 22, color: '#211e28', textAlign: 'center', marginBottom: 12 },
+  startBody: { fontFamily: 'Inter_400Regular', fontSize: 14, color: '#80798c', textAlign: 'center', lineHeight: 21, marginBottom: 12 },
+  startInputBar: { backgroundColor: '#ffffff', borderWidth: 1, borderColor: '#dedde8', borderRadius: 9999, height: 48, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingLeft: 24 },
+  startInputText: { fontFamily: 'Inter_400Regular', fontSize: 13, color: '#80798c', letterSpacing: 0.026 },
+  startMicBtn: { backgroundColor: '#96d35f', width: 48, height: 48, borderRadius: 9999, alignItems: 'center', justifyContent: 'center' },
+  // Sessions heading
+  sessionsHeading: { fontFamily: 'InstrumentSans_600SemiBold', fontSize: 16, color: '#211e28' },
+  // Session cards
+  sessionCard: { backgroundColor: '#ffffff', borderWidth: 1, borderColor: '#dedde8', borderRadius: 16, padding: 16, marginBottom: 10 },
+  sessionDate: { fontFamily: 'Inter_500Medium', fontSize: 11, color: '#80798c', letterSpacing: 0.88 },
+  statusBadge: { borderWidth: 1, borderRadius: 9999, paddingHorizontal: 8, paddingVertical: 3, overflow: 'hidden' },
+  statusText: { fontFamily: 'Inter_600SemiBold', fontSize: 11, letterSpacing: 0.055 },
+  sessionName: { fontFamily: 'Inter_600SemiBold', fontSize: 14, color: '#211e28', lineHeight: 21, marginBottom: 8 },
+  stepDotsRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 8 },
+  stepDots: { flexDirection: 'row', alignItems: 'center', gap: 4 },
+  stepDot: { width: 12, height: 12, borderRadius: 6, backgroundColor: '#dedde8' },
+  stepCount: { fontFamily: 'Inter_400Regular', fontSize: 13, color: '#80798c', letterSpacing: 0.026 },
+  continueBtn: { borderWidth: 1.5, borderColor: '#dedde8', borderRadius: 9999, height: 44, alignItems: 'center', justifyContent: 'center' },
+  continueBtnText: { fontFamily: 'Inter_600SemiBold', fontSize: 16, color: '#211e28' },
   showMoreBtn: { alignItems: 'center', paddingVertical: 14, marginTop: 4, marginBottom: 8 },
-  showMoreText: { fontFamily: Fonts.bodyMedium, fontSize: 13, color: Colors.midBrown },
+  showMoreText: { fontFamily: Fonts.bodyMedium, fontSize: 13, color: '#80798c' },
 });
 
 const SESSION_CAPTURE = {
@@ -578,13 +585,48 @@ function ChatBubble({ item, theme, profileInitial }: { item: Message; theme: typ
 
   return (
     <Animated.View style={[styles.msgRow, item.role === 'user' && styles.msgRowUser, { opacity: fadeAnim, transform: [{ translateY: slideAnim }] }]}>
-      <View style={[styles.msgAvatar, item.role === 'user' && { backgroundColor: theme.light }]}>
-        {item.role === 'ai' ? <IconLeaf size={14} color={theme.color} /> : <Text style={{ fontSize: 13, color: theme.color }}>{profileInitial}</Text>}
+      <View style={[styles.msgAvatar]}>
+        <Text style={{ fontFamily: 'Inter_400Regular', fontSize: 14, color: '#001c14' }}>{profileInitial}</Text>
       </View>
-      <View style={[styles.msgBubble, item.role === 'user' && { backgroundColor: theme.pale, borderWidth: 1, borderColor: theme.light, borderBottomLeftRadius: 16, borderBottomRightRadius: 4 }]}>
-        <Text style={[styles.msgText, item.role === 'user' && { color: Colors.charcoal }]}>{item.text}</Text>
+      <View style={[styles.msgBubble, item.role === 'user' && { backgroundColor: theme.pale, borderColor: '#dedde8' }]}>
+        <Text style={styles.msgText}>{item.text}</Text>
       </View>
     </Animated.View>
+  );
+}
+
+const MASCOT_SOURCES: Record<string, any> = {
+  vent: require('../../assets/mascot-vent.png'),
+  understand: require('../../assets/mascot-understand.png'),
+  prepare: require('../../assets/mascot-prepare.png'),
+};
+
+function ChatMascot({ step }: { step: ModeKey }) {
+  const opacities = useRef(
+    Object.fromEntries(['vent', 'understand', 'prepare'].map(s => [s, new Animated.Value(s === step ? 1 : 0)]))
+  ).current as Record<string, Animated.Value>;
+
+  useEffect(() => {
+    ['vent', 'understand', 'prepare'].forEach(s => {
+      Animated.timing(opacities[s], {
+        toValue: s === step ? 1 : 0,
+        duration: 400,
+        useNativeDriver: true,
+      }).start();
+    });
+  }, [step]);
+
+  return (
+    <View style={styles.chatMascotWrap} pointerEvents="none">
+      {['vent', 'understand', 'prepare'].map(s => (
+        <Animated.Image
+          key={s}
+          source={MASCOT_SOURCES[s]}
+          style={[styles.chatMascot, { position: 'absolute', opacity: opacities[s] }]}
+          resizeMode="contain"
+        />
+      ))}
+    </View>
   );
 }
 
@@ -594,6 +636,7 @@ function ActiveSessionView({ session, state, dispatch: d, onBack }: { session: S
   const [nameInput, setNameInput] = useState(session?.name || '');
   const [showCapture, setShowCapture] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
+  const [inputFocused, setInputFocused] = useState(false);
   const [speechAvailable, setSpeechAvailable] = useState(false);
   const transcriptRef = useRef('');
   const flatRef = useRef<FlatList>(null);
@@ -800,13 +843,15 @@ function ActiveSessionView({ session, state, dispatch: d, onBack }: { session: S
             <View style={{ minWidth: 56 }} />
           </View>
 
-          {/* Step identity */}
+        </View>
+
+        {/* Step identity + progress in a white card container */}
+        <View style={styles.stepCard}>
           <View style={styles.sessionStepIdentity}>
             {(() => { const I = STEP_ICON_MAP[cfg.emoji]; return I ? <I size={24} color={theme.color} /> : null; })()}
             <Text style={styles.sessionStepName}>{cfg.label}</Text>
+            <Text style={styles.sessionStepSub}>Share exactly how you feel.</Text>
           </View>
-
-          {/* Progress nodes */}
           <StepProgressBar session={session} activeTheme={theme} onGoToStep={(s) => d({ type: 'GO_TO_STEP', sessionId: session.id, step: s })} />
         </View>
 
@@ -821,28 +866,32 @@ function ActiveSessionView({ session, state, dispatch: d, onBack }: { session: S
             <NurtureCard session={session} dispatch={d} profile={state.profile} onResolved={resolveSession} />
           </ScrollView>
         ) : (
-          <FlatList
-            ref={flatRef}
-            data={messages}
-            keyExtractor={(m) => m.id}
-            style={{ flex: 1 }}
-            contentContainerStyle={styles.msgList}
-            showsVerticalScrollIndicator={false}
-            renderItem={({ item }) => (
-              <ChatBubble item={item} theme={theme} profileInitial={state.profile.name?.[0] || '?'} />
-            )}
-            ListFooterComponent={loading ? (
-              <View style={styles.msgRow}>
-                <View style={styles.msgAvatar}><IconLeaf size={14} color={theme.color} /></View>
-                <View style={styles.msgBubble}><TypingIndicator /></View>
-              </View>
-            ) : null}
-          />
+          <View style={{ flex: 1 }}>
+            {/* Mascot background — fixed at bottom-right, crossfade on step change */}
+            <ChatMascot step={step} />
+            <FlatList
+              ref={flatRef}
+              data={messages}
+              keyExtractor={(m) => m.id}
+              style={{ flex: 1 }}
+              contentContainerStyle={[styles.msgList, { paddingBottom: 130 }]}
+              showsVerticalScrollIndicator={false}
+              renderItem={({ item }) => (
+                <ChatBubble item={item} theme={theme} profileInitial={state.profile.name?.[0] || '?'} />
+              )}
+              ListFooterComponent={loading ? (
+                <View style={styles.msgRow}>
+                  <View style={styles.msgAvatar}><IconLeaf size={14} color={theme.color} /></View>
+                  <View style={styles.msgBubble}><TypingIndicator /></View>
+                </View>
+              ) : null}
+            />
+          </View>
         )}
 
         {canAdvance && (
-          <TouchableOpacity style={[styles.advanceBanner, { backgroundColor: theme.pale, borderColor: theme.light }]} onPress={advanceStep} activeOpacity={0.85}>
-            <Text style={[styles.advanceText, { color: theme.color }]}>Ready for the next step? Move to {MODE_CONFIG[SESSION_STEPS[SESSION_STEPS.indexOf(step) + 1]].label} →</Text>
+          <TouchableOpacity style={[styles.advanceBanner, { backgroundColor: '#96d35f' }]} onPress={advanceStep} activeOpacity={0.85}>
+            <Text style={styles.advanceText}>Ready? Move to {MODE_CONFIG[SESSION_STEPS[SESSION_STEPS.indexOf(step) + 1]].label} →</Text>
           </TouchableOpacity>
         )}
 
@@ -850,13 +899,15 @@ function ActiveSessionView({ session, state, dispatch: d, onBack }: { session: S
           <>
             <View style={styles.inputArea}>
               {userMsgCount === 0 && cfg.quickActions.length > 0 && (
+                <>
                 <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.qaWrap}>
                   {cfg.quickActions.map((qa) => (
-                    <TouchableOpacity key={qa} onPress={() => setInput(qa)} style={[styles.qaPill, { borderColor: theme.light }]}>
-                      <Text style={[styles.qaText, { color: theme.color }]} numberOfLines={1}>{qa}</Text>
+                    <TouchableOpacity key={qa} onPress={() => setInput(qa)} style={styles.qaPill}>
+                      <Text style={styles.qaText} numberOfLines={1}>{qa}</Text>
                     </TouchableOpacity>
                   ))}
                 </ScrollView>
+                </>
               )}
               {isRecording && (
                 <View style={styles.recordingBanner}>
@@ -868,33 +919,36 @@ function ActiveSessionView({ session, state, dispatch: d, onBack }: { session: S
                 <TextInput
                   value={input}
                   onChangeText={setInput}
-                  placeholder={step === 'vent' ? "Type or tap the mic to speak freely..." : "Share what is on your heart..."}
-                  placeholderTextColor={Colors.lightBrown}
-                  style={[styles.input, { borderColor: theme.light }]}
-                  multiline
+                  placeholder="Type your message here..."
+                  placeholderTextColor="#80798c"
+                  selectionColor="#96d35f"
+                  cursorColor="#96d35f"
+                  style={[styles.input, inputFocused && styles.inputFocused]}
+                  onFocus={() => setInputFocused(true)}
+                  onBlur={() => setInputFocused(false)}
                   blurOnSubmit={false}
                 />
                 {speechAvailable && (
                   <TouchableOpacity
                     onPress={toggleRecording}
-                    style={[styles.micBtn, isRecording && { backgroundColor: theme.color }]}
+                    style={[styles.micBtn, isRecording && { backgroundColor: '#ff4853' }]}
                     activeOpacity={0.8}
                   >
                     {isRecording
-                      ? <View style={{ width: 14, height: 14, borderRadius: 2, backgroundColor: Colors.white }} />
-                      : <MicIcon />
+                      ? <View style={{ width: 14, height: 14, borderRadius: 2, backgroundColor: '#ffffff' }} />
+                      : <IconVoice size={22} color="#ffffff" />
                     }
                   </TouchableOpacity>
                 )}
                 <TouchableOpacity
                   onPress={sendMessage}
                   disabled={loading || !input.trim()}
-                  style={[styles.sendBtn, { backgroundColor: loading || !input.trim() ? Colors.sand : theme.color }]}
+                  style={[styles.sendBtn, { opacity: loading || !input.trim() ? 0.5 : 1 }]}
                   activeOpacity={0.8}
                 >
                   {loading
-                    ? <ActivityIndicator color={Colors.white} size="small" />
-                    : <Text style={{ color: Colors.white, fontSize: 18, fontFamily: Fonts.bodyMedium }}>↑</Text>
+                    ? <ActivityIndicator color="#ffffff" size="small" />
+                    : <Text style={{ color: '#ffffff', fontSize: 18, fontFamily: 'Inter_600SemiBold', marginTop: -2 }}>↑</Text>
                   }
                 </TouchableOpacity>
               </View>
@@ -1010,7 +1064,7 @@ export default function SessionsTab() {
     return (
       <SafeAreaView style={styles.safe} edges={['top']}>
         <View style={{ flex: 1, justifyContent: 'center', paddingHorizontal: 28 }}>
-          <Text style={{ fontFamily: Fonts.display, fontSize: 24, color: Colors.charcoal, textAlign: 'center', marginBottom: 8 }}>
+          <Text style={{ fontFamily: Fonts.displaySemiBold, fontSize: 24, color: Colors.charcoal, textAlign: 'center', marginBottom: 8 }}>
             Name your session
           </Text>
           <Text style={{ fontFamily: Fonts.body, fontSize: 14, color: Colors.midBrown, textAlign: 'center', marginBottom: 24, lineHeight: 20 }}>
@@ -1055,46 +1109,51 @@ export default function SessionsTab() {
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: Colors.cream },
   scroll: { flex: 1 },
-  headerTitle: { fontFamily: Fonts.display, fontSize: 26, color: Colors.charcoal, marginBottom: 6 },
+  headerTitle: { fontFamily: Fonts.displaySemiBold, fontSize: 22, color: Colors.charcoal, marginBottom: 6 },
   headerSub: { fontFamily: Fonts.body, fontSize: 14, color: Colors.midBrown },
   sectionLabel: { fontFamily: Fonts.bodyMedium, fontSize: 10, letterSpacing: 0.8, textTransform: 'uppercase', color: Colors.midBrown, marginBottom: 14 },
-  sessionHeader: { borderBottomWidth: 1, backgroundColor: Colors.warmWhite },
+  sessionHeader: { backgroundColor: '#fbf9ff' },
   sessionHeaderNav: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingTop: 10, paddingBottom: 4 },
   sessionBackBtn: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingVertical: 4, paddingRight: 8, minWidth: 56 },
   sessionBackText: { fontFamily: Fonts.bodyMedium, fontSize: 14, color: Colors.midBrown },
   sessionNameInput: { fontFamily: Fonts.body, fontSize: 12, color: Colors.charcoal, textAlign: 'center', paddingVertical: 2, minWidth: 120 },
   sessionNameText: { fontFamily: Fonts.body, fontSize: 12, color: Colors.midBrown, textAlign: 'center' },
   sessionStepCounter: { fontFamily: Fonts.bodyMedium, fontSize: 12, minWidth: 56, textAlign: 'right' },
-  sessionStepIdentity: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10, paddingHorizontal: 16, paddingTop: 10, paddingBottom: 2 },
-  sessionStepName: { fontFamily: Fonts.display, fontSize: 22, color: Colors.charcoal },
+  stepCard: { marginHorizontal: 16, marginTop: 8, backgroundColor: '#ffffff', borderWidth: 1, borderColor: '#dedde8', borderRadius: 12, paddingVertical: 16, overflow: 'hidden' },
+  sessionStepIdentity: { flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 2, paddingHorizontal: 16, paddingBottom: 8 },
+  sessionStepName: { fontFamily: 'InstrumentSans_600SemiBold', fontSize: 22, color: '#211e28' },
+  sessionStepSub: { fontFamily: 'Inter_400Regular', fontSize: 14, color: '#211e28', textAlign: 'center' },
   floodBanner: { borderBottomWidth: 1, padding: 10, paddingHorizontal: 16 },
   floodText: { fontFamily: Fonts.body, fontSize: 13, color: Colors.warmBrown },
-  msgList: { paddingHorizontal: 16, paddingVertical: 14, gap: 12 },
-  msgRow: { flexDirection: 'row', alignItems: 'flex-end', gap: 8, maxWidth: '88%' },
-  msgRowUser: { flexDirection: 'row-reverse', alignSelf: 'flex-end', maxWidth: '88%' },
-  msgAvatar: { width: 28, height: 28, borderRadius: 14, backgroundColor: Colors.creamDark, alignItems: 'center', justifyContent: 'center', flexShrink: 0 },
-  msgBubble: { backgroundColor: Colors.warmWhite, borderWidth: 1, borderColor: Colors.sand, borderRadius: 16, borderBottomLeftRadius: 4, padding: 12, maxWidth: '85%' },
-  // msgBubbleUser now set inline via theme.color
-  msgText: { fontFamily: Fonts.body, fontSize: 14, color: Colors.charcoal, lineHeight: 21 },
-  qaWrap: { flexDirection: 'row', alignItems: 'center', paddingBottom: 10 },
-  qaPill: { backgroundColor: Colors.white, borderWidth: 1.5, borderRadius: 20, paddingHorizontal: 14, paddingVertical: 8, marginRight: 8, height: 36, justifyContent: 'center' },
-  qaText: { fontFamily: Fonts.bodyMedium, fontSize: 12, lineHeight: 16 },
-  inputArea: { backgroundColor: Colors.warmWhite, borderTopWidth: 1, borderTopColor: Colors.sand, padding: 12 },
+  chatMascotWrap: { position: 'absolute', bottom: 8, right: 16, zIndex: 0, width: 110, height: 110 },
+  chatMascot: { width: 110, height: 110 },
+  msgList: { paddingHorizontal: 16, paddingVertical: 12, gap: 16 },
+  msgRow: { flexDirection: 'row', alignItems: 'flex-start', gap: 8, maxWidth: '90%' },
+  msgRowUser: { flexDirection: 'row-reverse', alignSelf: 'flex-end', maxWidth: '90%' },
+  msgAvatar: { width: 32, height: 32, borderRadius: 16, backgroundColor: '#bcb8c3', alignItems: 'center', justifyContent: 'center', flexShrink: 0 },
+  msgBubble: { backgroundColor: '#ffffff', borderWidth: 1, borderColor: '#dedde8', borderRadius: 16, padding: 12, maxWidth: '85%', ...Shadows.xs },
+  // msgBubbleUser now set inline via theme.pale
+  msgText: { fontFamily: Fonts.body, fontSize: 14, color: '#211e28', lineHeight: 21 },
+  qaWrap: { flexDirection: 'row', alignItems: 'center', paddingBottom: 12, paddingHorizontal: 0 },
+  qaPill: { backgroundColor: '#ffffff', borderWidth: 2, borderColor: '#dedde8', borderRadius: 9999, paddingHorizontal: 24, height: 44, justifyContent: 'center', marginRight: 8 },
+  qaText: { fontFamily: 'Inter_400Regular', fontSize: 13, color: '#211e28', letterSpacing: 0.026 },
+  inputArea: { backgroundColor: '#fbf9ff', borderTopWidth: 1, borderTopColor: '#dedde8', padding: 16 },
   inputRow: { flexDirection: 'row', alignItems: 'flex-end', gap: 8 },
-  input: { flex: 1, backgroundColor: Colors.cream, borderWidth: 1.5, borderColor: Colors.sand, borderRadius: 14, paddingHorizontal: 14, paddingVertical: 11, fontFamily: Fonts.body, fontSize: 15, color: Colors.charcoal, maxHeight: 110, minHeight: 44 },
-  micBtn: { width: 44, height: 44, borderRadius: 22, alignItems: 'center', justifyContent: 'center', backgroundColor: Colors.sagePale, borderWidth: 1, borderColor: Colors.sageLight },
+  input: { flex: 1, backgroundColor: '#ffffff', borderWidth: 1.5, borderColor: '#dedde8', borderRadius: 9999, paddingHorizontal: 20, paddingVertical: 0, fontFamily: 'Inter_400Regular', fontSize: 14, color: '#211e28', maxHeight: 80, height: 44 },
+  inputFocused: { borderColor: '#96d35f' },
+  micBtn: { width: 44, height: 44, borderRadius: 22, alignItems: 'center', justifyContent: 'center', backgroundColor: '#96d35f' },
   recordingBanner: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 4, paddingBottom: 8 },
   recordingDot: { width: 8, height: 8, borderRadius: 4, backgroundColor: '#E25555' },
   recordingText: { fontFamily: Fonts.body, fontSize: 12, color: Colors.warmBrown, flex: 1 },
-  sendBtn: { width: 44, height: 44, borderRadius: 22, alignItems: 'center', justifyContent: 'center', ...Shadows.sm },
-  advanceBanner: { borderWidth: 1, marginHorizontal: 12, marginVertical: 6, borderRadius: Radius.md, padding: 12, alignItems: 'center' },
-  advanceText: { fontFamily: Fonts.bodyMedium, fontSize: 13 },
+  sendBtn: { width: 44, height: 44, borderRadius: 22, alignItems: 'center', justifyContent: 'center', backgroundColor: '#96d35f' },
+  advanceBanner: { marginHorizontal: 16, marginVertical: 8, borderRadius: 9999, height: 48, alignItems: 'center', justifyContent: 'center' },
+  advanceText: { fontFamily: 'Inter_600SemiBold', fontSize: 16, color: '#001c14' },
 });
 
 const cap = StyleSheet.create({
   overlay: { flex: 1, justifyContent: 'flex-end', backgroundColor: 'rgba(0,0,0,0.35)' },
   sheet: { backgroundColor: Colors.warmWhite, borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: 28, paddingBottom: 44 },
-  question: { fontFamily: Fonts.display, fontSize: 17, color: Colors.charcoal, textAlign: 'center', marginBottom: 24, lineHeight: 26 },
+  question: { fontFamily: Fonts.displaySemiBold, fontSize: 17, color: Colors.charcoal, textAlign: 'center', marginBottom: 24, lineHeight: 26 },
   optionsRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 20 },
   optBtn: { flex: 1, alignItems: 'center', gap: 6 },
   optEmoji: { fontSize: 30 },
