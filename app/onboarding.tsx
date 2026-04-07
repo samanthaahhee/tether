@@ -161,7 +161,7 @@ export default function Onboarding() {
               <Text style={styles.stepTag}>Step 1 of 8</Text>
               <Text style={styles.stepH}>Let us start with you</Text>
               <Text style={styles.stepSub}>This takes about 4 minutes. Your answers help Tether understand how you experience relationships so every session feels made for you.</Text>
-              <TextInput value={name} onChangeText={setName} placeholder="Your first name" placeholderTextColor={Colors.lightBrown} style={styles.nameInput} autoFocus returnKeyType="done" onSubmitEditing={next} />
+              <TextInput value={name} onChangeText={setName} placeholder="Your first name" placeholderTextColor={Colors.lightBrown} selectionColor="#96d35f" cursorColor="#96d35f" style={styles.nameInput} autoFocus returnKeyType="done" onSubmitEditing={next} />
               <View style={styles.hintBox}>
                 <IconLock size={16} color={Colors.midBrown} />
                 <Text style={styles.hintText}>Everything you share here stays private. Tether never shows your answers to your partner.</Text>

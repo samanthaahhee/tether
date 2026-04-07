@@ -301,7 +301,7 @@ const nr = StyleSheet.create({
 
 const PAST_SESSIONS_PREVIEW = 3;
 
-function SessionMenu({ sessionId, status, dispatch: d }: { sessionId: string; status: string; dispatch: any }) {
+function SessionMenu({ sessionId, status, dispatch: d, onDelete }: { sessionId: string; status: string; dispatch: any; onDelete?: () => void }) {
   // haptic on menu open handled inline
   const [open, setOpen] = useState(false);
 
@@ -328,10 +328,17 @@ function SessionMenu({ sessionId, status, dispatch: d }: { sessionId: string; st
           )}
           <TouchableOpacity style={sm.menuItem} onPress={() => {
             setOpen(false);
-            Alert.alert('Delete session', 'This will permanently remove this session and its data.', [
-              { text: 'Cancel', style: 'cancel' },
-              { text: 'Delete', style: 'destructive', onPress: () => d({ type: 'DELETE_SESSION', sessionId }) },
-            ]);
+            if (Platform.OS === 'web') {
+              if (confirm('Delete this session? This cannot be undone.')) {
+                d({ type: 'DELETE_SESSION', sessionId });
+                if (onDelete) onDelete();
+              }
+            } else {
+              Alert.alert('Delete session', 'This will permanently remove this session and its data.', [
+                { text: 'Cancel', style: 'cancel' },
+                { text: 'Delete', style: 'destructive', onPress: () => { d({ type: 'DELETE_SESSION', sessionId }); if (onDelete) onDelete(); } },
+              ]);
+            }
           }} activeOpacity={0.7}>
             <IconX size={14} color={Colors.errorText} />
             <Text style={[sm.menuText, { color: Colors.errorText }]}>Delete</Text>
@@ -352,7 +359,7 @@ const sm = StyleSheet.create({
 
 type SessionFilter = 'active' | 'resolved' | 'archived';
 
-function SessionListView({ sessions, dispatch: d, onOpenSession, onStartNew }: { sessions: Session[]; dispatch: any; onOpenSession: (id: string) => void; onStartNew: () => void }) {
+function SessionListView({ sessions, dispatch: d, onOpenSession, onStartNew, onDeleteSession }: { sessions: Session[]; dispatch: any; onOpenSession: (id: string) => void; onStartNew: () => void; onDeleteSession: () => void }) {
   const [showAllPast, setShowAllPast] = useState(false);
   const [filter, setFilter] = useState<SessionFilter>('active');
 
@@ -414,7 +421,7 @@ function SessionListView({ sessions, dispatch: d, onOpenSession, onStartNew }: {
                       <View style={[sl.statusBadge, { backgroundColor: badge.bg, borderColor: badge.border }]}>
                         <Text style={[sl.statusText, { color: badge.text }]}>{currentStepCfg.label}</Text>
                       </View>
-                      <SessionMenu sessionId={s.id} status={s.status} dispatch={d} />
+                      <SessionMenu sessionId={s.id} status={s.status} dispatch={d} onDelete={onDeleteSession} />
                     </View>
                   </View>
                   {/* Session name */}
@@ -456,7 +463,7 @@ function SessionListView({ sessions, dispatch: d, onOpenSession, onStartNew }: {
                         <View style={[sl.statusBadge, { backgroundColor: '#e8f7d6', borderColor: '#96d35f' }]}>
                           <Text style={[sl.statusText, { color: '#5a8a2f' }]}>Completed</Text>
                         </View>
-                        <SessionMenu sessionId={s.id} status={s.status} dispatch={d} />
+                        <SessionMenu sessionId={s.id} status={s.status} dispatch={d} onDelete={onDeleteSession} />
                       </View>
                     </View>
                     <Text style={sl.sessionName}>{firstMsg}</Text>
@@ -503,7 +510,7 @@ function SessionListView({ sessions, dispatch: d, onOpenSession, onStartNew }: {
                       <View style={[sl.statusBadge, { backgroundColor: '#eeebf4', borderColor: '#dedde8' }]}>
                         <Text style={[sl.statusText, { color: '#80798c' }]}>Archived</Text>
                       </View>
-                      <SessionMenu sessionId={s.id} status={s.status} dispatch={d} />
+                      <SessionMenu sessionId={s.id} status={s.status} dispatch={d} onDelete={onDeleteSession} />
                     </View>
                   </View>
                   <Text style={sl.sessionName}>{firstMsg}</Text>
@@ -826,6 +833,8 @@ function ActiveSessionView({ session, state, dispatch: d, onBack }: { session: S
                   autoFocus
                   placeholder="Name this session..."
                   placeholderTextColor={Colors.lightBrown}
+                  selectionColor="#96d35f"
+                  cursorColor="#96d35f"
                   style={styles.sessionNameInput}
                 />
               ) : (
@@ -1014,9 +1023,20 @@ function generateReflection(session: Session, profile: any): string {
 
 export default function SessionsTab() {
   const { state, dispatch } = useAppState();
+  const navigation = require('@react-navigation/native').useNavigation();
   const [viewingId, setViewingId] = useState<string | null>(null);
+
+  // Reset to session list when tab is tapped (re-focused)
+  useEffect(() => {
+    const unsubscribe = navigation.addListener('tabPress', () => {
+      setViewingId(null);
+      setShowNamePrompt(false);
+    });
+    return unsubscribe;
+  }, [navigation]);
   const [showNamePrompt, setShowNamePrompt] = useState(false);
   const [newSessionName, setNewSessionName] = useState('');
+  const [pendingFeeling, setPendingFeeling] = useState<string | null>(null);
   const viewingSession = viewingId ? state.sessions.find((s) => s.id === viewingId) : null;
 
   const openSession = (id: string) => setViewingId(id);
@@ -1032,29 +1052,55 @@ export default function SessionsTab() {
     setShowNamePrompt(false);
   };
 
-  // After CREATE_SESSION, the newest session is at index 0
-  // Watch for new sessions and auto-open them, then set the name
-  const latestSessionId = state.sessions.length > 0 ? state.sessions[0].id : null;
-  const prevLatestRef = useRef(latestSessionId);
+  // Check for initial feeling from home screen (only once on mount)
+  const feelingChecked = useRef(false);
   useEffect(() => {
-    if (latestSessionId && latestSessionId !== prevLatestRef.current) {
+    if (feelingChecked.current) return;
+    const feeling = (global as any).__tether_initial_feeling;
+    if (feeling) {
+      setPendingFeeling(feeling);
+      delete (global as any).__tether_initial_feeling;
+      feelingChecked.current = true;
+    }
+  }, []);
+
+  // Track session IDs to detect additions vs deletions
+  const prevSessionIdsRef = useRef<string[]>(state.sessions.map(s => s.id));
+  useEffect(() => {
+    const currentIds = state.sessions.map(s => s.id);
+    const prevIds = prevSessionIdsRef.current;
+
+    // Find newly added sessions
+    const newIds = currentIds.filter(id => !prevIds.includes(id));
+
+    if (newIds.length > 0) {
+      // A session was ADDED — auto-open it
+      const latestSessionId = newIds[0];
       if (newSessionName.trim()) {
         dispatch({ type: 'RENAME_SESSION', sessionId: latestSessionId, name: newSessionName.trim() });
+      }
+      if (pendingFeeling) {
+        setTimeout(() => {
+          dispatch({
+            type: 'ADD_SESSION_MESSAGE',
+            sessionId: latestSessionId,
+            step: 'vent',
+            message: { role: 'user', text: pendingFeeling, id: Date.now().toString() },
+          });
+          setPendingFeeling(null);
+        }, 500);
       }
       setViewingId(latestSessionId);
       setNewSessionName('');
     }
-    prevLatestRef.current = latestSessionId;
-  }, [latestSessionId]);
 
-  // Clear viewingId if the session was deleted or archived
-  useEffect(() => {
-    if (!viewingId) return;
-    const s = state.sessions.find((s) => s.id === viewingId);
-    if (!s || s.status === 'archived') {
+    // Clear viewingId if the viewed session was deleted
+    if (viewingId && !currentIds.includes(viewingId)) {
       setViewingId(null);
     }
-  }, [state.sessions, viewingId]);
+
+    prevSessionIdsRef.current = currentIds;
+  }, [state.sessions]);
 
   if (showNamePrompt) {
     return (
@@ -1071,6 +1117,8 @@ export default function SessionsTab() {
             onChangeText={setNewSessionName}
             placeholder="e.g. The dinner argument, Feeling distant..."
             placeholderTextColor={Colors.lightBrown}
+            selectionColor="#96d35f"
+            cursorColor="#96d35f"
             autoFocus
             style={{
               backgroundColor: Colors.warmWhite, borderWidth: 1.5, borderColor: Colors.sand,
@@ -1099,7 +1147,7 @@ export default function SessionsTab() {
     return <ActiveSessionView session={viewingSession} state={state} dispatch={dispatch} onBack={closeSession} />;
   }
 
-  return <SessionListView sessions={state.sessions} dispatch={dispatch} onOpenSession={openSession} onStartNew={promptNewSession} />;
+  return <SessionListView sessions={state.sessions} dispatch={dispatch} onOpenSession={openSession} onStartNew={promptNewSession} onDeleteSession={() => setViewingId(null)} />;
 }
 
 const styles = StyleSheet.create({
@@ -1135,7 +1183,7 @@ const styles = StyleSheet.create({
   qaText: { fontFamily: 'Inter_400Regular', fontSize: 13, color: '#211e28', letterSpacing: 0.026 },
   inputArea: { backgroundColor: '#fbf9ff', borderTopWidth: 1, borderTopColor: '#dedde8', padding: 16 },
   inputRow: { flexDirection: 'row', alignItems: 'flex-end', gap: 8 },
-  input: { flex: 1, backgroundColor: '#ffffff', borderWidth: 1.5, borderColor: '#dedde8', borderRadius: 9999, paddingHorizontal: 20, paddingVertical: 0, fontFamily: 'Inter_400Regular', fontSize: 14, color: '#211e28', maxHeight: 80, height: 44 },
+  input: { flex: 1, backgroundColor: '#ffffff', borderWidth: 1.5, borderColor: '#dedde8', borderRadius: 9999, paddingHorizontal: 20, paddingVertical: 0, fontFamily: 'Inter_400Regular', fontSize: 14, color: '#211e28', maxHeight: 80, height: 44, outlineStyle: 'none' } as any,
   inputFocused: { borderColor: '#96d35f' },
   micBtn: { width: 44, height: 44, borderRadius: 22, alignItems: 'center', justifyContent: 'center', backgroundColor: '#96d35f' },
   recordingBanner: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 4, paddingBottom: 8 },

@@ -241,6 +241,8 @@ export default function SettingsTab() {
                   onChangeText={setCountrySearch}
                   placeholder="Search countries..."
                   placeholderTextColor={Colors.lightBrown}
+                  selectionColor="#96d35f"
+                  cursorColor="#96d35f"
                   style={cs.searchInput}
                   autoFocus
                 />

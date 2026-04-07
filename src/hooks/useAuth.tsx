@@ -26,10 +26,12 @@ interface AuthContextValue {
   partnerProfile: SupabaseProfile | null;
   couple: CoupleInfo | null;
   loading: boolean;
+  guestMode: boolean;
   signUp: (email: string, password: string) => Promise<{ error: string | null }>;
   signIn: (email: string, password: string) => Promise<{ error: string | null }>;
   signOut: () => Promise<void>;
   signInWithGoogle: () => Promise<{ error: string | null }>;
+  signInAsGuest: () => void;
   syncProfile: (data: Partial<SupabaseProfile>) => Promise<void>;
   generateInvite: () => Promise<string>;
   acceptInvite: (code: string) => Promise<{ error: string | null }>;
@@ -45,6 +47,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [partnerProfile, setPartnerProfile] = useState<SupabaseProfile | null>(null);
   const [couple, setCouple] = useState<CoupleInfo | null>(null);
   const [loading, setLoading] = useState(true);
+  const [guestMode, setGuestMode] = useState(false);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -122,7 +125,32 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const signOut = async () => {
+    if (guestMode) {
+      setGuestMode(false);
+      setUser(null);
+      setProfile(null);
+      return;
+    }
     await supabase.auth.signOut();
+  };
+
+  const signInAsGuest = () => {
+    const guestUser = { id: 'guest', email: 'guest@tether.app' } as User;
+    const guestProfile: SupabaseProfile = {
+      id: 'guest',
+      name: 'Sam',
+      attachment: '',
+      conflict: '',
+      love: '',
+      window: '',
+      need: '',
+      context: '',
+      onboarded: true,
+    };
+    setGuestMode(true);
+    setUser(guestUser);
+    setProfile(guestProfile);
+    setLoading(false);
   };
 
   const signInWithGoogle = async (): Promise<{ error: string | null }> => {
@@ -158,6 +186,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const syncProfile = async (data: Partial<SupabaseProfile>) => {
     if (!user) return;
+    if (guestMode) {
+      setProfile(prev => prev ? { ...prev, ...data } : null);
+      return;
+    }
     await supabase.from('profiles').upsert({ id: user.id, ...data, updated_at: new Date().toISOString() });
     setProfile(prev => prev ? { ...prev, ...data } : null);
   };
@@ -205,8 +237,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   return (
     <AuthContext.Provider value={{
-      user, session, profile, partnerProfile, couple, loading,
-      signUp, signIn, signOut, signInWithGoogle, syncProfile, generateInvite, acceptInvite, refreshCouple,
+      user, session, profile, partnerProfile, couple, loading, guestMode,
+      signUp, signIn, signOut, signInWithGoogle, signInAsGuest, syncProfile, generateInvite, acceptInvite, refreshCouple,
     }}>
       {children}
     </AuthContext.Provider>

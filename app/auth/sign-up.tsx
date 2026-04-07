@@ -97,6 +97,8 @@ export default function SignUp() {
               onChangeText={setEmail}
               placeholder="you@example.com"
               placeholderTextColor={Colors.lightBrown}
+              selectionColor="#96d35f"
+              cursorColor="#96d35f"
               keyboardType="email-address"
               autoCapitalize="none"
               autoCorrect={false}
@@ -109,6 +111,8 @@ export default function SignUp() {
               onChangeText={setPassword}
               placeholder="At least 6 characters"
               placeholderTextColor={Colors.lightBrown}
+              selectionColor="#96d35f"
+              cursorColor="#96d35f"
               secureTextEntry
             />
 
@@ -119,6 +123,8 @@ export default function SignUp() {
               onChangeText={setConfirm}
               placeholder="Repeat your password"
               placeholderTextColor={Colors.lightBrown}
+              selectionColor="#96d35f"
+              cursorColor="#96d35f"
               secureTextEntry
               onSubmitEditing={handleSignUp}
             />

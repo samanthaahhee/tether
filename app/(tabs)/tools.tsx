@@ -4,16 +4,16 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Colors, Fonts, Radius, Shadows } from '../../src/constants/theme';
 import { TOOLS_CONTENT, REPAIR_ATTEMPTS } from '../../src/constants/data';
-import { IconWind, IconMoon, IconActivity, IconLeaf, IconHeart, IconCheck, IconUser, IconClock, IconX } from '../../src/components/Icons';
+import { IconWind, IconMoon, IconActivity, IconLeaf, IconHeart, IconCheck, IconUser, IconClock, IconX, IconVoice } from '../../src/components/Icons';
 
 const BREATHING_ICONS: Record<string, React.ComponentType<{ size?: number; color?: string }>> = {
   'box': IconActivity,
   '478': IconMoon,
 };
 
-const BREATHING_THEMES: Record<string, { accent: string; cardGrad: [string, string, string]; tag: string; bg: [string, string]; circle: [string, string, string]; text: string }> = {
-  'box': { accent: '#af30dc', cardGrad: ['#ffffff', '#ffffff', '#ece0f5'], tag: 'Calm your nerves', bg: ['#679647', '#497032'], circle: ['#b8f37e', '#96d35f', '#81b756'], text: '#edf0e8' },
-  '478': { accent: '#e96300', cardGrad: ['#ffffff', '#ffffff', '#f5e6d6'], tag: 'Prepare your nerves', bg: ['#9615b5', '#79028e'], circle: ['#ebb0ff', '#bd57f2', '#af30dc'], text: '#edf0e8' },
+const BREATHING_THEMES: Record<string, { accent: string; cardGrad: [string, string, string]; tag: string; bg: string; circleColor: string; titleColor: string; text: string }> = {
+  'box': { accent: '#af30dc', cardGrad: ['#ffffff', '#ffffff', '#ece0f5'], tag: 'Calm your nerves', bg: '#fdeaff', circleColor: '#e8b0f8', titleColor: '#211e28', text: '#211e28' },
+  '478': { accent: '#e96300', cardGrad: ['#ffffff', '#ffffff', '#f5e6d6'], tag: 'Prepare your nerves', bg: '#fff3e0', circleColor: '#f5d490', titleColor: '#211e28', text: '#211e28' },
 };
 
 const GROUNDING_ICONS: Record<string, React.ComponentType<{ size?: number; color?: string }>> = {
@@ -21,16 +21,16 @@ const GROUNDING_ICONS: Record<string, React.ComponentType<{ size?: number; color
   'bodyscan': IconUser,
 };
 
-const GROUNDING_THEMES: Record<string, { accent: string; cardGrad: [string, string, string]; tag: string; duration: string; bg: [string, string, string]; text: string }> = {
-  '54321': { accent: '#4ea989', cardGrad: ['#ffffff', '#ffffff', '#ddeee0'], tag: 'Quieten the noise', duration: '4 MINS', bg: ['#3A3630', '#2A2520', '#201D18'], text: '#DDD9D0' },
-  'bodyscan': { accent: '#f67700', cardGrad: ['#ffffff', '#ffffff', '#dde3f5'], tag: 'Release Tension', duration: '4 MINS', bg: ['#3A3630', '#2A2520', '#201D18'], text: '#DDD9D0' },
+const GROUNDING_THEMES: Record<string, { accent: string; cardGrad: [string, string, string]; tag: string; duration: string; bg: [string, string]; text: string }> = {
+  '54321': { accent: '#211e28', cardGrad: ['#ffffff', '#ffffff', '#ddeee0'], tag: 'Quieten the noise', duration: '4 MINS', bg: ['#4ea989', '#ffffff'], text: '#211e28' },
+  'bodyscan': { accent: '#211e28', cardGrad: ['#ffffff', '#ffffff', '#dde3f5'], tag: 'Release Tension', duration: '4 MINS', bg: ['#92a6f4', '#ffffff'], text: '#211e28' },
 };
 
 const REPAIR_ICONS: Record<string, React.ComponentType<{ size?: number; color?: string }>> = {
-  'Olive branch': IconHeart,
+  'Olive branch': IconLeaf,
   'Accountability': IconCheck,
   'Pause request': IconClock,
-  'Soft start': IconLeaf,
+  'Soft start': IconVoice,
   'I hear you': IconUser,
   'Be together': IconHeart,
 };
@@ -39,7 +39,7 @@ function BreathingExercise({ exercise }: { exercise: typeof TOOLS_CONTENT.breath
   const [active, setActive] = useState(false);
   const [stepIdx, setStepIdx] = useState(0);
   const [cycle, setCycle] = useState(0);
-  const scale = useRef(new Animated.Value(0.5)).current;
+  const scale = useRef(new Animated.Value(0.65)).current;
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const totalCycles = 4;
@@ -52,10 +52,10 @@ function BreathingExercise({ exercise }: { exercise: typeof TOOLS_CONTENT.breath
     const isExhale = durations.length === 3 ? stepIdx % 3 === 2 : stepIdx % 4 === 2;
 
     if (isInhale) {
-      Animated.timing(scale, { toValue: 1, duration: durations[0] * 1000, useNativeDriver: true }).start();
+      Animated.timing(scale, { toValue: 1.25, duration: durations[0] * 1000, useNativeDriver: true }).start();
     } else if (isExhale) {
       const exhaleIdx = durations.length === 3 ? 2 : 2;
-      Animated.timing(scale, { toValue: 0.5, duration: durations[exhaleIdx] * 1000, useNativeDriver: true }).start();
+      Animated.timing(scale, { toValue: 0.65, duration: durations[exhaleIdx] * 1000, useNativeDriver: true }).start();
     }
 
     const currentDuration = durations[stepIdx % durations.length];
@@ -67,7 +67,7 @@ function BreathingExercise({ exercise }: { exercise: typeof TOOLS_CONTENT.breath
           setActive(false);
           setStepIdx(0);
           setCycle(0);
-          scale.setValue(0.5);
+          scale.setValue(0.65);
           return;
         }
         setCycle(nextCycle);
@@ -84,7 +84,7 @@ function BreathingExercise({ exercise }: { exercise: typeof TOOLS_CONTENT.breath
     setActive(false);
     setStepIdx(0);
     setCycle(0);
-    scale.setValue(0.5);
+    scale.setValue(0.65);
     if (timerRef.current) clearTimeout(timerRef.current);
   };
 
@@ -119,27 +119,28 @@ function BreathingExercise({ exercise }: { exercise: typeof TOOLS_CONTENT.breath
       </LinearGradient>
 
       <Modal visible={active} animationType="fade" onRequestClose={stop}>
-        <LinearGradient colors={bTheme.bg} style={br.fullScreen}>
-          <Text style={[br.fullTitle, { color: bTheme.text }]}>{exercise.name}</Text>
-          <Text style={[br.fullCycle, { color: bTheme.text, opacity: 0.6 }]}>Cycle {cycle + 1} of {totalCycles}</Text>
-
-          <View style={br.circleWrap}>
-            <Animated.View style={[br.circleOuter, { transform: [{ scale }] }]}>
-              <LinearGradient
-                colors={bTheme.circle}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 1 }}
-                style={br.circleGradient}
-              >
-                <Text style={br.fullCircleText}>{currentStepLabel}</Text>
-              </LinearGradient>
-            </Animated.View>
+        <View style={[br.fullScreen, { backgroundColor: bTheme.bg }]}>
+          {/* Header */}
+          <View style={br.fullHeader}>
+            <Text style={br.fullTitle}>{exercise.name}</Text>
+            <Text style={br.fullCycle}>Cycle {cycle + 1} of {totalCycles}</Text>
           </View>
 
-          <TouchableOpacity onPress={stop} style={br.fullStopBtn} activeOpacity={0.8}>
-            <Text style={br.fullStopText}>End exercise</Text>
-          </TouchableOpacity>
-        </LinearGradient>
+          {/* Circle + text */}
+          <View style={br.circleWrap}>
+            <Animated.View style={[br.circleOuter, { backgroundColor: bTheme.circleColor, transform: [{ scale }] }]} />
+            <View style={br.circleTextWrap}>
+              <Text style={br.fullCircleText}>{currentStepLabel}</Text>
+            </View>
+          </View>
+
+          {/* End button */}
+          <View style={br.fullFooter}>
+            <TouchableOpacity onPress={stop} style={br.fullStopBtn} activeOpacity={0.8}>
+              <Text style={br.fullStopText}>End exercise</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
       </Modal>
     </>
   );
@@ -155,16 +156,18 @@ const br = StyleSheet.create({
   desc: { fontFamily: 'Inter_400Regular', fontSize: 14, color: '#80798c', lineHeight: 21 },
   arrowBtn: { width: 44, height: 44, borderRadius: 22, borderWidth: 1.5, borderColor: '#dedde8', backgroundColor: '#ffffff', alignItems: 'center', justifyContent: 'center' },
   arrowText: { fontSize: 18, color: '#211e28' },
-  // Full screen
-  fullScreen: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 32 },
-  fullTitle: { fontFamily: Fonts.displayLight, fontSize: 28, color: '#edf0e8', marginBottom: 4 },
-  fullCycle: { fontFamily: Fonts.body, fontSize: 13, color: '#96d35f', marginBottom: 40 },
-  circleWrap: { width: 220, height: 220, alignItems: 'center', justifyContent: 'center', marginBottom: 40 },
-  circleOuter: { width: 200, height: 200 },
-  circleGradient: { width: 200, height: 200, borderRadius: 100, alignItems: 'center', justifyContent: 'center' },
-  fullCircleText: { fontFamily: Fonts.display, fontSize: 20, color: '#edf0e8', textAlign: 'center' },
-  fullStopBtn: { backgroundColor: 'rgba(255,255,255,0.15)', borderWidth: 1.5, borderColor: 'rgba(255,255,255,0.25)', borderRadius: 100, paddingHorizontal: 32, paddingVertical: 14 },
-  fullStopText: { fontFamily: Fonts.bodyMedium, fontSize: 14, color: '#F0F1E6' },
+  // Full screen breathing — matching Figma exactly
+  fullScreen: { flex: 1, alignItems: 'center', paddingTop: 120, paddingBottom: 60, paddingHorizontal: 16, gap: 80 },
+  fullHeader: { alignItems: 'center', gap: 8 },
+  fullTitle: { fontFamily: 'InstrumentSans_700Bold', fontSize: 22, color: '#211e28', textAlign: 'center' },
+  fullCycle: { fontFamily: 'Inter_400Regular', fontSize: 14, color: '#211e28' },
+  circleWrap: { width: '100%', height: 390, alignItems: 'center', justifyContent: 'center' },
+  circleOuter: { width: 390, height: 390, borderRadius: 195, position: 'absolute', opacity: 0.5 },
+  circleTextWrap: { position: 'absolute', alignItems: 'center', justifyContent: 'center' },
+  fullCircleText: { fontFamily: 'InstrumentSans_600SemiBold', fontSize: 16, color: '#211e28', textAlign: 'center', lineHeight: 22 },
+  fullFooter: { flex: 1, width: '100%', justifyContent: 'flex-end' },
+  fullStopBtn: { backgroundColor: '#ffffff', borderWidth: 1.5, borderColor: '#dedde8', borderRadius: 9999, height: 44, alignItems: 'center', justifyContent: 'center', width: '100%' },
+  fullStopText: { fontFamily: 'Inter_600SemiBold', fontSize: 16, color: '#000000' },
 });
 
 function BreathingBackground({ colors }: { colors: [string, string, string] }) {
@@ -228,25 +231,32 @@ function GroundingCard({ technique: g, theme: gTheme, Icon }: {
       </LinearGradient>
 
       <Modal visible={active} animationType="fade" onRequestClose={close}>
-        <View style={gr.fullScreen}>
-          <BreathingBackground colors={gTheme.bg} />
-
-          <Text style={[gr.fullTitle, { color: gTheme.text }]}>{g.name}</Text>
-          <Text style={[gr.fullProgress, { color: gTheme.text }]}>Step {currentStep + 1} of {g.steps.length}</Text>
-
-          <View style={gr.stepCard}>
-            <Text style={gr.stepNum}>{currentStep + 1}</Text>
-            <Text style={gr.stepText}>{g.steps[currentStep]}</Text>
+        <LinearGradient
+          colors={gTheme.bg}
+          locations={[0, 0.35]}
+          start={{ x: 0.5, y: 0 }}
+          end={{ x: 0.5, y: 1 }}
+          style={gr.fullScreen}
+        >
+          {/* Title + Card centered */}
+          <View style={gr.fullCenter}>
+            <Text style={[gr.fullTitle, { color: gTheme.accent }]}>{g.name}</Text>
+            <View style={gr.stepCard}>
+              <Text style={gr.stepLabel}>STEP {currentStep + 1}</Text>
+              <Text style={gr.stepText}>{g.steps[currentStep]}</Text>
+            </View>
           </View>
 
-          <TouchableOpacity onPress={next} style={gr.nextBtn} activeOpacity={0.85}>
-            <Text style={gr.nextText}>{currentStep < g.steps.length - 1 ? 'Next step' : 'Done'}</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity onPress={close} style={gr.closeBtn} activeOpacity={0.7}>
-            <Text style={[gr.closeText, { color: gTheme.text }]}>End exercise</Text>
-          </TouchableOpacity>
-        </View>
+          {/* Buttons at bottom */}
+          <View style={gr.fullFooter}>
+            <TouchableOpacity onPress={next} style={gr.nextBtn} activeOpacity={0.85}>
+              <Text style={gr.nextText}>{currentStep < g.steps.length - 1 ? 'Next Step' : 'Done'}</Text>
+            </TouchableOpacity>
+            <TouchableOpacity onPress={close} style={gr.closeBtn} activeOpacity={0.7}>
+              <Text style={gr.closeText}>End exercise</Text>
+            </TouchableOpacity>
+          </View>
+        </LinearGradient>
       </Modal>
     </>
   );
@@ -262,16 +272,17 @@ const gr = StyleSheet.create({
   desc: { fontFamily: 'Inter_400Regular', fontSize: 14, color: '#80798c', lineHeight: 21 },
   startBtn: { width: 44, height: 44, borderRadius: 22, borderWidth: 1.5, borderColor: '#dedde8', backgroundColor: '#ffffff', alignItems: 'center', justifyContent: 'center' },
   startText: { fontSize: 18, color: '#211e28' },
-  fullScreen: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 32 },
-  fullTitle: { fontFamily: Fonts.displayLight, fontSize: 28, marginBottom: 4, textAlign: 'center' },
-  fullProgress: { fontFamily: Fonts.body, fontSize: 13, opacity: 0.6, marginBottom: 40, textAlign: 'center' },
-  stepCard: { backgroundColor: 'rgba(255,255,255,0.12)', borderRadius: Radius.xl, padding: 32, alignItems: 'center', width: '100%', marginBottom: 40 },
-  stepNum: { fontFamily: Fonts.displayLight, fontSize: 48, color: 'rgba(255,255,255,0.3)', marginBottom: 12 },
-  stepText: { fontFamily: Fonts.body, fontSize: 17, color: '#edf0e8', textAlign: 'center', lineHeight: 26 },
-  nextBtn: { backgroundColor: 'rgba(255,255,255,0.2)', borderWidth: 1.5, borderColor: 'rgba(255,255,255,0.3)', borderRadius: 100, paddingHorizontal: 40, paddingVertical: 14, marginBottom: 16 },
-  nextText: { fontFamily: Fonts.bodyMedium, fontSize: 15, color: '#edf0e8' },
-  closeBtn: { paddingVertical: 8 },
-  closeText: { fontFamily: Fonts.body, fontSize: 13, opacity: 0.6 },
+  fullScreen: { flex: 1, paddingHorizontal: 16, paddingBottom: 40 },
+  fullCenter: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 32 },
+  fullTitle: { fontFamily: 'InstrumentSans_700Bold', fontSize: 22, textAlign: 'center', lineHeight: 29 },
+  stepCard: { backgroundColor: '#ffffff', borderWidth: 1, borderColor: '#dedde8', borderRadius: 16, padding: 10, alignItems: 'center', width: '100%', height: 383, justifyContent: 'center', shadowColor: '#001c14', shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.12, shadowRadius: 32, elevation: 12 },
+  stepLabel: { fontFamily: 'Inter_500Medium', fontSize: 11, color: '#211e28', letterSpacing: 0.88, textTransform: 'uppercase' as const, marginBottom: 8 },
+  stepText: { fontFamily: 'InstrumentSans_400Regular', fontSize: 26, color: '#211e28', textAlign: 'center', lineHeight: 33, letterSpacing: -0.5, paddingHorizontal: 16 },
+  fullFooter: { width: '100%', alignItems: 'center' },
+  nextBtn: { backgroundColor: '#96d35f', borderRadius: 9999, height: 44, width: '100%', alignItems: 'center', justifyContent: 'center', marginBottom: 10 },
+  nextText: { fontFamily: 'Inter_600SemiBold', fontSize: 16, color: '#001c14' },
+  closeBtn: { height: 44, alignItems: 'center', justifyContent: 'center' },
+  closeText: { fontFamily: 'Inter_600SemiBold', fontSize: 16, color: '#000000' },
 });
 
 function ExpandableCard({ icon, title, children }: { icon: React.ReactNode; title: string; children: React.ReactNode }) {
@@ -315,10 +326,7 @@ export default function ToolsTab() {
 
         {/* Breathing Techniques */}
         <View style={styles.section} onLayout={(e) => { sectionPositions.current['breathing'] = e.nativeEvent.layout.y; }}>
-          <View style={styles.sectionRow}>
-            <Text style={styles.sectionTitle}>Breathing Techniques</Text>
-            <Text style={styles.viewAll}>View all</Text>
-          </View>
+          <Text style={styles.sectionTitle}>Breathing Techniques</Text>
           {TOOLS_CONTENT.breathing.map((b) => (
             <BreathingExercise key={b.id} exercise={b} />
           ))}
@@ -340,7 +348,7 @@ export default function ToolsTab() {
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Speak with kindness</Text>
 
-          <ExpandableCard icon={<IconLeaf size={20} color="#4ea989" />} title="Gratitude Practice">
+          <ExpandableCard icon={<IconLeaf size={20} color="#4ea989" />} title="Soft start-ups">
             {TOOLS_CONTENT.phrases.softStartups.map((p, i) => (
               <View key={i} style={pb.pair}>
                 <View style={pb.itemGroup}>
@@ -356,7 +364,7 @@ export default function ToolsTab() {
             ))}
           </ExpandableCard>
 
-          <ExpandableCard icon={<IconHeart size={20} color="#bd57f2" />} title="Words to avoid">
+          <ExpandableCard icon={<IconX size={20} color="#f90330" />} title="Words to avoid">
             {TOOLS_CONTENT.phrases.wordsToAvoid.map((w, i) => (
               <View key={i} style={pb.avoidCardNew}>
                 <View style={pb.avoidHeader}>
@@ -439,7 +447,5 @@ const styles = StyleSheet.create({
   scroll: { flex: 1 },
   content: { paddingTop: 16, paddingBottom: 32 },
   section: { paddingHorizontal: 16, marginBottom: 24 },
-  sectionRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 },
   sectionTitle: { fontFamily: 'InstrumentSans_600SemiBold', fontSize: 16, color: '#211e28', marginBottom: 8 },
-  viewAll: { fontFamily: 'Inter_400Regular', fontSize: 14, color: '#80798c' },
 });

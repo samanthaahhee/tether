@@ -242,7 +242,7 @@ export const TOOLS_CONTENT = {
       name: 'Box Breathing',
       emoji: '⬜',
       desc: 'Equal counts of inhale, hold, exhale, hold. Used by Navy SEALs to calm under pressure.',
-      steps: ['Breathe in for 4 seconds', 'Hold for 4 seconds', 'Breathe out for 4 seconds', 'Hold for 4 seconds'],
+      steps: ['Breath in for\n4 seconds', 'Hold for\n4 seconds', 'Breath out for\n4 seconds', 'Hold for\n4 seconds'],
       durations: [4, 4, 4, 4],
     },
     {
@@ -250,7 +250,7 @@ export const TOOLS_CONTENT = {
       name: '4-7-8 Breathing',
       emoji: '🌙',
       desc: 'Activates your parasympathetic nervous system. Particularly effective before a difficult conversation.',
-      steps: ['Breathe in for 4 seconds', 'Hold for 7 seconds', 'Breathe out for 8 seconds'],
+      steps: ['Breath in for\n4 seconds', 'Hold for\n7 seconds', 'Breath out for\n8 seconds'],
       durations: [4, 7, 8],
     },
   ],

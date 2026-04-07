@@ -188,6 +188,8 @@ export default function PartnerOnboarding() {
                 onChangeText={setName}
                 placeholder="Your first name"
                 placeholderTextColor={Colors.lightBrown}
+                selectionColor="#96d35f"
+                cursorColor="#96d35f"
                 style={styles.nameInput}
                 autoFocus
                 returnKeyType="done"

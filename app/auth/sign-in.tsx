@@ -76,6 +76,8 @@ export default function SignIn() {
               onChangeText={setEmail}
               placeholder="you@example.com"
               placeholderTextColor={Colors.lightBrown}
+              selectionColor="#96d35f"
+              cursorColor="#96d35f"
               keyboardType="email-address"
               autoCapitalize="none"
               autoCorrect={false}
@@ -88,6 +90,8 @@ export default function SignIn() {
               onChangeText={setPassword}
               placeholder="Your password"
               placeholderTextColor={Colors.lightBrown}
+              selectionColor="#96d35f"
+              cursorColor="#96d35f"
               secureTextEntry
               onSubmitEditing={handleSignIn}
             />

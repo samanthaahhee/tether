@@ -4,8 +4,9 @@
     {
       "name": "Expo (Metro)",
       "runtimeExecutable": "/usr/local/bin/npx",
-      "runtimeArgs": ["expo", "start", "--web", "--port", "8081"],
+      "runtimeArgs": ["expo", "start", "--web"],
       "port": 8081,
+      "autoPort": true,
       "env": {
         "PATH": "/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin"
       }
