@@ -251,7 +251,7 @@ export default function GrowthTab() {
                 partnerObservations.map((obs, i) => (
                   <View key={i} style={pt.card}>
                     <Text style={[pc.label, { color: '#bd57f2' }]}>OBSERVATION</Text>
-                    <Text style={{ fontFamily: Fonts.body, fontSize: 14, color: '#211e28', lineHeight: 21 }}>{obs}</Text>
+                    <Text style={{ fontFamily: Fonts.body, fontSize: 14, color: '#211e28', lineHeight: 21, textAlign: 'center' }}>{obs}</Text>
                   </View>
                 ))
               ) : (
@@ -279,7 +279,7 @@ export default function GrowthTab() {
                 relationshipPatterns.map((pattern, i) => (
                   <View key={i} style={pt.card}>
                     <Text style={[pc.label, { color: '#d2b100' }]}>PATTERN</Text>
-                    <Text style={{ fontFamily: Fonts.body, fontSize: 14, color: '#211e28', lineHeight: 21 }}>{pattern}</Text>
+                    <Text style={{ fontFamily: Fonts.body, fontSize: 14, color: '#211e28', lineHeight: 21, textAlign: 'center' }}>{pattern}</Text>
                   </View>
                 ))
               ) : (

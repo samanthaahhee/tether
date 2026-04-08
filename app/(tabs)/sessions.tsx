@@ -284,15 +284,15 @@ const nr = StyleSheet.create({
 
   reminderHeading: { fontFamily: Fonts.bodyMedium, fontSize: 12, color: Colors.warmBrown, letterSpacing: 0.4, textTransform: 'uppercase', marginTop: 14, marginBottom: 8 },
   reminderRow: { flexDirection: 'row', gap: 8, marginBottom: 16 },
-  reminderChip: { backgroundColor: '#fdeaff', borderWidth: 1, borderColor: '#dedde8', borderRadius: Radius.full, paddingHorizontal: 14, paddingVertical: 8 },
-  reminderChipText: { fontFamily: Fonts.bodyMedium, fontSize: 12, color: '#bd57f2' },
+  reminderChip: { backgroundColor: '#ffffff', borderWidth: 1.5, borderColor: '#dedde8', borderRadius: Radius.full, paddingHorizontal: 14, paddingVertical: 8 },
+  reminderChipText: { fontFamily: Fonts.bodyMedium, fontSize: 12, color: '#211e28' },
   reminderSet: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', backgroundColor: '#fdeaff', borderWidth: 1, borderColor: '#dedde8', borderRadius: Radius.md, padding: 12, marginBottom: 16 },
   reminderSetText: { fontFamily: Fonts.bodyMedium, fontSize: 13, color: '#211e28' },
   reminderChange: { fontFamily: Fonts.bodyMedium, fontSize: 12, color: '#80798c' },
 
-  // Shared — purple pastel button matching Figma
-  primaryBtn: { backgroundColor: '#fdeaff', borderRadius: 9999, height: 44, alignItems: 'center', justifyContent: 'center', marginTop: 16 },
-  primaryBtnText: { fontFamily: 'Inter_600SemiBold', fontSize: 16, color: '#af30dc' },
+  // Primary action button — green
+  primaryBtn: { backgroundColor: '#96d35f', borderRadius: 9999, height: 44, alignItems: 'center', justifyContent: 'center', marginTop: 16 },
+  primaryBtnText: { fontFamily: 'Inter_600SemiBold', fontSize: 16, color: '#001c14' },
   sentRow: { marginTop: 4, gap: 10 },
   sentConfirm: { fontFamily: Fonts.bodyMedium, fontSize: 13, color: '#af30dc', textAlign: 'center', paddingVertical: 4 },
   resolveBtn: { backgroundColor: Colors.charcoal, borderRadius: Radius.full, paddingVertical: 14, alignItems: 'center' },
