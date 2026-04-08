@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useEffect, useReducer } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { ModeKey, SESSION_STEPS } from '../constants/data';
+import { encodeForStorage, decodeFromStorage } from '../utils/crypto';
 
 export interface Message {
   role: 'ai' | 'user';
@@ -18,6 +19,7 @@ export interface UserProfile {
   context: string;
   onboarded: boolean;
   streak: number;
+  aiConsentGiven: boolean;
 }
 
 export interface PartnerProfile {
@@ -120,6 +122,7 @@ const defaultProfile: UserProfile = {
   context: '',
   onboarded: false,
   streak: 0,
+  aiConsentGiven: false,
 };
 
 const defaultPartnerProfile: PartnerProfile = {
@@ -400,7 +403,8 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
     AsyncStorage.getItem('tether_state').then((raw) => {
       if (raw) {
         try {
-          const saved = JSON.parse(raw);
+          const decoded = decodeFromStorage(raw);
+          const saved = JSON.parse(decoded);
           dispatch({ type: 'HYDRATE', state: { ...initialState, ...saved, loaded: true } });
         } catch {
           dispatch({ type: 'SET_LOADED' });
@@ -414,7 +418,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (state.loaded) {
       const { loaded, ...toSave } = state;
-      AsyncStorage.setItem('tether_state', JSON.stringify(toSave));
+      AsyncStorage.setItem('tether_state', encodeForStorage(JSON.stringify(toSave)));
     }
   }, [state]);
 

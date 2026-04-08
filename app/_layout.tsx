@@ -34,7 +34,7 @@ function RouteGuard() {
       }
     } else {
       // Signed in + onboarded — go to tabs (allow standalone pages through)
-      const standalonePages = ['reflections', 'assessment', 'frameworks'];
+      const standalonePages = ['reflections', 'assessment', 'frameworks', 'privacy'];
       if (!inTabs && !standalonePages.includes(segments[0] as string)) {
         router.replace('/(tabs)');
       }

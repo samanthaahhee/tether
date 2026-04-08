@@ -44,3 +44,8 @@ yarn-error.*
 deploy-web.sh
 dist/
 .vercel/
+
+# Environment secrets
+.env
+.env.local
+.env.production

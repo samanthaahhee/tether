@@ -255,6 +255,35 @@ export default function SettingsTab() {
             }}
             right={exporting ? <ActivityIndicator size="small" color={Colors.midBrown} /> : undefined}
           />
+          <SettingsRow
+            icon={<IconX size={18} color="#A32D2D" />}
+            label="Delete all my data"
+            sub="Permanently remove your account and all data"
+            onPress={() => {
+              Alert.alert(
+                'Delete all data',
+                'This will permanently delete your account, all sessions, messages, learnings, and profile data. This action cannot be undone.\n\nAre you absolutely sure?',
+                [
+                  { text: 'Cancel', style: 'cancel' },
+                  {
+                    text: 'Delete everything',
+                    style: 'destructive',
+                    onPress: async () => {
+                      try {
+                        await AsyncStorage.removeItem('tether_state');
+                        dispatch({ type: 'SET_PROFILE', payload: { onboarded: false, name: '', attachment: '', conflict: '', love: '', window: '', need: '', context: '' } });
+                        await signOut();
+                        router.replace('/');
+                        Alert.alert('Data deleted', 'All your data has been removed.');
+                      } catch {
+                        Alert.alert('Error', 'Something went wrong. Please try again.');
+                      }
+                    },
+                  },
+                ],
+              );
+            }}
+          />
         </Section>
 
         <Section title="Crisis support">
@@ -343,7 +372,7 @@ export default function SettingsTab() {
               'Tether uses AI to guide conversations and offer insights. While grounded in established research, AI responses are not infallible and should be taken as suggestions, not prescriptions.'
             )}
           />
-          <SettingsRow icon={<IconShield size={18} color={Colors.midBrown} />} label="Privacy policy" sub="How we handle your data" onPress={() => Alert.alert('Privacy policy', 'Your session content is encrypted and stored only on your device and secure servers. It is never sold, shared, or used to train AI models. Your partner cannot see your vent sessions. You can export or delete your data at any time.')} />
+          <SettingsRow icon={<IconShield size={18} color={Colors.midBrown} />} label="Privacy policy" sub="How we handle your data" onPress={() => router.push('/privacy')} />
           <SettingsRow icon={<IconInfo size={18} color={Colors.midBrown} />} label="Version" sub="Tether 1.0.0" />
         </Section>
 

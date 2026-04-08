@@ -1,8 +1,9 @@
 import { createClient } from '@supabase/supabase-js';
 import * as SecureStore from 'expo-secure-store';
+import Constants from 'expo-constants';
 
-const SUPABASE_URL = 'https://axlarqthzbmqxzyhbrab.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF4bGFycXRoemJtcXh6eWhicmFiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ0NDIxOTAsImV4cCI6MjA5MDAxODE5MH0.dclvcOJnbdTGm6jX6yiNjGxxPAQ_4wYPeN8S9p9KW9g';
+const SUPABASE_URL = Constants.expoConfig?.extra?.supabaseUrl || process.env.EXPO_PUBLIC_SUPABASE_URL || '';
+const SUPABASE_ANON_KEY = Constants.expoConfig?.extra?.supabaseAnonKey || process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY || '';
 
 const SecureStoreAdapter = {
   getItem: (key: string) => SecureStore.getItemAsync(key),
