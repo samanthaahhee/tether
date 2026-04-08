@@ -117,6 +117,7 @@ export default function AssessmentQuiz() {
     const profileKey = PROFILE_KEY_MAP[type];
     const update = { [profileKey]: result.primary };
     dispatch({ type: 'SET_PROFILE', payload: update });
+    dispatch({ type: 'COMPLETE_FULL_ASSESSMENT', assessmentType: type });
     await syncProfile(update);
     setSaving(false);
     // Navigate to the detail page for the new result

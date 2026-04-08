@@ -23,18 +23,22 @@ const ACCENT_PALE: Record<string, string> = {
   '#92a6f4': '#dce3fd', // blue/periwinkle
 };
 
-function PatternCard({ label, value, note, accentColor, assessmentType, assessmentValue }: {
+function PatternCard({ label, value, note, accentColor, assessmentType, assessmentValue, isIncomplete }: {
   label: string; value: string; note: string; accentColor: string;
-  assessmentType?: string; assessmentValue?: string;
+  assessmentType?: string; assessmentValue?: string; isIncomplete?: boolean;
 }) {
   const handlePress = () => {
+    if (isIncomplete && assessmentType) {
+      router.push({ pathname: '/assessment/quiz/[type]', params: { type: assessmentType } });
+      return;
+    }
     if (assessmentType && assessmentValue) {
       router.push({ pathname: '/assessment/[type]', params: { type: assessmentType, value: assessmentValue } });
     }
   };
   const pale = ACCENT_PALE[accentColor] || '#f0f0f0';
   return (
-    <TouchableOpacity onPress={handlePress} activeOpacity={assessmentType ? 0.75 : 1}>
+    <TouchableOpacity onPress={handlePress} activeOpacity={(assessmentType || isIncomplete) ? 0.75 : 1}>
       <LinearGradient
         colors={['#ffffff', '#ffffff', pale]}
         locations={[0, 0.6, 1]}
@@ -45,7 +49,7 @@ function PatternCard({ label, value, note, accentColor, assessmentType, assessme
         <Text style={[pc.label, { color: accentColor }]}>{label}</Text>
         <Text style={pc.value}>{value}</Text>
         <Text style={pc.note}>{note}</Text>
-        {assessmentType && (
+        {(isIncomplete || assessmentType) && (
           <View style={pc.arrowBtn}>
             <Text style={{ fontSize: 18, color: '#211e28', marginLeft: 1 }}>→</Text>
           </View>
@@ -133,44 +137,47 @@ export default function GrowthTab() {
                 value={ATTACHMENT_LABELS[attachment] || 'Not set'}
                 note={ATTACH_REVEALS[attachment]?.body || 'Complete your profile to unlock attachment insights.'}
                 accentColor="#f67700"
-                assessmentType={attachment ? 'attachment' : undefined}
+                assessmentType="attachment"
                 assessmentValue={attachment}
+                isIncomplete={!attachment}
               />
               <PatternCard
                 label="Love language"
                 value={LOVE_LABELS[love] || 'Not set'}
                 note={LOVE_REVEALS[love]?.body || 'Understanding how you receive love explains many conflicts.'}
                 accentColor="#d2b100"
-                assessmentType={love ? 'love' : undefined}
+                assessmentType="love"
                 assessmentValue={love}
+                isIncomplete={!love}
               />
               <PatternCard
                 label="Conflict style"
                 value={CONFLICT_LABELS[conflict] || 'Not set'}
                 note={CONFLICT_REVEALS[conflict]?.body || 'Your natural response under pressure.'}
                 accentColor="#bd57f2"
-                assessmentType={conflict ? 'conflict' : undefined}
+                assessmentType="conflict"
                 assessmentValue={conflict}
+                isIncomplete={!conflict}
               />
               <PatternCard
                 label="Body in conflict"
                 value={WINDOW_LABELS[win] || 'Not set'}
                 note={WINDOW_REVEALS[win]?.body || 'How your body responds during conflict.'}
                 accentColor="#4ea989"
-                assessmentType={win ? 'window' : undefined}
+                assessmentType="window"
                 assessmentValue={win}
+                isIncomplete={!win}
               />
 
-              {need && (
-                <PatternCard
-                  label="Core need"
-                  value={NEED_LABELS[need] || 'Not set'}
-                  note="This is the thread underneath most of your conflicts. The unspoken thing you most need your partner to understand."
-                  accentColor="#92a6f4"
-                  assessmentType="need"
-                  assessmentValue={need}
-                />
-              )}
+              <PatternCard
+                label="Core need"
+                value={NEED_LABELS[need] || 'Not set'}
+                note={need ? "This is the thread underneath most of your conflicts. The unspoken thing you most need your partner to understand." : "Understanding your core need helps explain what drives your conflicts."}
+                accentColor="#92a6f4"
+                assessmentType="need"
+                assessmentValue={need}
+                isIncomplete={!need}
+              />
             </View>
 
           </>

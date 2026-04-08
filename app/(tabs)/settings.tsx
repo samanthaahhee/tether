@@ -1,7 +1,8 @@
 import React, { useState, useMemo, useRef, useEffect } from 'react';
-import { View, Text, TouchableOpacity, ScrollView, StyleSheet, Animated, Alert, Linking, Share, ActivityIndicator, Modal, TextInput, FlatList } from 'react-native';
+import { View, Text, TouchableOpacity, ScrollView, StyleSheet, Animated, Alert, Linking, Share, ActivityIndicator, Modal, TextInput, FlatList, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Colors, Fonts, Radius } from '../../src/constants/theme';
 import { IconHeart, IconUser, IconBell, IconLeaf, IconBookmark, IconLink, IconMail, IconKey, IconEdit, IconShield, IconBox, IconPhone, IconInfo, IconLock, IconSun, IconSearch, IconX } from '../../src/components/Icons';
 import { ChevronRight } from '../../src/components/Icon';
@@ -62,11 +63,11 @@ export default function SettingsTab() {
   const pp: PartnerProfile = state.partnerProfile;
   const partnerSet = !!pp.attachment;
   const [inviteLoading, setInviteLoading] = useState(false);
-  const [notifDaily, setNotifDaily] = useState(true);
-  const [notifBridge, setNotifBridge] = useState(true);
+  const [inviteCode, setInviteCode] = useState<string | null>(null);
   const [appLock, setAppLock] = useState(false);
   const [showCountryPicker, setShowCountryPicker] = useState(false);
   const [countrySearch, setCountrySearch] = useState('');
+  const [exporting, setExporting] = useState(false);
 
   const crisisData = getCrisisLines(state.crisisCountry);
   const filteredCountries = useMemo(() => {
@@ -102,7 +103,7 @@ export default function SettingsTab() {
                   const code = await generateInvite();
                   setInviteLoading(false);
                   Share.share({
-                    message: `Join me on Tether 💞\n\nDownload the app and use invite code: ${code}\n\nor tap: tether://invite/${code}`,
+                    message: `Join me on Tether\n\nDownload the app and use invite code: ${code}\n\nor tap: tether://invite/${code}`,
                     title: 'Join me on Tether',
                   });
                 }}
@@ -117,34 +118,54 @@ export default function SettingsTab() {
               <SettingsRow
                 icon={<IconMail size={18} color={Colors.midBrown} />}
                 label="Invite your partner"
-                sub="Send them a link to create their account"
+                sub="Generate a code and share it with them"
                 onPress={async () => {
                   setInviteLoading(true);
                   const code = await generateInvite();
+                  setInviteCode(code);
                   setInviteLoading(false);
-                  Share.share({
-                    message: `Join me on Tether 💞\n\nDownload the app and use invite code: ${code}\n\nor tap: tether://invite/${code}`,
-                    title: 'Join me on Tether',
-                  });
                 }}
                 right={inviteLoading ? <ActivityIndicator size="small" color={Colors.terracotta} /> : undefined}
               />
+              {inviteCode && (
+                <View style={styles.inviteCodeBox}>
+                  <Text style={styles.inviteCodeLabel}>YOUR INVITE CODE</Text>
+                  <Text style={styles.inviteCodeValue}>{inviteCode}</Text>
+                  <Text style={styles.inviteCodeHint}>Expires in 7 days</Text>
+                  <TouchableOpacity
+                    style={styles.inviteShareBtn}
+                    activeOpacity={0.8}
+                    onPress={() => {
+                      Share.share({
+                        message: `Join me on Tether\n\nDownload the app and use invite code: ${inviteCode}\n\nor tap: tether://invite/${inviteCode}`,
+                        title: 'Join me on Tether',
+                      });
+                    }}
+                  >
+                    <Text style={styles.inviteShareBtnText}>Share invite link</Text>
+                  </TouchableOpacity>
+                </View>
+              )}
               <SettingsRow
                 icon={<IconKey size={18} color={Colors.midBrown} />}
                 label="I have an invite code"
                 sub="Enter a code your partner sent you"
                 onPress={() => {
-                  Alert.prompt(
-                    'Enter invite code',
-                    'Paste or type the code your partner shared with you.',
-                    async (code) => {
-                      if (!code) return;
-                      router.push(`/invite/${code.trim().toUpperCase()}`);
-                    },
-                    'plain-text',
-                    '',
-                    'default',
-                  );
+                  if (Platform.OS === 'ios') {
+                    Alert.prompt(
+                      'Enter invite code',
+                      'Paste or type the code your partner shared with you.',
+                      async (code) => {
+                        if (!code) return;
+                        router.push(`/invite/${code.trim().toUpperCase()}`);
+                      },
+                      'plain-text',
+                      '',
+                      'default',
+                    );
+                  } else {
+                    router.push('/invite/ENTER');
+                  }
                 }}
               />
             </View>
@@ -166,43 +187,74 @@ export default function SettingsTab() {
               </View>
             ))}
           </View>
-          <SettingsRow icon={<IconEdit size={18} color={Colors.midBrown} />} label="Retake onboarding" sub="Update your profile answers" onPress={() => router.push('/onboarding')} />
+          <SettingsRow icon={<IconEdit size={18} color={Colors.midBrown} />} label="Retake onboarding" sub="Start fresh and update your answers" onPress={() => {
+            Alert.alert(
+              'Retake onboarding',
+              'This will reset your profile answers. Your sessions and learnings will be kept. Continue?',
+              [
+                { text: 'Cancel', style: 'cancel' },
+                {
+                  text: 'Continue', onPress: () => {
+                    dispatch({
+                      type: 'SET_PROFILE',
+                      payload: { attachment: '', conflict: '', love: '', window: '', need: '', context: '', onboarded: false },
+                    });
+                    router.replace('/onboarding');
+                  },
+                },
+              ],
+            );
+          }} />
         </Section>
 
-        <Section title="Partner's profile">
-          {partnerSet ? (
-            <View style={styles.profileGrid}>
-              {[
-                { label: 'Attachment', value: ATTACHMENT_LABELS[pp.attachment] || 'Not set' },
-                { label: 'Love language', value: LOVE_LABELS[pp.love] || 'Not set' },
-                { label: 'Conflict style', value: CONFLICT_LABELS[pp.conflict] || 'Not set' },
-                { label: 'Body response', value: WINDOW_LABELS[pp.window] || 'Not set' },
-                { label: 'Core need', value: NEED_LABELS[pp.need] || 'Not set' },
-              ].map((item) => (
-                <View key={item.label} style={styles.profilePill}>
-                  <Text style={styles.pillLabel}>{item.label}</Text>
-                  <Text style={styles.pillValue}>{item.value}</Text>
-                </View>
-              ))}
-            </View>
-          ) : null}
-          <SettingsRow
-            icon={<IconHeart size={18} color={Colors.midBrown} />}
-            label={partnerSet ? `Update ${pp.name || 'partner'}'s profile` : 'Set up partner profile'}
-            sub={partnerSet ? 'They can redo the questions anytime' : 'Hand your phone to your partner to fill in'}
-            onPress={() => router.push('/partner-onboarding')}
-          />
-        </Section>
 
-        <Section title="Notifications">
-          <SettingsRow icon={<IconSun size={18} color={Colors.midBrown} />} label="Daily check-in reminder" sub="9:00 AM" right={<Toggle value={notifDaily} onValueChange={setNotifDaily} />} />
-          <SettingsRow icon={<IconBell size={18} color={Colors.midBrown} />} label="Session alerts" sub="When a session is completed" right={<Toggle value={notifBridge} onValueChange={setNotifBridge} />} />
-        </Section>
 
         <Section title="Privacy and safety">
           <SettingsRow icon={<IconLock size={18} color={Colors.midBrown} />} label="App lock" sub="Require Face ID or passcode" right={<Toggle value={appLock} onValueChange={setAppLock} />} />
-          <SettingsRow icon={<IconShield size={18} color={Colors.midBrown} />} label="Data and encryption" sub="AES-256, never sold or shared" onPress={() => Alert.alert('Your data is protected', 'All session content is encrypted with AES-256. Your vent sessions are never visible to your partner. Your data is never sold or shared with third parties.')} />
-          <SettingsRow icon={<IconBox size={18} color={Colors.midBrown} />} label="Export my data" sub="Download everything (GDPR)" onPress={() => Alert.alert('Coming soon', 'Data export will be available in the next update.')} />
+          <SettingsRow icon={<IconShield size={18} color={Colors.midBrown} />} label="Data and encryption" sub="How your data is protected" onPress={() => Alert.alert(
+            'Data and encryption',
+            'Your data is protected in the following ways:\n\n' +
+            'End-to-end encryption\nAll session content is encrypted using AES-256 before being stored.\n\n' +
+            'Private by design\nYour vent sessions are never visible to your partner. Only you can see what you share in private mode.\n\n' +
+            'No selling or sharing\nYour data is never sold, shared with third parties, or used to train AI models.\n\n' +
+            'Local-first storage\nYour profile and session data is stored on your device. Server sync is encrypted and minimal.\n\n' +
+            'You are in control\nExport or delete your data at any time using the options below.'
+          )} />
+          <SettingsRow
+            icon={<IconBox size={18} color={Colors.midBrown} />}
+            label="Export my data"
+            sub="Download a copy of all your data"
+            onPress={async () => {
+              setExporting(true);
+              try {
+                const raw = await AsyncStorage.getItem('tether_app_state');
+                const exportData = {
+                  exportedAt: new Date().toISOString(),
+                  profile: state.profile,
+                  sessions: state.sessions.map(s => ({
+                    id: s.id,
+                    name: s.name,
+                    status: s.status,
+                    currentStep: s.currentStep,
+                    startDate: s.startDate,
+                    resolvedDate: s.resolvedDate,
+                    messages: s.messages,
+                    reflection: s.reflection,
+                  })),
+                  learnings: state.learnings,
+                };
+                const json = JSON.stringify(exportData, null, 2);
+                await Share.share({
+                  message: json,
+                  title: 'Tether Data Export',
+                });
+              } catch (e) {
+                Alert.alert('Export failed', 'Something went wrong exporting your data. Please try again.');
+              }
+              setExporting(false);
+            }}
+            right={exporting ? <ActivityIndicator size="small" color={Colors.midBrown} /> : undefined}
+          />
         </Section>
 
         <Section title="Crisis support">
@@ -273,14 +325,22 @@ export default function SettingsTab() {
         </Modal>
 
         <Section title="About">
-          <SettingsRow icon={<IconBookmark size={18} color={Colors.midBrown} />} label="Therapeutic frameworks" sub="Gottman, EFT, NVC, IFS, CBCT" onPress={() => Alert.alert('About Tether', 'Tether draws on research from Gottman Method, Emotionally Focused Therapy (EFT), Non-Violent Communication (NVC), Internal Family Systems (IFS), and Cognitive Behavioural Couples Therapy (CBCT).')} />
+          <SettingsRow icon={<IconBookmark size={18} color={Colors.midBrown} />} label="Therapeutic frameworks" sub="Gottman, EFT, NVC, IFS, CBCT" onPress={() => router.push('/frameworks')} />
           <SettingsRow
             icon={<IconInfo size={18} color={Colors.midBrown} />}
             label="Important notice"
-            sub="Tether is not a substitute for therapy"
+            sub="Please read before using Tether"
             onPress={() => Alert.alert(
               'Important notice',
-              'Tether is a self-guided relationship wellness tool, not a substitute for therapy, counselling, or medical advice.\n\nThe assessments are for self-reflection only and are not clinical diagnoses.\n\nIf you are experiencing a mental health crisis, domestic abuse, or feel you need professional support, please reach out to a qualified mental health professional or use the crisis contacts listed in this section.'
+              'Tether is a self-guided relationship wellness tool designed to support your personal growth and communication skills.\n\n' +
+              'Tether is not a replacement for professional support\n' +
+              'The content, exercises, and insights provided are for self-reflection and personal development only. They are not clinical diagnoses, medical advice, or a substitute for qualified professional guidance.\n\n' +
+              'When to seek professional support\n' +
+              'If you or your partner are experiencing domestic abuse, a mental health crisis, thoughts of self-harm, or feel unsafe in your relationship, please contact a qualified professional or use the crisis support contacts in your settings.\n\n' +
+              'Your safety comes first\n' +
+              'Tether is designed to be used in relationships where both partners feel safe. If there is any form of coercion, control, or abuse, relationship tools alone are not sufficient. Please prioritise your safety.\n\n' +
+              'AI limitations\n' +
+              'Tether uses AI to guide conversations and offer insights. While grounded in established research, AI responses are not infallible and should be taken as suggestions, not prescriptions.'
             )}
           />
           <SettingsRow icon={<IconShield size={18} color={Colors.midBrown} />} label="Privacy policy" sub="How we handle your data" onPress={() => Alert.alert('Privacy policy', 'Your session content is encrypted and stored only on your device and secure servers. It is never sold, shared, or used to train AI models. Your partner cannot see your vent sessions. You can export or delete your data at any time.')} />
@@ -337,6 +397,12 @@ const styles = StyleSheet.create({
   connectedText: { fontFamily: Fonts.bodyMedium, fontSize: 13, color: Colors.sage },
   notConnectedRow: { padding: 14, borderBottomWidth: 1, borderBottomColor: Colors.creamDark },
   notConnectedText: { fontFamily: Fonts.body, fontSize: 13, color: Colors.midBrown },
+  inviteCodeBox: { padding: 16, borderBottomWidth: 1, borderBottomColor: Colors.creamDark, alignItems: 'center' },
+  inviteCodeLabel: { fontFamily: Fonts.bodyMedium, fontSize: 10, letterSpacing: 0.8, textTransform: 'uppercase', color: Colors.midBrown, marginBottom: 8 },
+  inviteCodeValue: { fontFamily: Fonts.displaySemiBold, fontSize: 28, color: Colors.charcoal, letterSpacing: 4, marginBottom: 4 },
+  inviteCodeHint: { fontFamily: Fonts.body, fontSize: 12, color: Colors.lightBrown, marginBottom: 12 },
+  inviteShareBtn: { backgroundColor: '#96d35f', borderRadius: Radius.full, paddingHorizontal: 24, paddingVertical: 10 },
+  inviteShareBtnText: { fontFamily: Fonts.bodyMedium, fontSize: 14, color: '#001c14' },
 });
 
 const cs = StyleSheet.create({

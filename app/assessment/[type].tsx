@@ -7,13 +7,14 @@ import { ASSESSMENT_DETAIL } from '../../src/constants/assessmentDetail';
 import { QUIZ_META } from '../../src/constants/assessmentQuestions';
 import { ChevronLeft, ChevronDown } from '../../src/components/Icon';
 import { IconHeart, IconSparkles, IconWind, IconActivity, IconLeaf } from '../../src/components/Icons';
+import { useAppState } from '../../src/hooks/useAppState';
 
 const TYPE_META: Record<string, { label: string; accentColor: string; description: string; Icon: React.ComponentType<{ size?: number; color?: string }> }> = {
-  attachment: { label: 'Attachment style', accentColor: Colors.sage, description: 'How you relate to closeness and security in relationships', Icon: IconHeart },
-  love: { label: 'Love language', accentColor: Colors.mauve, description: 'How you most naturally give and receive love', Icon: IconSparkles },
-  conflict: { label: 'Conflict style', accentColor: Colors.blue, description: 'How you respond when things get tense', Icon: IconWind },
-  window: { label: 'Window of tolerance', accentColor: Colors.amber, description: 'What happens in your body during conflict', Icon: IconActivity },
-  need: { label: 'Core emotional need', accentColor: Colors.sage, description: 'The unspoken need beneath most of your conflicts', Icon: IconLeaf },
+  attachment: { label: 'Attachment style', accentColor: '#f67700', description: 'How you relate to closeness and security in relationships', Icon: IconHeart },
+  love: { label: 'Love language', accentColor: '#d2b100', description: 'How you most naturally give and receive love', Icon: IconSparkles },
+  conflict: { label: 'Conflict style', accentColor: '#bd57f2', description: 'How you respond when things get tense', Icon: IconWind },
+  window: { label: 'Window of tolerance', accentColor: '#4ea989', description: 'What happens in your body during conflict', Icon: IconActivity },
+  need: { label: 'Core emotional need', accentColor: '#92a6f4', description: 'The unspoken need beneath most of your conflicts', Icon: IconLeaf },
 };
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
@@ -36,7 +37,9 @@ function Bullet({ text, color }: { text: string; color: string }) {
 
 export default function AssessmentDetail() {
   const { type, value } = useLocalSearchParams<{ type: string; value: string }>();
+  const { state } = useAppState();
   const [expanded, setExpanded] = useState<number | null>(0);
+  const hasTakenFull = state.completedFullAssessments?.includes(type);
 
   const meta = TYPE_META[type];
   const detail = ASSESSMENT_DETAIL[type]?.[value];
@@ -75,13 +78,13 @@ export default function AssessmentDetail() {
           </View>
           <Text style={s.heroLabel}>{detail.label}</Text>
           <Text style={s.heroSubtitle}>{detail.subtitle}</Text>
-          <Text style={s.accuracyCopy}>Based on your quick onboarding assessment.</Text>
+          <Text style={s.accuracyCopy}>{hasTakenFull ? 'Based on your full assessment.' : 'Based on your quick onboarding assessment.'}</Text>
           <TouchableOpacity
             onPress={() => router.push({ pathname: '/assessment/quiz/[type]', params: { type } })}
             activeOpacity={0.85}
             style={s.fullAssessmentBtn}
           >
-            <Text style={s.fullAssessmentBtnText}>Take the full assessment</Text>
+            <Text style={s.fullAssessmentBtnText}>{hasTakenFull ? 'Retake full assessment' : 'Take the full assessment'}</Text>
           </TouchableOpacity>
         </View>
 

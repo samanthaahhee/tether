@@ -47,7 +47,7 @@ export const QUIZ_META: Record<
     subtitle: 'Identify what matters most to you when things feel hard',
     questionCount: 8,
     estimatedMins: 4,
-    accentColor: '#96d35f', // lime
+    accentColor: '#92a6f4', // blue
   },
 };
 

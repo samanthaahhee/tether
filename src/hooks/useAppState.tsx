@@ -77,6 +77,7 @@ interface AppState {
   activeSessionId: string | null;
   learnings: Learnings;
   userMemory: UserMemory | null;
+  completedFullAssessments: string[];
   crisisCountry: string;
   loaded: boolean;
 }
@@ -106,7 +107,8 @@ type Action =
   | { type: 'ADD_EMOTIONAL_CAPTURE'; capture: EmotionalCapture }
   | { type: 'UPDATE_SESSION_SUMMARY'; sessionId: string; summary: string }
   | { type: 'SET_CRISIS_COUNTRY'; code: string }
-  | { type: 'UPDATE_USER_MEMORY'; memory: UserMemory };
+  | { type: 'UPDATE_USER_MEMORY'; memory: UserMemory }
+  | { type: 'COMPLETE_FULL_ASSESSMENT'; assessmentType: string };
 
 const defaultProfile: UserProfile = {
   name: '',
@@ -152,6 +154,7 @@ const initialState: AppState = {
     emotionalCaptures: [],
   },
   userMemory: null,
+  completedFullAssessments: [],
   crisisCountry: 'international',
   loaded: false,
 };
@@ -192,6 +195,7 @@ function reducer(state: AppState, action: Action): AppState {
           relationshipPatterns: saved.learnings?.relationshipPatterns?.length ? saved.learnings.relationshipPatterns : initialState.learnings.relationshipPatterns,
         },
         userMemory: saved.userMemory || null,
+        completedFullAssessments: saved.completedFullAssessments || [],
         crisisCountry: saved.crisisCountry || 'international',
         partnerProfile: saved.partnerProfile || defaultPartnerProfile,
         loaded: true,
@@ -373,6 +377,14 @@ function reducer(state: AppState, action: Action): AppState {
 
     case 'SET_CRISIS_COUNTRY':
       return { ...state, crisisCountry: action.code };
+
+    case 'COMPLETE_FULL_ASSESSMENT':
+      return {
+        ...state,
+        completedFullAssessments: state.completedFullAssessments.includes(action.assessmentType)
+          ? state.completedFullAssessments
+          : [...state.completedFullAssessments, action.assessmentType],
+      };
 
     default:
       return state;
