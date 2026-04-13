@@ -47,5 +47,8 @@
     "docx": "^9.6.1",
     "typescript": "~5.9.2"
   },
-  "private": true
+  "private": true,
+  "overrides": {
+    "@xmldom/xmldom": ">=0.8.12"
+  }
 }
