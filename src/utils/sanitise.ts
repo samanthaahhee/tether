@@ -12,8 +12,12 @@ export function sanitiseInput(text: string): string {
   // Remove null bytes
   clean = clean.replace(/\0/g, '');
 
-  // Remove HTML tags (prevent XSS if rendered)
-  clean = clean.replace(/<[^>]*>/g, '');
+  // Remove HTML tags repeatedly until stable (prevent nested tag injection)
+  let previous = '';
+  while (previous !== clean) {
+    previous = clean;
+    clean = clean.replace(/<[^>]*>/g, '');
+  }
 
   return clean;
 }
