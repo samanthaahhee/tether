@@ -27,3 +27,28 @@ export function filterPII(text: string): { cleaned: string; piiFound: boolean } 
 
   return { cleaned, piiFound };
 }
+
+/**
+ * Check AI output for harmful content patterns that should never appear
+ * in a relationship wellness context. Returns a safe fallback if detected.
+ */
+const HARMFUL_PATTERNS: RegExp[] = [
+  /you should (leave|divorce|break up|end (the|your) relationship)/i,
+  /your partner is (abusing|gaslighting|narcissist|toxic)/i,
+  /you (deserve|need) to (punish|hurt|get (back|revenge|even))/i,
+  /prescription|medication|dosage|diagnos(e|is|ed)/i,
+  /as (a|your) therapist/i,
+  /my (clinical|professional) (opinion|diagnosis|assessment) is/i,
+  /you (have|suffer from|are diagnosed with) (depression|anxiety|PTSD|BPD|bipolar)/i,
+];
+
+const HARMFUL_FALLBACK = "I want to make sure I'm supporting you well. I'm not a therapist, and some things are best explored with a professional. Would you like to continue sharing how you're feeling?";
+
+export function filterHarmfulContent(text: string): { cleaned: string; wasHarmful: boolean } {
+  for (const pattern of HARMFUL_PATTERNS) {
+    if (pattern.test(text)) {
+      return { cleaned: HARMFUL_FALLBACK, wasHarmful: true };
+    }
+  }
+  return { cleaned: text, wasHarmful: false };
+}

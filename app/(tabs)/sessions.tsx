@@ -633,6 +633,15 @@ function ChatMascot({ step }: { step: ModeKey }) {
   );
 }
 
+const CRISIS_HELPLINES = [
+  { label: 'SA Lifeline', number: '0800 567 567' },
+  { label: 'SA Depression & Anxiety', number: '0800 456 789' },
+  { label: 'USA 988 Suicide & Crisis', number: '988' },
+  { label: 'UK Samaritans', number: '116 123' },
+];
+
+const SESSION_DURATION_NUDGE_MS = 30 * 60 * 1000; // 30 minutes
+
 function ActiveSessionView({ session, state, dispatch: d, onBack }: { session: Session; state: any; dispatch: any; onBack: () => void }) {
   const [input, setInput] = useState('');
   const [editingName, setEditingName] = useState(false);
@@ -641,8 +650,12 @@ function ActiveSessionView({ session, state, dispatch: d, onBack }: { session: S
   const [isRecording, setIsRecording] = useState(false);
   const [inputFocused, setInputFocused] = useState(false);
   const [speechAvailable, setSpeechAvailable] = useState(false);
+  const [showCrisisBanner, setShowCrisisBanner] = useState(false);
+  const [showDurationNudge, setShowDurationNudge] = useState(false);
+  const [disclaimerDismissed, setDisclaimerDismissed] = useState(false);
   const transcriptRef = useRef('');
   const flatRef = useRef<FlatList>(null);
+  const sessionStartRef = useRef(Date.now());
   const step = session.currentStep;
   const cfg = MODE_CONFIG[step];
   const theme = STEP_THEME[step];
@@ -689,6 +702,14 @@ function ActiveSessionView({ session, state, dispatch: d, onBack }: { session: S
     }
   }, [messages.length, loading]);
 
+  // Session duration nudge — gentle reminder after 30 minutes
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setShowDurationNudge(true);
+    }, SESSION_DURATION_NUDGE_MS);
+    return () => clearTimeout(timer);
+  }, []);
+
   const sendMessage = async () => {
     const text = input.trim();
     if (!text || loading) return;
@@ -698,10 +719,11 @@ function ActiveSessionView({ session, state, dispatch: d, onBack }: { session: S
     const lower = text.toLowerCase();
     const isCrisis = CRISIS_WORDS.some((w) => lower.includes(w));
     if (isCrisis) {
+      setShowCrisisBanner(true);
       Alert.alert(
         'You are not alone',
-        'It sounds like you may be going through something serious. Please reach out:\n\nLifeline SA: 0800 567 567\nSA DSD: 116',
-        [{ text: 'I am okay, continue', style: 'cancel' }]
+        'It sounds like you may be going through something serious. Please reach out to a crisis helpline — you deserve real support right now.\n\nSA Lifeline: 0800 567 567\nSA Depression & Anxiety: 0800 456 789\nUSA: 988\nUK Samaritans: 116 123',
+        [{ text: 'I understand, continue', style: 'cancel' }]
       );
     }
 
@@ -860,9 +882,45 @@ function ActiveSessionView({ session, state, dispatch: d, onBack }: { session: S
           <StepProgressBar session={session} activeTheme={theme} onGoToStep={(s) => d({ type: 'GO_TO_STEP', sessionId: session.id, step: s })} />
         </View>
 
+        {/* Disclaimer — shown once per session until dismissed */}
+        {!disclaimerDismissed && step === 'vent' && messages.length <= 1 && (
+          <View style={styles.disclaimerBanner}>
+            <Text style={styles.disclaimerText}>
+              Tether is a wellness tool, not a substitute for professional therapy. If you're in crisis, please contact a helpline.
+            </Text>
+            <TouchableOpacity onPress={() => setDisclaimerDismissed(true)} activeOpacity={0.7}>
+              <Text style={styles.disclaimerDismiss}>Got it</Text>
+            </TouchableOpacity>
+          </View>
+        )}
+
         {floodingDetected && step === 'vent' && (
           <View style={[styles.floodBanner, { backgroundColor: theme.pale, borderBottomColor: theme.light }]}>
             <Text style={[styles.floodText, { color: theme.color }]}>You seem very activated. A short pause can help.</Text>
+          </View>
+        )}
+
+        {/* Persistent crisis banner — stays visible after crisis words detected */}
+        {showCrisisBanner && (
+          <View style={styles.crisisBanner}>
+            <Text style={styles.crisisBannerTitle}>💛 You're not alone</Text>
+            <Text style={styles.crisisBannerText}>If you're in immediate danger, please reach out:</Text>
+            {CRISIS_HELPLINES.map((h) => (
+              <Text key={h.number} style={styles.crisisHelpline}>{h.label}: {h.number}</Text>
+            ))}
+            <TouchableOpacity onPress={() => setShowCrisisBanner(false)} activeOpacity={0.7} style={styles.crisisDismissBtn}>
+              <Text style={styles.crisisDismissText}>I'm okay, dismiss</Text>
+            </TouchableOpacity>
+          </View>
+        )}
+
+        {/* Gentle nudge after 30 minutes of session use */}
+        {showDurationNudge && (
+          <View style={styles.nudgeBanner}>
+            <Text style={styles.nudgeText}>You've been here a while — it's okay to take a break and come back later. Your session will be saved. 🌿</Text>
+            <TouchableOpacity onPress={() => setShowDurationNudge(false)} activeOpacity={0.7}>
+              <Text style={styles.nudgeDismiss}>Continue</Text>
+            </TouchableOpacity>
           </View>
         )}
 
@@ -1192,6 +1250,21 @@ const styles = StyleSheet.create({
   sendBtn: { width: 44, height: 44, borderRadius: 22, alignItems: 'center', justifyContent: 'center', backgroundColor: '#96d35f' },
   advanceBanner: { marginHorizontal: 16, marginVertical: 8, borderRadius: 9999, height: 48, alignItems: 'center', justifyContent: 'center' },
   advanceText: { fontFamily: 'Inter_600SemiBold', fontSize: 16, color: '#001c14' },
+  // Disclaimer banner
+  disclaimerBanner: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#f0eef5', paddingHorizontal: 16, paddingVertical: 10, gap: 12 },
+  disclaimerText: { flex: 1, fontFamily: Fonts.body, fontSize: 12, color: Colors.midBrown, lineHeight: 17 },
+  disclaimerDismiss: { fontFamily: Fonts.bodyMedium, fontSize: 12, color: '#96d35f' },
+  // Crisis banner
+  crisisBanner: { backgroundColor: '#fef3e6', borderBottomWidth: 1, borderBottomColor: '#f5d9a8', paddingHorizontal: 16, paddingVertical: 14 },
+  crisisBannerTitle: { fontFamily: Fonts.bodyMedium, fontSize: 15, color: '#8a5a00', marginBottom: 4 },
+  crisisBannerText: { fontFamily: Fonts.body, fontSize: 13, color: '#8a5a00', marginBottom: 6 },
+  crisisHelpline: { fontFamily: Fonts.bodyMedium, fontSize: 13, color: '#8a5a00', marginLeft: 8, lineHeight: 22 },
+  crisisDismissBtn: { marginTop: 8, alignSelf: 'flex-start' },
+  crisisDismissText: { fontFamily: Fonts.bodyMedium, fontSize: 12, color: '#b07800' },
+  // Duration nudge
+  nudgeBanner: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#e8f5e9', paddingHorizontal: 16, paddingVertical: 10, gap: 12 },
+  nudgeText: { flex: 1, fontFamily: Fonts.body, fontSize: 12, color: '#2e7d32', lineHeight: 17 },
+  nudgeDismiss: { fontFamily: Fonts.bodyMedium, fontSize: 12, color: '#4caf50' },
 });
 
 const cap = StyleSheet.create({

@@ -3,7 +3,7 @@ import Constants from 'expo-constants';
 import { FLOODING_WORDS, CRISIS_WORDS } from '../constants/data';
 import { UserMemory } from './useAppState';
 import { sanitiseInput } from '../utils/sanitise';
-import { filterPII } from '../utils/piiFilter';
+import { filterPII, filterHarmfulContent } from '../utils/piiFilter';
 
 const API_URL = 'https://api.anthropic.com/v1/messages';
 const API_KEY = Constants.expoConfig?.extra?.anthropicApiKey || process.env.EXPO_PUBLIC_ANTHROPIC_API_KEY || '';
@@ -192,7 +192,8 @@ export function useClaude({ systemPrompt, userProfile, userMemory }: UseClaudeOp
       }
 
       const text = data.content?.[0]?.text || "I'm here with you. Can you tell me more?";
-      const { cleaned } = filterPII(text);
+      const { cleaned: harmSafe } = filterHarmfulContent(text);
+      const { cleaned } = filterPII(harmSafe);
       return cleaned;
     } catch {
       setLoading(false);
@@ -237,7 +238,8 @@ export function useClaude({ systemPrompt, userProfile, userMemory }: UseClaudeOp
       });
       const data = await response.json();
       const summaryText = data.content?.[0]?.text || previousSummary || '';
-      const { cleaned } = filterPII(summaryText);
+      const { cleaned: harmSafe } = filterHarmfulContent(summaryText);
+      const { cleaned } = filterPII(harmSafe);
       return cleaned;
     } catch {
       return previousSummary || '';
@@ -273,7 +275,8 @@ export function useClaude({ systemPrompt, userProfile, userMemory }: UseClaudeOp
       });
       const data = await response.json();
       const memoryText = data.content?.[0]?.text || '';
-      const { cleaned: cleanedMemoryText } = filterPII(memoryText);
+      const { cleaned: harmSafeMemory } = filterHarmfulContent(memoryText);
+      const { cleaned: cleanedMemoryText } = filterPII(harmSafeMemory);
       const parsed = JSON.parse(cleanedMemoryText);
       return {
         narrative: parsed.narrative || '',
