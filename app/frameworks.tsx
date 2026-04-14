@@ -20,7 +20,7 @@ const FRAMEWORKS = [
       'Turning Toward: responding to your partner\'s small bids for attention builds trust over time.',
     ],
     howUsed:
-      'Tether uses Gottman principles in session guidance, repair attempt suggestions, and conflict pattern identification. The four-step session flow (Vent, Understand, Prepare, Nurture) is informed by Gottman\'s approach to processing conflict constructively.',
+      'Hey Otis uses Gottman principles in session guidance, repair attempt suggestions, and conflict pattern identification. The four-step session flow (Vent, Understand, Prepare, Nurture) is informed by Gottman\'s approach to processing conflict constructively.',
   },
   {
     name: 'Emotionally Focused Therapy (EFT)',
@@ -36,7 +36,7 @@ const FRAMEWORKS = [
       'Bonding Conversations: sharing vulnerable emotions creates new patterns of secure connection.',
     ],
     howUsed:
-      'Tether\'s Understand step draws heavily on EFT, helping you move from surface complaints to underlying attachment needs. The language "beneath this, there may be a deeper fear of..." comes directly from EFT practice.',
+      'Hey Otis\'s Understand step draws heavily on EFT, helping you move from surface complaints to underlying attachment needs. The language "beneath this, there may be a deeper fear of..." comes directly from EFT practice.',
   },
   {
     name: 'Non-Violent Communication (NVC)',
@@ -51,7 +51,7 @@ const FRAMEWORKS = [
       'Requests: make clear, specific, doable requests rather than vague complaints or demands.',
     ],
     howUsed:
-      'Tether\'s Prepare step uses NVC structure to help you turn raw feelings into clear, fair language. The soft start-up suggestions and "words to avoid" in Tools are based on NVC principles.',
+      'Hey Otis\'s Prepare step uses NVC structure to help you turn raw feelings into clear, fair language. The soft start-up suggestions and "words to avoid" in Tools are based on NVC principles.',
   },
   {
     name: 'Internal Family Systems (IFS)',
@@ -66,7 +66,7 @@ const FRAMEWORKS = [
       'Unburdening: when we acknowledge and understand our parts, they no longer need to act out in extreme ways.',
     ],
     howUsed:
-      'Tether draws on IFS when helping you recognise that your conflict reactions are protective strategies, not character flaws. Understanding "which part of me is responding right now" creates space for more intentional choices.',
+      'Hey Otis draws on IFS when helping you recognise that your conflict reactions are protective strategies, not character flaws. Understanding "which part of me is responding right now" creates space for more intentional choices.',
   },
   {
     name: 'Cognitive Behavioural Couples Therapy (CBCT)',
@@ -81,7 +81,7 @@ const FRAMEWORKS = [
       'Reframing: learning to generate alternative, more balanced interpretations of your partner\'s behaviour.',
     ],
     howUsed:
-      'Tether uses CBCT principles when helping you examine whether your interpretation of a situation is the only possible reading. Questions like "what else could this mean?" and "is this a pattern or an isolated moment?" draw on this approach.',
+      'Hey Otis uses CBCT principles when helping you examine whether your interpretation of a situation is the only possible reading. Questions like "what else could this mean?" and "is this a pattern or an isolated moment?" draw on this approach.',
   },
 ];
 
@@ -91,7 +91,7 @@ export default function FrameworksScreen() {
       <View style={styles.header}>
         <View style={{ flex: 1 }}>
           <Text style={styles.title}>Therapeutic Frameworks</Text>
-          <Text style={styles.subtitle}>The research and models behind Tether</Text>
+          <Text style={styles.subtitle}>The research and models behind Hey Otis</Text>
         </View>
         <TouchableOpacity onPress={() => router.back()} style={styles.closeBtn} activeOpacity={0.7}>
           <IconX size={18} color={Colors.midBrown} />
@@ -99,7 +99,7 @@ export default function FrameworksScreen() {
       </View>
       <ScrollView style={{ flex: 1 }} contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         <Text style={styles.intro}>
-          Tether is built on established, evidence-based approaches to relationship wellness. Each framework contributes a different lens for understanding and improving how you connect with your partner.
+          Hey Otis is built on established, evidence-based approaches to relationship wellness. Each framework contributes a different lens for understanding and improving how you connect with your partner.
         </Text>
 
         {FRAMEWORKS.map((fw, i) => (

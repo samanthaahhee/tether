@@ -779,7 +779,7 @@ function ActiveSessionView({ session, state, dispatch: d, onBack }: { session: S
 
     const { granted } = await ExpoSpeechRecognitionModule.requestPermissionsAsync();
     if (!granted) {
-      Alert.alert('Permission needed', 'Tether needs microphone access for voice input.');
+      Alert.alert('Permission needed', 'Hey Otis needs microphone access for voice input.');
       return;
     }
 
@@ -886,7 +886,7 @@ function ActiveSessionView({ session, state, dispatch: d, onBack }: { session: S
         {!disclaimerDismissed && step === 'vent' && messages.length <= 1 && (
           <View style={styles.disclaimerBanner}>
             <Text style={styles.disclaimerText}>
-              Tether is a wellness tool, not a substitute for professional therapy. If you're in crisis, please contact a helpline.
+              Hey Otis is a wellness tool, not a substitute for professional therapy. If you're in crisis, please contact a helpline.
             </Text>
             <TouchableOpacity onPress={() => setDisclaimerDismissed(true)} activeOpacity={0.7}>
               <Text style={styles.disclaimerDismiss}>Got it</Text>

@@ -135,7 +135,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const signInAsGuest = () => {
-    const guestUser = { id: 'guest', email: 'guest@tether.app' } as User;
+    const guestUser = { id: 'guest', email: 'guest@heyotis.app' } as User;
     const guestProfile: SupabaseProfile = {
       id: 'guest',
       name: 'Sam',

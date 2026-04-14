@@ -59,7 +59,7 @@ export default function SignUp() {
           <Text style={s.title}>Create your account</Text>
           <Text style={s.subtitle}>
             {invite
-              ? 'Your partner invited you to Tether. Create an account to connect.'
+              ? 'Your partner invited you to Hey Otis. Create an account to connect.'
               : 'Start your journey toward better communication.'}
           </Text>
 

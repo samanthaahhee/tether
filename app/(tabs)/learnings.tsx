@@ -90,8 +90,8 @@ export default function GrowthTab() {
       const code = await generateInvite();
       const link = `tether://invite/${code}`;
       await Share.share({
-        message: `Join me on Tether, a relationship wellness app. Use my invite link to create your account:\n\n${link}\n\nOr enter code: ${code}`,
-        title: 'Join me on Tether',
+        message: `Join me on Hey Otis, a relationship wellness app. Use my invite link to create your account:\n\n${link}\n\nOr enter code: ${code}`,
+        title: 'Join me on Hey Otis',
       });
     } finally {
       setInviting(false);

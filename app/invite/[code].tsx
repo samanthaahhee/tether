@@ -79,10 +79,10 @@ export default function AcceptInvite() {
         </View>
         <Text style={styles.title}>You are connected</Text>
         <Text style={styles.subtitle}>
-          You and your partner are now linked on Tether. You will see each other's Bridge sessions and can grow together.
+          You and your partner are now linked on Hey Otis. You will see each other's Bridge sessions and can grow together.
         </Text>
         <TouchableOpacity style={styles.btn} onPress={() => router.replace('/(tabs)')} activeOpacity={0.85}>
-          <Text style={styles.btnText}>Enter Tether</Text>
+          <Text style={styles.btnText}>Enter Hey Otis</Text>
         </TouchableOpacity>
       </View>
     </SafeAreaView>

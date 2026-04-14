@@ -3,7 +3,6 @@ import { router } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Colors, Fonts, Radius, Shadows } from '../src/constants/theme';
 import { IconHeart, IconSearch, IconLeaf, IconSliders } from '../src/components/Icons';
-import { useAuth } from '../src/hooks/useAuth';
 
 const features = [
   { Icon: IconHeart, color: Colors.mauve, title: 'Feel heard', desc: 'Express without judgment' },
@@ -13,7 +12,6 @@ const features = [
 ];
 
 export default function Landing() {
-  const { signInAsGuest } = useAuth();
   return (
     <SafeAreaView style={styles.safe} edges={['top', 'bottom']}>
       <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
@@ -24,7 +22,7 @@ export default function Landing() {
           <View style={styles.logoOrb}>
             <IconLeaf size={32} color={Colors.white} />
           </View>
-          <Text style={styles.brand}>Tether</Text>
+          <Text style={styles.brand}>Hey Otis</Text>
           <Text style={styles.tagline}>Navigate together, grow closer</Text>
 
           <View style={styles.grid}>
@@ -47,12 +45,8 @@ export default function Landing() {
             <Text style={styles.btnSecondaryText}>Sign in</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.btnGuest} onPress={signInAsGuest} activeOpacity={0.85}>
-            <Text style={styles.btnGuestText}>Continue as guest</Text>
-          </TouchableOpacity>
-
           <Text style={styles.safeNote}>
-            Tether supports but does not replace professional therapy.
+            Hey Otis supports but does not replace professional therapy.
           </Text>
         </View>
       </ScrollView>
@@ -78,7 +72,5 @@ const styles = StyleSheet.create({
   btnPrimaryText: { fontFamily: Fonts.bodyMedium, fontSize: 15, color: Colors.white },
   btnSecondary: { width: '100%', backgroundColor: Colors.warmWhite, borderWidth: 1.5, borderColor: Colors.sand, borderRadius: Radius.full, paddingVertical: 15, alignItems: 'center', marginBottom: 10 },
   btnSecondaryText: { fontFamily: Fonts.bodyMedium, fontSize: 15, color: Colors.charcoal },
-  btnGuest: { width: '100%', paddingVertical: 12, alignItems: 'center' },
-  btnGuestText: { fontFamily: Fonts.body, fontSize: 14, color: Colors.midBrown },
   safeNote: { fontFamily: Fonts.body, fontSize: 11, color: Colors.lightBrown, textAlign: 'center', marginTop: 24, lineHeight: 16 },
 });

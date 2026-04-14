@@ -273,6 +273,7 @@ export default function HomeTab() {
 
   const snapInterval = CARD_WIDTH + CAROUSEL_GAP;
 
+  const openCount = state.sessions.filter((s) => s.status === 'active').length;
   const resolvedCount = state.sessions.filter((s) => s.status === 'resolved').length;
   const captures = state.learnings.emotionalCaptures;
 
@@ -392,16 +393,16 @@ export default function HomeTab() {
             <View style={st.card}>
               <View style={st.iconRow}>
                 <IconLeaf size={24} color="#4ea989" />
-                <Text style={st.num}>{resolvedCount}</Text>
+                <Text style={st.num}>{openCount}</Text>
               </View>
-              <Text style={st.label}>Total Sessions</Text>
+              <Text style={st.label}>Open Sessions</Text>
             </View>
             <View style={st.card}>
               <View style={st.iconRow}>
                 <IconSearch size={24} color="#f67700" />
-                <Text style={st.num}>{captures.length}</Text>
+                <Text style={st.num}>{resolvedCount}</Text>
               </View>
-              <Text style={st.label}>Total Sessions</Text>
+              <Text style={st.label}>Completed Sessions</Text>
             </View>
           </View>
         </View>

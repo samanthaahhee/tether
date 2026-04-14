@@ -160,11 +160,11 @@ export default function Onboarding() {
             <View style={styles.stepWrap}>
               <Text style={styles.stepTag}>Step 1 of 8</Text>
               <Text style={styles.stepH}>Let us start with you</Text>
-              <Text style={styles.stepSub}>This takes about 4 minutes. Your answers help Tether understand how you experience relationships so every session feels made for you.</Text>
+              <Text style={styles.stepSub}>This takes about 4 minutes. Your answers help Hey Otis understand how you experience relationships so every session feels made for you.</Text>
               <TextInput value={name} onChangeText={setName} placeholder="Your first name" placeholderTextColor={Colors.lightBrown} selectionColor="#96d35f" cursorColor="#96d35f" style={styles.nameInput} autoFocus returnKeyType="done" onSubmitEditing={next} />
               <View style={styles.hintBox}>
                 <IconLock size={16} color={Colors.midBrown} />
-                <Text style={styles.hintText}>Everything you share here stays private. Tether never shows your answers to your partner.</Text>
+                <Text style={styles.hintText}>Everything you share here stays private. Hey Otis never shows your answers to your partner.</Text>
               </View>
             </View>
           )}
@@ -173,7 +173,7 @@ export default function Onboarding() {
             <View style={styles.stepWrap}>
               <Text style={styles.stepTag}>Step 2 of 8: Your situation</Text>
               <Text style={styles.stepH}>What is bringing you here?</Text>
-              <Text style={styles.stepSub}>No right answer. This just helps Tether understand where you are starting from.</Text>
+              <Text style={styles.stepSub}>No right answer. This just helps Hey Otis understand where you are starting from.</Text>
               {CONTEXT_OPTIONS.map((o) => <OptionCard key={o.value} option={o} selected={picks.context === o.value} onPress={() => pick('context', o.value)} />)}
             </View>
           )}
@@ -206,7 +206,7 @@ export default function Onboarding() {
             <View style={styles.stepWrap}>
               <Text style={styles.stepTag}>Step 5 of 8: Your body in conflict</Text>
               <Text style={styles.stepH}>When an argument escalates, what happens in your body first?</Text>
-              <Text style={styles.stepSub}>This helps Tether know when to suggest a pause and what kind of support you need.</Text>
+              <Text style={styles.stepSub}>This helps Hey Otis know when to suggest a pause and what kind of support you need.</Text>
               {WINDOW_OPTIONS.map((o) => <OptionCard key={o.value} option={o} selected={picks.window === o.value} onPress={() => pick('window', o.value)} />)}
               {picks.window && WINDOW_REVEALS[picks.window] && (
                 <InsightReveal label="What this means for you" title={WINDOW_REVEALS[picks.window].title} body={WINDOW_REVEALS[picks.window].body} bg={rc.window.bg} borderColor={rc.window.border} labelColor={rc.window.label} />
@@ -230,7 +230,7 @@ export default function Onboarding() {
             <View style={styles.stepWrap}>
               <Text style={styles.stepTag}>Step 7 of 8: What you most need</Text>
               <Text style={styles.stepH}>When you are hurting in a relationship, which feels most true?</Text>
-              <Text style={styles.stepSub}>This helps Tether understand what is beneath your conflicts. The need that is usually unspoken.</Text>
+              <Text style={styles.stepSub}>This helps Hey Otis understand what is beneath your conflicts. The need that is usually unspoken.</Text>
               {NEED_OPTIONS.map((o) => <OptionCard key={o.value} option={o} selected={picks.need === o.value} onPress={() => pick('need', o.value)} />)}
             </View>
           )}
@@ -244,7 +244,7 @@ export default function Onboarding() {
               </View>
               <Text style={styles.stepTag}>Your profile is ready</Text>
               <Text style={[styles.stepH, { textAlign: 'center' }]}>Welcome, {name}</Text>
-              <Text style={[styles.stepSub, { textAlign: 'center' }]}>Here is what Tether has learned about you.</Text>
+              <Text style={[styles.stepSub, { textAlign: 'center' }]}>Here is what Hey Otis has learned about you.</Text>
               <View style={styles.summaryGrid}>
                 {[
                   { label: 'Attachment', value: ATTACHMENT_LABELS[picks.attach] || '—' },
@@ -263,14 +263,14 @@ export default function Onboarding() {
               <View style={styles.finalInsight}>
                 <Text style={styles.finalInsightLabel}>Your personalised insight</Text>
                 <Text style={styles.finalInsightBody}>
-                  {ATTACH_INSIGHTS[picks.attach] || ''} Your core need is to feel {picks.need || 'seen'}. This is the thread underneath most of your conflicts. Tether will help you name it and communicate it.
+                  {ATTACH_INSIGHTS[picks.attach] || ''} Your core need is to feel {picks.need || 'seen'}. This is the thread underneath most of your conflicts. Hey Otis will help you name it and communicate it.
                 </Text>
               </View>
             </View>
           )}
 
           <View style={styles.footer}>
-            <Button label={step === 8 ? 'Enter Tether' : 'Continue'} onPress={next} disabled={!canProceed()} />
+            <Button label={step === 8 ? 'Enter Hey Otis' : 'Continue'} onPress={next} disabled={!canProceed()} />
           </View>
         </ScrollView>
       </KeyboardAvoidingView>

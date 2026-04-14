@@ -75,7 +75,7 @@ export const CONFLICT_REVEALS: Record<string, { title: string; body: string }> =
 export const WINDOW_REVEALS: Record<string, { title: string; body: string }> = {
   hyper: {
     title: 'You tend to become hyperaroused in conflict',
-    body: 'Your body floods with energy: heart rate spikes, voice rises, thinking narrows. Tether will offer grounding tools proactively and help you recognise the early signs.',
+    body: 'Your body floods with energy: heart rate spikes, voice rises, thinking narrows. Hey Otis will offer grounding tools proactively and help you recognise the early signs.',
   },
   hypo: {
     title: 'You tend to become hypoaroused in conflict',
@@ -83,7 +83,7 @@ export const WINDOW_REVEALS: Record<string, { title: string; body: string }> = {
   },
   mixed: {
     title: 'Your response varies depending on context',
-    body: 'You can go either way: flooded or frozen. Tether will check in on how you are feeling in the moment to offer the right support each time.',
+    body: 'You can go either way: flooded or frozen. Hey Otis will check in on how you are feeling in the moment to offer the right support each time.',
   },
   regulated: {
     title: 'You tend to stay regulated under pressure',
@@ -135,7 +135,7 @@ export const MODE_CONFIG = {
     nextMode: 'understand' as const,
     nextLabel: 'Ready to reflect? Try Understand',
     quickActions: ['I feel unheard', 'I feel invisible', 'I am so frustrated', 'I feel scared about us'],
-    systemPrompt: `You are Tether's empathic listener in VENT mode.
+    systemPrompt: `You are Hey Otis's empathic listener in VENT mode.
 RULES:
 - Reflect feelings with deep empathy — 2-4 sentences ONLY
 - NEVER give advice or suggest solutions
@@ -157,7 +157,7 @@ RULES:
     nextMode: 'prepare' as const,
     nextLabel: 'Ready to act? Try Prepare',
     quickActions: ['What pattern am I in?', 'What was I really feeling?', 'Why does this keep happening?'],
-    systemPrompt: `You are Tether's insight guide in UNDERSTAND mode.
+    systemPrompt: `You are Hey Otis's insight guide in UNDERSTAND mode.
 RULES:
 - Help them move from surface complaint to underlying attachment need
 - Use EFT language: "Beneath this, there may be a deeper fear of..."
@@ -177,7 +177,7 @@ RULES:
     nextMode: 'bridge' as const,
     nextLabel: 'Words ready? Move to Nurture',
     quickActions: ['What do I actually want to say?', 'Am I being fair?', 'How do I start this conversation?'],
-    systemPrompt: `You are Tether's communication coach in PREPARE mode.
+    systemPrompt: `You are Hey Otis's communication coach in PREPARE mode.
 RULES:
 - Help the user turn raw feelings into clear, fair language
 - Guide from interpretation to observation ("you always..." becomes "when X happened...")
@@ -198,7 +198,7 @@ RULES:
     nextMode: null,
     nextLabel: null,
     quickActions: [],
-    systemPrompt: `You are Tether's bridge coach in BRIDGE mode.
+    systemPrompt: `You are Hey Otis's bridge coach in BRIDGE mode.
 RULES:
 - The user is preparing for or reflecting on a real conversation with their partner
 - Reference what they explored in earlier steps

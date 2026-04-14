@@ -1,4 +1,4 @@
-// Assessment questions and scoring for Tether relationship wellness app
+// Assessment questions and scoring for Hey Otis relationship wellness app
 
 // ---------------------------------------------------------------------------
 // Metadata

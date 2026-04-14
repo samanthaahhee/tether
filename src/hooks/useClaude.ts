@@ -35,7 +35,7 @@ function isRateLimited(): boolean {
 // Only pass the last N messages to keep token cost flat regardless of session length
 const HISTORY_WINDOW = 6;
 
-const SUMMARISE_SYSTEM = `You are a session memory assistant for Tether, a relationship wellness app.
+const SUMMARISE_SYSTEM = `You are a session memory assistant for Hey Otis, a relationship wellness app.
 Given a conversation and a previous summary, produce a concise updated summary in plain text.
 Structure it exactly like this (fill in each line, keep each to 1-2 sentences max):
 
@@ -49,7 +49,7 @@ Total output must be under 120 words. Return only the structured summary — no 
 
 Never include or reference data from other users. Process only the content provided.`;
 
-const MEMORY_SYSTEM = `You are a long-term memory builder for Tether, a relationship wellness app.
+const MEMORY_SYSTEM = `You are a long-term memory builder for Hey Otis, a relationship wellness app.
 After each session, you update a persistent memory of this person — who they are emotionally, what patterns recur, how they are growing, and what remains unresolved.
 
 Given the session summary and the previous memory, return a JSON object with exactly these fields:
@@ -68,7 +68,7 @@ Rules:
 
 Never include or reference data from other users. Process only the content provided.`;
 
-const CHECKIN_SYSTEM = `You are the opening voice of Tether, a relationship wellness app.
+const CHECKIN_SYSTEM = `You are the opening voice of Hey Otis, a relationship wellness app.
 Based on what you know about this person and their last session, generate a single warm, specific check-in question to open the new session.
 
 The question should:
@@ -183,7 +183,7 @@ export function useClaude({ systemPrompt, userProfile, userMemory }: UseClaudeOp
 
       // Log usage metadata only — never content
       if (__DEV__) {
-        console.log('[Tether AI]', {
+        console.log('[Hey Otis AI]', {
           timestamp: new Date().toISOString(),
           model: 'claude-haiku-4-5-20251001',
           inputTokens: data.usage?.input_tokens,

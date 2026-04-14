@@ -103,8 +103,8 @@ export default function SettingsTab() {
                   const code = await generateInvite();
                   setInviteLoading(false);
                   Share.share({
-                    message: `Join me on Tether\n\nDownload the app and use invite code: ${code}\n\nor tap: tether://invite/${code}`,
-                    title: 'Join me on Tether',
+                    message: `Join me on Hey Otis\n\nDownload the app and use invite code: ${code}\n\nor tap: tether://invite/${code}`,
+                    title: 'Join me on Hey Otis',
                   });
                 }}
                 right={inviteLoading ? <ActivityIndicator size="small" color={Colors.terracotta} /> : undefined}
@@ -137,8 +137,8 @@ export default function SettingsTab() {
                     activeOpacity={0.8}
                     onPress={() => {
                       Share.share({
-                        message: `Join me on Tether\n\nDownload the app and use invite code: ${inviteCode}\n\nor tap: tether://invite/${inviteCode}`,
-                        title: 'Join me on Tether',
+                        message: `Join me on Hey Otis\n\nDownload the app and use invite code: ${inviteCode}\n\nor tap: tether://invite/${inviteCode}`,
+                        title: 'Join me on Hey Otis',
                       });
                     }}
                   >
@@ -246,7 +246,7 @@ export default function SettingsTab() {
                 const json = JSON.stringify(exportData, null, 2);
                 await Share.share({
                   message: json,
-                  title: 'Tether Data Export',
+                  title: 'Hey Otis Data Export',
                 });
               } catch (e) {
                 Alert.alert('Export failed', 'Something went wrong exporting your data. Please try again.');
@@ -358,22 +358,22 @@ export default function SettingsTab() {
           <SettingsRow
             icon={<IconInfo size={18} color={Colors.midBrown} />}
             label="Important notice"
-            sub="Please read before using Tether"
+            sub="Please read before using Hey Otis"
             onPress={() => Alert.alert(
               'Important notice',
-              'Tether is a self-guided relationship wellness tool designed to support your personal growth and communication skills.\n\n' +
-              'Tether is not a replacement for professional support\n' +
+              'Hey Otis is a self-guided relationship wellness tool designed to support your personal growth and communication skills.\n\n' +
+              'Hey Otis is not a replacement for professional support\n' +
               'The content, exercises, and insights provided are for self-reflection and personal development only. They are not clinical diagnoses, medical advice, or a substitute for qualified professional guidance.\n\n' +
               'When to seek professional support\n' +
               'If you or your partner are experiencing domestic abuse, a mental health crisis, thoughts of self-harm, or feel unsafe in your relationship, please contact a qualified professional or use the crisis support contacts in your settings.\n\n' +
               'Your safety comes first\n' +
-              'Tether is designed to be used in relationships where both partners feel safe. If there is any form of coercion, control, or abuse, relationship tools alone are not sufficient. Please prioritise your safety.\n\n' +
+              'Hey Otis is designed to be used in relationships where both partners feel safe. If there is any form of coercion, control, or abuse, relationship tools alone are not sufficient. Please prioritise your safety.\n\n' +
               'AI limitations\n' +
-              'Tether uses AI to guide conversations and offer insights. While grounded in established research, AI responses are not infallible and should be taken as suggestions, not prescriptions.'
+              'Hey Otis uses AI to guide conversations and offer insights. While grounded in established research, AI responses are not infallible and should be taken as suggestions, not prescriptions.'
             )}
           />
           <SettingsRow icon={<IconShield size={18} color={Colors.midBrown} />} label="Privacy policy" sub="How we handle your data" onPress={() => router.push('/privacy')} />
-          <SettingsRow icon={<IconInfo size={18} color={Colors.midBrown} />} label="Version" sub="Tether 1.0.0" />
+          <SettingsRow icon={<IconInfo size={18} color={Colors.midBrown} />} label="Version" sub="Hey Otis 1.0.0" />
         </Section>
 
         <TouchableOpacity

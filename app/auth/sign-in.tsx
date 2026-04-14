@@ -111,7 +111,7 @@ export default function SignIn() {
           </View>
 
           <TouchableOpacity onPress={() => router.replace('/auth/sign-up')} style={s.switchLink}>
-            <Text style={s.switchText}>New to Tether? <Text style={s.switchAction}>Create account</Text></Text>
+            <Text style={s.switchText}>New to Hey Otis? <Text style={s.switchAction}>Create account</Text></Text>
           </TouchableOpacity>
 
         </ScrollView>

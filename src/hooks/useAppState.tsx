@@ -18,6 +18,7 @@ export interface UserProfile {
   need: string;
   context: string;
   onboarded: boolean;
+  sawIntro: boolean;
   streak: number;
   aiConsentGiven: boolean;
 }
@@ -121,6 +122,7 @@ const defaultProfile: UserProfile = {
   need: '',
   context: '',
   onboarded: false,
+  sawIntro: false,
   streak: 0,
   aiConsentGiven: false,
 };
@@ -405,6 +407,8 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
         try {
           const decoded = decodeFromStorage(raw);
           const saved = JSON.parse(decoded);
+          // Reset sawIntro so users see the intro flow
+          if (saved.profile) saved.profile.sawIntro = false;
           dispatch({ type: 'HYDRATE', state: { ...initialState, ...saved, loaded: true } });
         } catch {
           dispatch({ type: 'SET_LOADED' });
