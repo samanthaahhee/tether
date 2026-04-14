@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html><head>
+<meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { width: 1080px; height: 1080px; overflow: hidden; }
+.slide { width: 1080px; height: 1080px; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 80px; gap: 40px; background: #f7f5fd; position: relative; }
+.card { width: 100%; background: white; border: 2px solid #dedde8; border-radius: 24px; padding: 48px; }
+.label { font-family: 'Inter', sans-serif; font-weight: 600; font-size: 14px; letter-spacing: 2px; text-transform: uppercase; color: #a09bac; margin-bottom: 16px; }
+.card-text { font-family: 'Instrument Sans', sans-serif; font-weight: 600; font-size: 40px; color: #211e28; line-height: 1.25; }
+.card.green { border-color: #96d35f; background: #edf8e4; }
+.card.green .label { color: #81b756; }
+.vs { font-family: 'Instrument Sans', sans-serif; font-weight: 700; font-size: 28px; color: #a09bac; }
+.logo { position: absolute; bottom: 50px; font-family: 'Instrument Sans', sans-serif; font-weight: 600; font-size: 20px; color: #a09bac; }
+</style>
+</head><body>
+<div class="slide">
+  <div class="card">
+    <div class="label">What I said</div>
+    <div class="card-text">&ldquo;It&rsquo;s fine.&rdquo;</div>
+  </div>
+  <div class="vs">vs</div>
+  <div class="card green">
+    <div class="label">What I meant</div>
+    <div class="card-text">&ldquo;I need you to ask me one more time because I don&rsquo;t know how to say it&rsquo;s not fine.&rdquo;</div>
+  </div>
+  <div class="logo">@heyotis.app</div>
+</div>
+</body></html>
