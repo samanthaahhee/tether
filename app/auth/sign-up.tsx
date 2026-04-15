@@ -35,7 +35,7 @@ export default function SignUp() {
     }
 
     if (invite) await acceptInvite(invite);
-    router.replace('/onboarding');
+    router.replace('/intro');
     setLoading(false);
   };
 

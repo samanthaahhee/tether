@@ -131,7 +131,7 @@ function StepProgressBar({ session, activeTheme, onGoToStep }: { session: Sessio
             <React.Fragment key={step}>
               {i > 0 && (
                 <LinearGradient
-                  colors={lineActive ? [activeTheme.mid || activeTheme.color, '#ffffff'] : ['#c5c4d2', '#ffffff']}
+                  colors={lineActive ? [activeTheme.color, '#dedde8'] : ['#dedde8', '#dedde8']}
                   start={{ x: 0, y: 0.5 }}
                   end={{ x: 1, y: 0.5 }}
                   style={sp.line}
@@ -144,11 +144,11 @@ function StepProgressBar({ session, activeTheme, onGoToStep }: { session: Sessio
               >
                 <View style={[
                   sp.node,
-                  isActive && { backgroundColor: activeTheme.mid || activeTheme.color },
+                  (isCurrent || isCompleted) && { backgroundColor: '#ffffff', borderWidth: 2, borderColor: activeTheme.mid || activeTheme.color },
                   isLocked && { backgroundColor: '#eeebf4' },
                 ]}>
                   <Text style={[sp.nodeNum, {
-                    color: isActive ? '#001c14' : '#80798c',
+                    color: (isCurrent || isCompleted) ? (activeTheme.mid || activeTheme.color) : '#80798c',
                   }]}>{i + 1}</Text>
                 </View>
               </TouchableOpacity>
@@ -161,11 +161,11 @@ function StepProgressBar({ session, activeTheme, onGoToStep }: { session: Sessio
 }
 
 const sp = StyleSheet.create({
-  container: { paddingTop: 8, paddingBottom: 14, paddingHorizontal: 16 },
-  nodesRow: { flexDirection: 'row', alignItems: 'center' },
-  node: { width: 40, height: 40, borderRadius: 20, backgroundColor: '#eeebf4', alignItems: 'center', justifyContent: 'center' },
-  nodeNum: { fontFamily: 'Inter_600SemiBold', fontSize: 16, color: '#80798c' },
-  line: { flex: 1, height: 3 },
+  container: { paddingTop: 6, paddingBottom: 8, paddingHorizontal: 60, width: '100%' },
+  nodesRow: { flexDirection: 'row', alignItems: 'center', width: '100%' },
+  node: { width: 32, height: 32, borderRadius: 16, backgroundColor: '#eeebf4', alignItems: 'center', justifyContent: 'center' },
+  nodeNum: { fontFamily: 'Inter_600SemiBold', fontSize: 14, color: '#80798c' },
+  line: { flex: 1, height: 3, minWidth: 20 },
 });
 
 const REMINDER_OPTIONS = ['Tonight', 'Tomorrow morning', 'This weekend'];
@@ -588,9 +588,13 @@ function ChatBubble({ item, theme, profileInitial }: { item: Message; theme: typ
 
   return (
     <Animated.View style={[styles.msgRow, item.role === 'user' && styles.msgRowUser, { opacity: fadeAnim, transform: [{ translateY: slideAnim }] }]}>
-      <View style={[styles.msgAvatar]}>
-        <Text style={{ fontFamily: 'Inter_400Regular', fontSize: 14, color: '#001c14' }}>{profileInitial}</Text>
-      </View>
+      {item.role === 'ai' ? (
+        <Image source={require('../../assets/otis-avatar.png')} style={styles.msgAvatarImg} />
+      ) : (
+        <View style={[styles.msgAvatar]}>
+          <Text style={{ fontFamily: 'Inter_400Regular', fontSize: 14, color: '#001c14' }}>{profileInitial}</Text>
+        </View>
+      )}
       <View style={[styles.msgBubble, item.role === 'user' && { backgroundColor: theme.pale, borderColor: '#dedde8' }]}>
         <Text style={styles.msgText}>{item.text}</Text>
       </View>
@@ -834,51 +838,44 @@ function ActiveSessionView({ session, state, dispatch: d, onBack }: { session: S
   const goBack = onBack;
 
   return (
-    <View style={{ flex: 1, backgroundColor: Colors.cream }}>
+    <View style={{ flex: 1, backgroundColor: '#ffffff' }}>
     <SafeAreaView style={{ flex: 1 }} edges={['top']}>
       <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'} keyboardVerticalOffset={0}>
 
-        <View style={[styles.sessionHeader, { borderBottomColor: Colors.sand }]}>
-          {/* Nav row */}
-          <View style={styles.sessionHeaderNav}>
+        <View style={styles.sessionTopBlock}>
+          {/* Nav row with Back + Step name centred */}
+          <View style={styles.sessionNavRow}>
             <TouchableOpacity onPress={goBack} style={styles.sessionBackBtn} activeOpacity={0.7}>
               <ChevronLeft size={11} color={Colors.midBrown} style={{ marginTop: 1 }} />
               <Text style={styles.sessionBackText}>Back</Text>
             </TouchableOpacity>
-            <View style={{ flex: 1, alignItems: 'center' }}>
-              {editingName ? (
-                <TextInput
-                  value={nameInput}
-                  onChangeText={setNameInput}
-                  onBlur={() => { d({ type: 'RENAME_SESSION', sessionId: session.id, name: nameInput }); setEditingName(false); }}
-                  onSubmitEditing={() => { d({ type: 'RENAME_SESSION', sessionId: session.id, name: nameInput }); setEditingName(false); }}
-                  autoFocus
-                  placeholder="Name this session..."
-                  placeholderTextColor={Colors.lightBrown}
-                  selectionColor="#96d35f"
-                  cursorColor="#96d35f"
-                  style={styles.sessionNameInput}
-                />
-              ) : (
-                <TouchableOpacity onPress={() => { setNameInput(session.name); setEditingName(true); }} activeOpacity={0.7}>
-                  <Text style={styles.sessionNameText} numberOfLines={1}>
-                    {session.name || 'Tap to name'}
-                  </Text>
-                </TouchableOpacity>
-              )}
+            <View style={styles.sessionStepNameRow}>
+              <Text style={styles.sessionStepName}>{SESSION_STEPS.indexOf(step) + 1}. {cfg.label}</Text>
             </View>
             <View style={{ minWidth: 56 }} />
           </View>
 
-        </View>
+          {/* Session name */}
+          {editingName ? (
+            <TextInput
+              value={nameInput}
+              onChangeText={setNameInput}
+              onBlur={() => { d({ type: 'RENAME_SESSION', sessionId: session.id, name: nameInput }); setEditingName(false); }}
+              onSubmitEditing={() => { d({ type: 'RENAME_SESSION', sessionId: session.id, name: nameInput }); setEditingName(false); }}
+              autoFocus
+              placeholder="Name this session"
+              placeholderTextColor={Colors.lightBrown}
+              selectionColor="#96d35f"
+              cursorColor="#96d35f"
+              style={styles.sessionNameInput}
+            />
+          ) : (
+            <TouchableOpacity onPress={() => { setNameInput(session.name); setEditingName(true); }} activeOpacity={0.7}>
+              <Text style={styles.sessionNameSub}>{session.name || 'Name this session'}</Text>
+            </TouchableOpacity>
+          )}
 
-        {/* Step identity + progress in a white card container */}
-        <View style={styles.stepCard}>
-          <View style={styles.sessionStepIdentity}>
-            {(() => { const I = STEP_ICON_MAP[cfg.emoji]; return I ? <I size={24} color={theme.color} /> : null; })()}
-            <Text style={styles.sessionStepName}>{cfg.label}</Text>
-            <Text style={styles.sessionStepSub}>Share exactly how you feel.</Text>
-          </View>
+          {/* Step progress */}
           <StepProgressBar session={session} activeTheme={theme} onGoToStep={(s) => d({ type: 'GO_TO_STEP', sessionId: session.id, step: s })} />
         </View>
 
@@ -929,9 +926,7 @@ function ActiveSessionView({ session, state, dispatch: d, onBack }: { session: S
             <NurtureCard session={session} dispatch={d} profile={state.profile} onResolved={resolveSession} />
           </ScrollView>
         ) : (
-          <View style={{ flex: 1 }}>
-            {/* Mascot background — fixed at bottom-right, crossfade on step change */}
-            <ChatMascot step={step} />
+          <View style={{ flex: 1, backgroundColor: '#fbf9ff' }}>
             <FlatList
               ref={flatRef}
               data={messages}
@@ -944,7 +939,7 @@ function ActiveSessionView({ session, state, dispatch: d, onBack }: { session: S
               )}
               ListFooterComponent={loading ? (
                 <View style={styles.msgRow}>
-                  <View style={styles.msgAvatar}><IconLeaf size={14} color={theme.color} /></View>
+                  <Image source={require('../../assets/otis-avatar.png')} style={styles.msgAvatarImg} />
                   <View style={styles.msgBubble}><TypingIndicator /></View>
                 </View>
               ) : null}
@@ -1214,17 +1209,17 @@ const styles = StyleSheet.create({
   headerTitle: { fontFamily: Fonts.displaySemiBold, fontSize: 22, color: Colors.charcoal, marginBottom: 6 },
   headerSub: { fontFamily: Fonts.body, fontSize: 14, color: Colors.midBrown },
   sectionLabel: { fontFamily: Fonts.bodyMedium, fontSize: 10, letterSpacing: 0.8, textTransform: 'uppercase', color: Colors.midBrown, marginBottom: 14 },
-  sessionHeader: { backgroundColor: '#fbf9ff' },
-  sessionHeaderNav: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingTop: 10, paddingBottom: 4 },
   sessionBackBtn: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingVertical: 4, paddingRight: 8, minWidth: 56 },
   sessionBackText: { fontFamily: Fonts.bodyMedium, fontSize: 14, color: Colors.midBrown },
   sessionNameInput: { fontFamily: Fonts.body, fontSize: 12, color: Colors.charcoal, textAlign: 'center', paddingVertical: 2, minWidth: 120 },
   sessionNameText: { fontFamily: Fonts.body, fontSize: 12, color: Colors.midBrown, textAlign: 'center' },
   sessionStepCounter: { fontFamily: Fonts.bodyMedium, fontSize: 12, minWidth: 56, textAlign: 'right' },
-  stepCard: { marginHorizontal: 16, marginTop: 8, backgroundColor: '#ffffff', borderWidth: 1, borderColor: '#dedde8', borderRadius: 12, paddingVertical: 16, overflow: 'hidden' },
-  sessionStepIdentity: { flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 2, paddingHorizontal: 16, paddingBottom: 8 },
-  sessionStepName: { fontFamily: 'InstrumentSans_600SemiBold', fontSize: 22, color: '#211e28' },
-  sessionStepSub: { fontFamily: 'Inter_400Regular', fontSize: 14, color: '#211e28', textAlign: 'center' },
+  sessionTopBlock: { backgroundColor: '#ffffff', paddingBottom: 8, borderBottomWidth: 1, borderBottomColor: '#dedde8' },
+  sessionNavRow: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 8 },
+  sessionStepNameRow: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6 },
+  sessionStepName: { fontFamily: 'InstrumentSans_600SemiBold', fontSize: 20, color: '#211e28' },
+  sessionNameSub: { fontFamily: 'Inter_400Regular', fontSize: 13, color: '#a09bac', textAlign: 'center', marginBottom: 4 },
+  sessionNameInput: { fontFamily: 'Inter_400Regular', fontSize: 13, color: '#211e28', textAlign: 'center', marginBottom: 4, padding: 0 },
   floodBanner: { borderBottomWidth: 1, padding: 10, paddingHorizontal: 16 },
   floodText: { fontFamily: Fonts.body, fontSize: 13, color: Colors.warmBrown },
   chatMascotWrap: { position: 'absolute', bottom: 8, right: 16, zIndex: 0, width: 110, height: 110 },
@@ -1233,6 +1228,7 @@ const styles = StyleSheet.create({
   msgRow: { flexDirection: 'row', alignItems: 'flex-start', gap: 8, maxWidth: '90%' },
   msgRowUser: { flexDirection: 'row-reverse', alignSelf: 'flex-end', maxWidth: '90%' },
   msgAvatar: { width: 32, height: 32, borderRadius: 16, backgroundColor: '#bcb8c3', alignItems: 'center', justifyContent: 'center', flexShrink: 0 },
+  msgAvatarImg: { width: 32, height: 32, borderRadius: 16, flexShrink: 0 },
   msgBubble: { backgroundColor: '#ffffff', borderWidth: 1, borderColor: '#dedde8', borderRadius: 16, padding: 12, maxWidth: '85%', ...Shadows.xs },
   // msgBubbleUser now set inline via theme.pale
   msgText: { fontFamily: Fonts.body, fontSize: 14, color: '#211e28', lineHeight: 21 },

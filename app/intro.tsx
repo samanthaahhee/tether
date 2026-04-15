@@ -6,7 +6,6 @@ import {
 import { LinearGradient } from 'expo-linear-gradient';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
-import { useAppState } from '../src/hooks/useAppState';
 import { Colors, Fonts, Radius } from '../src/constants/theme';
 
 const { width, height } = Dimensions.get('window');
@@ -42,7 +41,6 @@ const SLIDES = [
 ];
 
 export default function IntroScreen() {
-  const { dispatch } = useAppState();
   const [currentIndex, setCurrentIndex] = useState(0);
   const flatRef = useRef<FlatList>(null);
   const scrollX = useRef(new Animated.Value(0)).current;
@@ -51,8 +49,7 @@ export default function IntroScreen() {
     if (currentIndex < SLIDES.length - 1) {
       flatRef.current?.scrollToIndex({ index: currentIndex + 1, animated: true });
     } else {
-      dispatch({ type: 'SET_PROFILE', payload: { sawIntro: true } });
-      router.replace('/auth/sign-up');
+      router.replace('/onboarding');
     }
   };
 

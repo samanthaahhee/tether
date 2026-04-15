@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, StyleSheet, Share, ActivityIndicator } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, StyleSheet, Share, ActivityIndicator, Modal } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Colors, Fonts, Radius } from '../../src/constants/theme';
@@ -78,11 +78,73 @@ const TABS: { key: Tab; label: string }[] = [
 
 export default function GrowthTab() {
   const { state } = useAppState();
-  const { partnerProfile: pp, generateInvite } = useAuth();
+  const { partnerProfile: realPp, generateInvite } = useAuth();
+
+  // TODO: Remove mock data before production
+  const pp = realPp || {
+    name: 'Alex',
+    attachment: 'avoidant',
+    love: 'acts',
+    conflict: 'stonewall',
+    window: 'hypo',
+    need: 'space',
+  };
   const { attachment, love, conflict, window: win, need } = state.profile;
-  const { partnerObservations, relationshipPatterns } = state.learnings;
+  // TODO: Remove mock data before production
+  const partnerObservations = state.learnings.partnerObservations.length > 0
+    ? state.learnings.partnerObservations
+    : [
+      'Alex tends to withdraw when he feels criticised, even if that wasn\u2019t the intention. His silence isn\u2019t punishment \u2014 it\u2019s overwhelm.',
+      'He expresses love through actions more than words. When he makes coffee or handles logistics, that\u2019s his way of saying I care.',
+      'He needs about 20 minutes after conflict before he can re-engage. Pushing for resolution before then makes him shut down further.',
+    ];
+  const relationshipPatterns = state.learnings.relationshipPatterns.length > 0
+    ? state.learnings.relationshipPatterns
+    : [
+      'When Sam feels unheard, she pursues. When Alex feels pressured, he withdraws. This creates a loop where both feel increasingly disconnected.',
+      'Arguments about small things (dishes, texting) are usually about bigger things (feeling valued, being remembered).',
+      'You both tend to revisit unresolved topics from the same emotional angle. Approaching from curiosity instead of frustration changes the outcome.',
+    ];
   const [activeTab, setActiveTab] = useState<Tab>('you');
   const [inviting, setInviting] = useState(false);
+  const [showPartnerSheet, setShowPartnerSheet] = useState(false);
+  const [showTogetherSheet, setShowTogetherSheet] = useState(false);
+
+  const userName = state.profile.name || 'You';
+  const partnerName = pp?.name || 'Partner';
+
+  // Compute relationship dynamics from both profiles
+  const getRelationshipInsights = () => {
+    if (!pp) return [];
+    const userAtt = attachment; const partAtt = pp.attachment;
+    const userLove = love; const partLove = pp.love;
+    const userConflict = conflict; const partConflict = pp.conflict;
+    const userWindow = win; const partWindow = pp.window;
+
+    const attDynamic = (userAtt === 'anxious' && partAtt === 'avoidant') || (userAtt === 'avoidant' && partAtt === 'anxious')
+      ? { title: 'Anxious-Avoidant trap', body: `${userName} reaches out for reassurance while ${partnerName} pulls back for space. The more one pursues, the more the other withdraws. This is the most common couple dynamic — and it\u2019s not anyone\u2019s fault.` }
+      : { title: `${ATTACHMENT_LABELS[userAtt] || 'Your style'} meets ${ATTACHMENT_LABELS[partAtt] || 'their style'}`, body: `Understanding how your attachment styles interact helps you predict conflict patterns and respond with more awareness.` };
+
+    const loveDynamic = userLove !== partLove
+      ? { title: `${LOVE_LABELS[userLove] || 'Your language'} vs ${LOVE_LABELS[partLove] || 'their language'}`, body: `You\u2019re both expressing care \u2014 just in different languages. When you feel unloved, look at what they\u2019re doing. When they feel pressured, notice what you\u2019re saying.` }
+      : { title: `Same love language`, body: `You both speak the same love language \u2014 ${LOVE_LABELS[userLove]}. This is a strength. The challenge is remembering to actively express it, not just assume the other knows.` };
+
+    const conflictDynamic = (userConflict === 'criticise' && partConflict === 'stonewall') || (userConflict === 'defensive' && partConflict === 'stonewall')
+      ? { title: 'Pursue-withdraw loop', body: `When things get heated, one of you pushes to resolve it now while the other goes silent. You\u2019re both trying to protect the relationship \u2014 just in opposite ways.` }
+      : { title: `${CONFLICT_LABELS[userConflict] || 'Your style'} meets ${CONFLICT_LABELS[partConflict] || 'their style'}`, body: `Your conflict styles create a unique dynamic. Understanding this pattern helps you break the cycle before it escalates.` };
+
+    const nervousDynamic = userWindow !== partWindow
+      ? { title: 'Opposite stress responses', body: `Under stress, one of your bodies speeds up while the other shuts down. Neither response is wrong. The key is learning to pause before your nervous systems hijack the conversation.` }
+      : { title: 'Similar stress responses', body: `You both respond to stress in similar ways. This can mean you escalate together or shut down together. Awareness of this shared pattern is the first step to breaking it.` };
+
+    return [
+      { label: 'ATTACHMENT DYNAMIC', color: '#f67700', ...attDynamic },
+      { label: 'COMMUNICATION GAP', color: '#d2b100', ...loveDynamic },
+      { label: 'CONFLICT CYCLE', color: '#bd57f2', ...conflictDynamic },
+      { label: 'NERVOUS SYSTEM', color: '#4ea989', ...nervousDynamic },
+      { label: 'GROWTH EDGE', color: '#92a6f4', title: 'The 20-minute rule', body: `When conflict starts, agree to a 20-minute pause. ${userName} gets the reassurance that the conversation will continue. ${partnerName} gets the space to regulate. Then come back \u2014 calmer, clearer, closer.` },
+    ];
+  };
 
   const handleInvite = async () => {
     setInviting(true);
@@ -187,45 +249,36 @@ export default function GrowthTab() {
         {activeTab === 'partner' && (
           <>
             <View style={styles.sectionHeader}>
-              <Text style={styles.sectionHeaderTitle}>Your partners profile</Text>
+              <Text style={styles.sectionHeaderTitle}>{pp ? `${partnerName}\u2019s profile` : 'Your partner'}</Text>
             </View>
 
             <View style={styles.section}>
               {pp ? (
-                <>
-                  <PatternCard
-                    label="Attachment style"
-                    value={ATTACHMENT_LABELS[pp.attachment] || 'Not set'}
-                    note={ATTACH_REVEALS[pp.attachment]?.body || ''}
-                    accentColor="#f67700"
-                  />
-                  <PatternCard
-                    label="Love language"
-                    value={LOVE_LABELS[pp.love] || 'Not set'}
-                    note={LOVE_REVEALS[pp.love]?.body || ''}
-                    accentColor="#d2b100"
-                  />
-                  <PatternCard
-                    label="Conflict style"
-                    value={CONFLICT_LABELS[pp.conflict] || 'Not set'}
-                    note={CONFLICT_REVEALS[pp.conflict]?.body || ''}
-                    accentColor="#bd57f2"
-                  />
-                  <PatternCard
-                    label="Body in conflict"
-                    value={WINDOW_LABELS[pp.window] || 'Not set'}
-                    note={WINDOW_REVEALS[pp.window]?.body || ''}
-                    accentColor="#4ea989"
-                  />
-                  {pp.need && (
-                    <PatternCard
-                      label="Core need"
-                      value={NEED_LABELS[pp.need] || 'Not set'}
-                      note="This is the thread underneath most of their conflicts. The unspoken thing they most need you to understand."
-                      accentColor="#92a6f4"
-                    />
-                  )}
-                </>
+                <View style={sc.card}>
+                  <View style={sc.avatarRow}>
+                    <View style={sc.avatar}>
+                      <Text style={sc.avatarText}>{partnerName.charAt(0).toUpperCase()}</Text>
+                    </View>
+                    <View style={{ flex: 1 }}>
+                      <Text style={sc.name}>{partnerName}</Text>
+                      <Text style={sc.sub}>Completed their profile</Text>
+                    </View>
+                  </View>
+                  <View style={sc.statsRow}>
+                    <View style={sc.statPill}>
+                      <View style={[sc.statDot, { backgroundColor: '#f67700' }]} />
+                      <Text style={sc.statText}>{ATTACHMENT_LABELS[pp.attachment] || 'Unknown'}</Text>
+                    </View>
+                    <View style={sc.statPill}>
+                      <View style={[sc.statDot, { backgroundColor: '#d2b100' }]} />
+                      <Text style={sc.statText}>{LOVE_LABELS[pp.love] || 'Unknown'}</Text>
+                    </View>
+                  </View>
+                  <TouchableOpacity style={sc.btn} onPress={() => setShowPartnerSheet(true)} activeOpacity={0.8}>
+                    <Text style={sc.btnText}>Understand more</Text>
+                    <Text style={{ fontSize: 16, color: '#211e28' }}>{'\u2192'}</Text>
+                  </TouchableOpacity>
+                </View>
               ) : (
                 <View style={pt.card}>
                   <IconSparkles size={24} color="#f67700" style={{ marginBottom: 12 }} />
@@ -233,16 +286,8 @@ export default function GrowthTab() {
                   <Text style={pt.body}>
                     Send your partner a link so they can create their own account. Their emotional profile will appear here automatically.
                   </Text>
-                  <TouchableOpacity
-                    style={pt.btn}
-                    onPress={handleInvite}
-                    activeOpacity={0.8}
-                    disabled={inviting}
-                  >
-                    {inviting
-                      ? <ActivityIndicator color="#001c14" />
-                      : <Text style={pt.btnText}>Send invite link</Text>
-                    }
+                  <TouchableOpacity style={pt.btn} onPress={handleInvite} activeOpacity={0.8} disabled={inviting}>
+                    {inviting ? <ActivityIndicator color="#001c14" /> : <Text style={pt.btnText}>Send invite link</Text>}
                   </TouchableOpacity>
                 </View>
               )}
@@ -250,7 +295,7 @@ export default function GrowthTab() {
 
             {/* Partner observations */}
             <View style={styles.sectionHeader}>
-              <Text style={styles.sectionHeaderTitle}>What Im learning about my partner</Text>
+              <Text style={styles.sectionHeaderTitle}>What I{'\u2019'}m learning about {partnerName}</Text>
             </View>
 
             <View style={styles.section}>
@@ -266,7 +311,7 @@ export default function GrowthTab() {
                   <IconMoon size={24} color="#f67700" style={{ marginBottom: 12 }} />
                   <Text style={pt.title}>Partner insights built over time</Text>
                   <Text style={pt.body}>
-                    As you complete more sessions, we will help you understand your partner better.
+                    As you complete more sessions, we{'\u2019'}ll help you understand {partnerName} better.
                   </Text>
                 </View>
               )}
@@ -278,45 +323,151 @@ export default function GrowthTab() {
         {activeTab === 'relationship' && (
           <>
             <View style={styles.sectionHeader}>
-              <Text style={styles.sectionHeaderTitle}>You & Your Partner</Text>
+              <Text style={styles.sectionHeaderTitle}>{userName} & {partnerName}</Text>
             </View>
 
             <View style={styles.section}>
-              {relationshipPatterns.length > 0 ? (
-                relationshipPatterns.map((pattern, i) => (
-                  <View key={i} style={pt.card}>
-                    <Text style={[pc.label, { color: '#d2b100' }]}>PATTERN</Text>
-                    <Text style={{ fontFamily: Fonts.body, fontSize: 14, color: '#211e28', lineHeight: 21, textAlign: 'center' }}>{pattern}</Text>
+              {pp ? (
+                <View style={sc.card}>
+                  <View style={sc.avatarRow}>
+                    <View style={[sc.avatar, { backgroundColor: '#96d35f' }]}>
+                      <Text style={sc.avatarText}>{userName.charAt(0)}</Text>
+                    </View>
+                    <View style={sc.heartBridge}>
+                      <IconHeart size={16} color="#bd57f2" />
+                    </View>
+                    <View style={[sc.avatar, { backgroundColor: '#92a6f4' }]}>
+                      <Text style={sc.avatarText}>{partnerName.charAt(0)}</Text>
+                    </View>
+                    <View style={{ flex: 1, marginLeft: 12 }}>
+                      <Text style={sc.name}>{userName} & {partnerName}</Text>
+                      <Text style={sc.sub}>Your relationship dynamics</Text>
+                    </View>
                   </View>
-                ))
+                  <View style={sc.statsRow}>
+                    <View style={sc.statPill}>
+                      <View style={[sc.statDot, { backgroundColor: '#bd57f2' }]} />
+                      <Text style={sc.statText}>{getRelationshipInsights()[0]?.title || 'Your dynamic'}</Text>
+                    </View>
+                  </View>
+                  <TouchableOpacity style={sc.btn} onPress={() => setShowTogetherSheet(true)} activeOpacity={0.8}>
+                    <Text style={sc.btnText}>Explore patterns</Text>
+                    <Text style={{ fontSize: 16, color: '#211e28' }}>{'\u2192'}</Text>
+                  </TouchableOpacity>
+                </View>
               ) : (
                 <View style={pt.card}>
                   <IconSparkles size={24} color="#f67700" style={{ marginBottom: 12 }} />
                   <Text style={pt.title}>Patterns will emerge here</Text>
                   <Text style={pt.body}>
-                    Complete a few sessions to start seeing relationship patterns. We will identify recurring themes across your conflicts.
+                    Complete a few sessions to start seeing relationship patterns. We{'\u2019'}ll identify recurring themes across your conflicts.
                   </Text>
-                  <TouchableOpacity
-                    style={pt.btn}
-                    onPress={handleInvite}
-                    activeOpacity={0.8}
-                    disabled={inviting}
-                  >
-                    {inviting
-                      ? <ActivityIndicator color="#001c14" />
-                      : <Text style={pt.btnText}>Send invite link</Text>
-                    }
+                  <TouchableOpacity style={pt.btn} onPress={handleInvite} activeOpacity={0.8} disabled={inviting}>
+                    {inviting ? <ActivityIndicator color="#001c14" /> : <Text style={pt.btnText}>Send invite link</Text>}
                   </TouchableOpacity>
                 </View>
               )}
             </View>
+
+            {/* Relationship patterns from sessions */}
+            {relationshipPatterns.length > 0 && (
+              <>
+                <View style={styles.sectionHeader}>
+                  <Text style={styles.sectionHeaderTitle}>Patterns from your sessions</Text>
+                </View>
+                <View style={styles.section}>
+                  {relationshipPatterns.map((pattern, i) => (
+                    <View key={i} style={pt.card}>
+                      <Text style={[pc.label, { color: '#d2b100' }]}>PATTERN</Text>
+                      <Text style={{ fontFamily: Fonts.body, fontSize: 14, color: '#211e28', lineHeight: 21, textAlign: 'center' }}>{pattern}</Text>
+                    </View>
+                  ))}
+                </View>
+              </>
+            )}
           </>
         )}
 
       </ScrollView>
+
+      {/* ── Partner Detail Sheet ── */}
+      <Modal visible={showPartnerSheet} animationType="slide" transparent onRequestClose={() => setShowPartnerSheet(false)}>
+        <View style={sh.overlay}>
+          <TouchableOpacity style={{ flex: 0.15 }} activeOpacity={1} onPress={() => setShowPartnerSheet(false)} />
+          <View style={sh.sheet}>
+            <View style={sh.handle} />
+            <View style={sh.header}>
+              <Text style={sh.title}>{partnerName}{'\u2019'}s profile</Text>
+              <TouchableOpacity onPress={() => setShowPartnerSheet(false)} activeOpacity={0.7}>
+                <Text style={sh.close}>{'\u2715'}</Text>
+              </TouchableOpacity>
+            </View>
+            <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 40 }}>
+              {pp && (
+                <>
+                  <PatternCard label="Attachment style" value={ATTACHMENT_LABELS[pp.attachment] || 'Not set'} note={ATTACH_REVEALS[pp.attachment]?.body || ''} accentColor="#f67700" />
+                  <PatternCard label="Love language" value={LOVE_LABELS[pp.love] || 'Not set'} note={LOVE_REVEALS[pp.love]?.body || ''} accentColor="#d2b100" />
+                  <PatternCard label="Conflict style" value={CONFLICT_LABELS[pp.conflict] || 'Not set'} note={CONFLICT_REVEALS[pp.conflict]?.body || ''} accentColor="#bd57f2" />
+                  <PatternCard label="Body in conflict" value={WINDOW_LABELS[pp.window] || 'Not set'} note={WINDOW_REVEALS[pp.window]?.body || ''} accentColor="#4ea989" />
+                  {pp.need && <PatternCard label="Core need" value={NEED_LABELS[pp.need] || 'Not set'} note="The unspoken thing they most need you to understand." accentColor="#92a6f4" />}
+                </>
+              )}
+            </ScrollView>
+          </View>
+        </View>
+      </Modal>
+
+      {/* ── Together Detail Sheet ── */}
+      <Modal visible={showTogetherSheet} animationType="slide" transparent onRequestClose={() => setShowTogetherSheet(false)}>
+        <View style={sh.overlay}>
+          <TouchableOpacity style={{ flex: 0.15 }} activeOpacity={1} onPress={() => setShowTogetherSheet(false)} />
+          <View style={sh.sheet}>
+            <View style={sh.handle} />
+            <View style={sh.header}>
+              <Text style={sh.title}>Your relationship patterns</Text>
+              <TouchableOpacity onPress={() => setShowTogetherSheet(false)} activeOpacity={0.7}>
+                <Text style={sh.close}>{'\u2715'}</Text>
+              </TouchableOpacity>
+            </View>
+            <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 40 }}>
+              {getRelationshipInsights().map((insight, i) => (
+                <PatternCard key={i} label={insight.label} value={insight.title} note={insight.body} accentColor={insight.color} />
+              ))}
+            </ScrollView>
+          </View>
+        </View>
+      </Modal>
+
     </SafeAreaView>
   );
 }
+
+// ── Summary Card styles ──
+const sc = StyleSheet.create({
+  card: { backgroundColor: '#ffffff', borderWidth: 1, borderColor: '#dedde8', borderRadius: 20, padding: 24, marginBottom: 12 },
+  avatarRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 16 },
+  avatar: { width: 44, height: 44, borderRadius: 22, backgroundColor: '#bcb8c3', alignItems: 'center', justifyContent: 'center' },
+  avatarText: { fontFamily: Fonts.bodySemiBold, fontSize: 16, color: '#ffffff' },
+  heartBridge: { marginHorizontal: -4, zIndex: 1, width: 24, height: 24, borderRadius: 12, backgroundColor: '#fdeaff', alignItems: 'center', justifyContent: 'center' },
+  name: { fontFamily: Fonts.displaySemiBold, fontSize: 18, color: '#211e28' },
+  sub: { fontFamily: Fonts.body, fontSize: 13, color: '#80798c', marginTop: 2 },
+  statsRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 20 },
+  statPill: { flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: '#f7f5fd', borderWidth: 1, borderColor: '#dedde8', borderRadius: 999, paddingHorizontal: 12, paddingVertical: 6 },
+  statDot: { width: 8, height: 8, borderRadius: 4 },
+  statText: { fontFamily: Fonts.bodyMedium, fontSize: 12, color: '#211e28' },
+  btn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, backgroundColor: '#96d35f', borderRadius: 999, paddingVertical: 14 },
+  btnText: { fontFamily: Fonts.bodySemiBold, fontSize: 15, color: '#211e28' },
+});
+
+// ── Sheet styles ──
+const sh = StyleSheet.create({
+  overlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.3)' },
+  sheet: { flex: 1, backgroundColor: '#f7f5fd', borderTopLeftRadius: 24, borderTopRightRadius: 24, paddingHorizontal: 16, paddingTop: 12 },
+  handle: { width: 36, height: 4, borderRadius: 2, backgroundColor: '#dedde8', alignSelf: 'center', marginBottom: 16 },
+  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20, paddingHorizontal: 4 },
+  title: { fontFamily: Fonts.displaySemiBold, fontSize: 20, color: '#211e28' },
+  close: { fontSize: 20, color: '#80798c', padding: 4 },
+});
 
 const pt = StyleSheet.create({
   card: { backgroundColor: '#ffffff', borderWidth: 1, borderColor: '#dedde8', borderRadius: 16, padding: 24, alignItems: 'center', marginBottom: 12 },
