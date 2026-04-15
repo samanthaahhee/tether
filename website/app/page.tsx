@@ -1,4 +1,5 @@
 import StepsSection from './StepsSection';
+import ScrollReveal from './ScrollReveal';
 
 export default function Home() {
   return (
@@ -7,8 +8,7 @@ export default function Home() {
       <nav className="nav">
         <div className="nav-inner">
           <div className="nav-brand">
-            <img src="/icon.png" alt="Hey Otis" className="nav-icon" />
-            <span>Hey Otis</span>
+            <img src="/header-logo.png" alt="Hey Otis" className="nav-icon" />
           </div>
           <a href="#get-started" className="nav-cta">Get early access</a>
         </div>
@@ -16,223 +16,148 @@ export default function Home() {
 
       {/* ── Hero ── */}
       <section className="hero">
-        <div className="hero-content">
+        <div className="hero-container">
           <div className="hero-text">
-            <p className="hero-quote fade-up">
-              &ldquo;The quality of your relationships determines the quality of your life.&rdquo;
-              <cite>&mdash; Esther Perel</cite>
-            </p>
-            <h1 className="fade-up delay-1">
-              Every couple argues.<br />
-              The ones that last<br />
-              learn how to <em>repair</em>.
-            </h1>
-            <p className="hero-sub fade-up delay-2">
-              Hey Otis is your private, AI-powered guide from rupture to repair.
-              Process conflict, uncover what&apos;s really going on, and find the
-              words that open doors.
-            </p>
-            <div className="hero-actions fade-up delay-3">
-              <a href="#get-started" className="btn-primary">Get early access</a>
-              <a href="#how" className="btn-ghost">See how it works</a>
-            </div>
+            <ScrollReveal>
+              <img src="/header-logo.png" alt="Hey Otis" className="hero-logo" />
+            </ScrollReveal>
+            <ScrollReveal delay={100}>
+              <h1 className="hero-h1">
+                Every couple argues.<br />
+                The ones that last,<br />
+                learn how to repair.
+              </h1>
+            </ScrollReveal>
+            <ScrollReveal delay={200}>
+              <p className="hero-sub">
+                Hey Otis is your private, AI-powered guide from rupture to
+                repair. Process conflict, uncover what&apos;s really going on, and
+                find the words that open doors.
+              </p>
+            </ScrollReveal>
+            <ScrollReveal delay={300}>
+              <div className="hero-actions">
+                <a href="#get-started" className="btn-primary">Download now</a>
+                <a href="#how" className="btn-ghost">See how it works</a>
+              </div>
+            </ScrollReveal>
           </div>
-          <div className="hero-phone fade-up delay-2">
-            <div className="phone-frame">
-              <img src="/session-vent.png" alt="Hey Otis session" />
-            </div>
-          </div>
+          <ScrollReveal delay={200} className="hero-image-wrap">
+            <img src="/hero-image.png" alt="Hey Otis app" className="hero-image" />
+          </ScrollReveal>
         </div>
       </section>
 
-      {/* ── Social Proof Bar ── */}
+      {/* ── Proof Bar ── */}
       <section className="proof-bar">
-        <div className="proof-inner">
-          <div className="proof-item">
-            <span className="proof-num">5</span>
-            <span className="proof-label">Evidence-based frameworks</span>
+        <ScrollReveal>
+          <div className="proof-inner">
+            <div className="proof-item">
+              <svg className="proof-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#81b756" strokeWidth="2" strokeLinecap="round"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+              <span className="proof-label">5 Evidence Based Frameworks</span>
+            </div>
+            <div className="proof-item">
+              <svg className="proof-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#81b756" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.582a.5.5 0 0 1 0 .963L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"/><path d="M20 3v4"/><path d="M22 5h-4"/></svg>
+              <span className="proof-label">4 Guided Repair Steps</span>
+            </div>
+            <div className="proof-item">
+              <svg className="proof-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#81b756" strokeWidth="2" strokeLinecap="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+              <span className="proof-label">100% Private &amp; Secure</span>
+            </div>
           </div>
-          <div className="proof-divider" />
-          <div className="proof-item">
-            <span className="proof-num">4</span>
-            <span className="proof-label">Guided repair steps</span>
+        </ScrollReveal>
+      </section>
+
+      {/* ── The Reality ── */}
+      <section className="reality">
+        <div className="reality-container">
+          <ScrollReveal>
+            <div className="reality-header">
+              <p className="reality-eyebrow">THE REALITY</p>
+              <h2 className="reality-title">Conflict isn&apos;t the problem.<br />Silence is.</h2>
+              <p className="reality-sub">Most couples don&apos;t break up because they fight. They break up because they stop trying to understand each other.</p>
+            </div>
+          </ScrollReveal>
+          <div className="reality-row">
+            <ScrollReveal delay={0}><div className="reality-card"><p className="reality-num" style={{color:'#4ea989'}}>69%</p><p className="reality-label">of conflicts are perpetual — they never fully resolve</p></div></ScrollReveal>
+            <ScrollReveal delay={100}><div className="reality-card"><p className="reality-num" style={{color:'#92a6f4'}}>6 yrs</p><p className="reality-label">couples wait before seeking any help</p></div></ScrollReveal>
+            <ScrollReveal delay={200}><div className="reality-card"><p className="reality-num" style={{color:'#f67700'}}>96%</p><p className="reality-label">the first 3 minutes predict the outcome</p></div></ScrollReveal>
+            <ScrollReveal delay={300}><div className="reality-card"><p className="reality-num" style={{color:'#bd57f2'}}>5:1</p><p className="reality-label">positive to negative — the magic ratio</p></div></ScrollReveal>
           </div>
-          <div className="proof-divider" />
-          <div className="proof-item">
-            <span className="proof-num">100%</span>
-            <span className="proof-label">Private &amp; secure</span>
+          <ScrollReveal delay={200}>
+            <div className="reality-quote-wrap">
+              <p className="reality-quote">&ldquo;Conflict in relationships is inevitable. It&apos;s not a sign that something is broken, it&apos;s a signal that something needs attention.&rdquo;</p>
+              <p className="reality-cite">&mdash; Esther Perel</p>
+            </div>
+          </ScrollReveal>
+        </div>
+      </section>
+
+      {/* ── Understand Better ── */}
+      <section className="ub">
+        <div className="ub-container">
+          <div className="ub-left">
+            <ScrollReveal>
+              <p className="ub-eyebrow">UNDERSTAND BETTER</p>
+              <h2 className="ub-title">Every person reacts differently. Understand how to navigate your differences.</h2>
+              <p className="ub-body">
+                Through short assessments, Hey Otis maps how you and your partner experience
+                love, handle conflict, and respond to stress. Not to label you, but to help you
+                understand why you react the way you do, and why they do too.
+              </p>
+            </ScrollReveal>
+          </div>
+          <div className="ub-right">
+            <ScrollReveal delay={200}>
+              <img src="/understand-image.png" alt="Growth screens" className="ub-image" />
+            </ScrollReveal>
           </div>
         </div>
       </section>
 
-      {/* ── The Problem ── */}
-      <section className="problem-section">
-        <div className="container">
-          <div className="problem-header fade-up">
-            <p className="eyebrow">The reality</p>
-            <h2>Conflict isn&apos;t the problem.<br />Silence is.</h2>
-            <p className="subtitle">
-              Most couples don&apos;t break up because they fight. They break up because
-              they stop trying to understand each other.
-            </p>
+      {/* ── Grow Together ── */}
+      <section className="gt">
+        <div className="gt-container">
+          <div className="gt-left">
+            <ScrollReveal delay={200}>
+              <img src="/grow-image.png" alt="Together screens" className="gt-image" />
+            </ScrollReveal>
           </div>
-
-          <div className="stats-row">
-            <div className="stat fade-up">
-              <div className="stat-ring" style={{ '--ring-color': '#4ea989' } as React.CSSProperties}>
-                <span>69%</span>
-              </div>
-              <p>of conflicts are perpetual &mdash; they never fully resolve</p>
-            </div>
-            <div className="stat fade-up delay-1">
-              <div className="stat-ring" style={{ '--ring-color': '#92a6f4' } as React.CSSProperties}>
-                <span>6 yrs</span>
-              </div>
-              <p>couples wait before seeking any help</p>
-            </div>
-            <div className="stat fade-up delay-2">
-              <div className="stat-ring" style={{ '--ring-color': '#f67700' } as React.CSSProperties}>
-                <span>96%</span>
-              </div>
-              <p>of the time, the first 3 minutes predict the outcome</p>
-            </div>
-            <div className="stat fade-up delay-3">
-              <div className="stat-ring" style={{ '--ring-color': '#bd57f2' } as React.CSSProperties}>
-                <span>5:1</span>
-              </div>
-              <p>positive to negative &mdash; the magic ratio for lasting love</p>
-            </div>
+          <div className="gt-right">
+            <ScrollReveal>
+              <p className="gt-eyebrow">GROW TOGETHER</p>
+              <h2 className="gt-title">The more you share, the better it understands.</h2>
+              <p className="gt-body">
+                Every answer you and your partner give tells Otis something new about your relationship.
+                Those insights help shape every conversation. So when you&apos;re stuck in the same argument again,
+                it already knows what&apos;s really going on. And when you&apos;re ready to talk, it helps you find
+                words that land, not words that wound.
+              </p>
+            </ScrollReveal>
           </div>
-
-          <blockquote className="perel-quote fade-up">
-            <p>
-              &ldquo;Conflict in relationships is inevitable. It&apos;s not a sign that
-              something is broken &mdash; it&apos;s a signal that something needs attention.&rdquo;
-            </p>
-            <cite>&mdash; Esther Perel</cite>
-          </blockquote>
         </div>
       </section>
 
-      {/* ── How It Works (Interactive) ── */}
+      {/* ── How It Works ── */}
       <StepsSection />
 
-      {/* ── App Screenshots Showcase ── */}
-      <section className="showcase-section">
-        <div className="container">
-          <div className="showcase-header fade-up">
-            <p className="eyebrow">Inside the app</p>
-            <h2>Your pocket relationship coach</h2>
-            <p className="subtitle">
-              Guided conversations, grounding tools, and personalised insights &mdash;
-              all in one private space.
-            </p>
-          </div>
-
-          <div className="showcase-scroll">
-            <div className="showcase-card fade-up">
-              <div className="phone-frame phone-sm">
-                <img src="/session-vent.png" alt="Vent mode" />
-              </div>
-              <h4>Let it out safely</h4>
-              <p>Private venting space with voice or text</p>
-            </div>
-            <div className="showcase-card fade-up delay-1">
-              <div className="phone-frame phone-sm">
-                <img src="/session-understand.png" alt="Understand mode" />
-              </div>
-              <h4>Uncover the pattern</h4>
-              <p>AI-guided reflection to find root causes</p>
-            </div>
-            <div className="showcase-card fade-up delay-2">
-              <div className="phone-frame phone-sm">
-                <img src="/session-prepare.png" alt="Prepare mode" />
-              </div>
-              <h4>Find the right words</h4>
-              <p>Frame your needs without blame</p>
-            </div>
-            <div className="showcase-card fade-up delay-3">
-              <div className="phone-frame phone-sm">
-                <img src="/tools.png" alt="Tools" />
-              </div>
-              <h4>Tools for tough moments</h4>
-              <p>Breathing, grounding &amp; repair exercises</p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ── Evidence-Based ── */}
-      <section className="science-section">
-        <div className="container">
-          <div className="science-layout">
-            <div className="science-text fade-up">
-              <p className="eyebrow">Grounded in science</p>
-              <h2>Five evidence-based frameworks. One app.</h2>
-              <p className="subtitle">
-                Hey Otis draws from decades of relationship research. Nothing is made up.
-                Everything is backed by science.
-              </p>
-            </div>
-            <div className="science-cards fade-up delay-1">
-              <div className="science-card" style={{ borderLeftColor: '#96d35f' }}>
-                <h4>Gottman Method</h4>
-                <p>40+ years of research. Predicts relationship outcomes with 90% accuracy.</p>
-              </div>
-              <div className="science-card" style={{ borderLeftColor: '#92a6f4' }}>
-                <h4>Emotionally Focused Therapy</h4>
-                <p>Grounded in attachment theory and the science of adult bonding.</p>
-              </div>
-              <div className="science-card" style={{ borderLeftColor: '#f67700' }}>
-                <h4>Non-Violent Communication</h4>
-                <p>A structured approach to expressing needs without blame or judgment.</p>
-              </div>
-              <div className="science-card" style={{ borderLeftColor: '#bd57f2' }}>
-                <h4>Internal Family Systems</h4>
-                <p>Understand the protective parts that take over during conflict.</p>
-              </div>
-              <div className="science-card" style={{ borderLeftColor: '#e85d75' }}>
-                <h4>Cognitive Behavioural Couples Therapy</h4>
-                <p>Reframe automatic thoughts that fuel emotional reactions.</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
       {/* ── Final CTA ── */}
-      <section className="final-cta" id="get-started">
-        <div className="container">
-          <div className="cta-card fade-up">
-            <img src="/mascot-home.png" alt="Otis mascot" className="cta-mascot" />
-            <h2>Your next argument could be your next breakthrough.</h2>
-            <p>
-              No couples therapy waitlist. No awkward first sessions.
-              Just you, your feelings, and a path forward.
-            </p>
-            <a href="#" className="btn-primary btn-lg">Get early access</a>
-            <p className="cta-note">Free to start. No credit card required.</p>
-          </div>
-        </div>
+      <section className="cta" id="get-started">
+        <ScrollReveal>
+          <h2 className="cta-title">Your next argument could be<br />your next breakthrough.</h2>
+          <p className="cta-sub">
+            No couples therapy waitlist. No awkward first sessions.
+            Just you, your feelings, and a path forward.
+          </p>
+          <a href="#" className="btn-primary btn-lg">Get early access</a>
+        </ScrollReveal>
       </section>
 
       {/* ── Footer ── */}
-      <footer className="footer">
-        <div className="footer-inner">
-          <div className="footer-brand">
-            <img src="/icon.png" alt="Hey Otis" className="footer-icon" />
-            <span>Hey Otis</span>
-          </div>
-          <p className="footer-disclaimer">
-            Hey Otis supports but does not replace professional therapy.
-          </p>
-          <div className="footer-links">
-            <a href="mailto:privacy@heyotis.app">Privacy</a>
-            <span>&middot;</span>
-            <a href="mailto:privacy@heyotis.app">Contact</a>
-          </div>
-          <p className="footer-copy">&copy; 2026 Hey Otis. All rights reserved.</p>
-        </div>
+      <footer className="ft">
+        <p className="ft-brand">Hey Otis</p>
+        <p className="ft-disc">Hey Otis supports but does not replace professional therapy.</p>
+        <p className="ft-copy">&copy; 2026 Hey Otis. All rights reserved. &nbsp;|&nbsp; <a href="mailto:privacy@heyotis.app">privacy@heyotis.app</a></p>
       </footer>
     </main>
   );
