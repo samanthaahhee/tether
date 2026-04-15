@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Image } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Image, ActivityIndicator } from 'react-native';
 import { router } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Colors, Fonts, Radius } from '../src/constants/theme';
@@ -62,6 +62,7 @@ export default function Landing() {
           </View>
         ) : (
           <View style={s.bottom}>
+            <ActivityIndicator size="small" color="#96d35f" style={{ marginBottom: 16 }} />
             <Text style={s.disclaimer}>
               Hey Otis is not a replacement for professional support.
             </Text>

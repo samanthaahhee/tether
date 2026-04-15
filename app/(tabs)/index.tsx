@@ -3,6 +3,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAppState } from '../../src/hooks/useAppState';
+import { useAuth } from '../../src/hooks/useAuth';
 import { Colors, Fonts, Radius, Shadows } from '../../src/constants/theme';
 import { ModeKey } from '../../src/constants/data';
 import { useState, useRef, useEffect } from 'react';
@@ -260,6 +261,7 @@ const CARD_WIDTH = 294;
 
 export default function HomeTab() {
   const { state, dispatch } = useAppState();
+  const { loading: authLoading } = useAuth();
   const router = useRouter();
   const { width: windowWidth } = useWindowDimensions();
   const name = state.profile.name || 'Sam';
@@ -273,6 +275,20 @@ export default function HomeTab() {
 
   const snapInterval = CARD_WIDTH + CAROUSEL_GAP;
 
+  // Loading pulse animation
+  const pulseAnim = useRef(new Animated.Value(0.3)).current;
+  useEffect(() => {
+    if (!state.loaded) {
+      Animated.loop(
+        Animated.sequence([
+          Animated.timing(pulseAnim, { toValue: 1, duration: 800, useNativeDriver: true }),
+          Animated.timing(pulseAnim, { toValue: 0.3, duration: 800, useNativeDriver: true }),
+        ])
+      ).start();
+    }
+  }, [state.loaded]);
+  const loadingPulse = pulseAnim;
+
   const openCount = state.sessions.filter((s) => s.status === 'active').length;
   const resolvedCount = state.sessions.filter((s) => s.status === 'resolved').length;
   const captures = state.learnings.emotionalCaptures;
@@ -284,6 +300,27 @@ export default function HomeTab() {
     dispatch({ type: 'CREATE_SESSION' });
     router.replace('/(tabs)/sessions');
   };
+
+  // Show loading skeleton while app state is hydrating or auth is loading
+  if (!state.loaded || authLoading) {
+    return (
+      <SafeAreaView style={s.safe} edges={['top']}>
+        <View style={s.loadingContainer}>
+          <Animated.View style={[s.loadingSkeleton, s.loadingWide, { opacity: loadingPulse }]} />
+          <Animated.View style={[s.loadingSkeleton, s.loadingNarrow, { opacity: loadingPulse }]} />
+          <View style={{ height: 24 }} />
+          <Animated.View style={[s.loadingSkeleton, s.loadingCard, { opacity: loadingPulse }]} />
+          <View style={{ height: 16 }} />
+          <Animated.View style={[s.loadingSkeleton, s.loadingWide, { opacity: loadingPulse }]} />
+          <View style={{ height: 8 }} />
+          <View style={{ flexDirection: 'row', gap: 12 }}>
+            <Animated.View style={[s.loadingSkeleton, s.loadingSmallCard, { opacity: loadingPulse }]} />
+            <Animated.View style={[s.loadingSkeleton, s.loadingSmallCard, { opacity: loadingPulse }]} />
+          </View>
+        </View>
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView style={s.safe} edges={['top']}>
@@ -502,6 +539,12 @@ const st = StyleSheet.create({
 // ── Base styles ──
 const s = StyleSheet.create({
   safe: { flex: 1, backgroundColor: '#f7f5fd' },
+  loadingContainer: { flex: 1, padding: 24, paddingTop: 48 },
+  loadingSkeleton: { backgroundColor: '#eeebf4', borderRadius: 12 },
+  loadingWide: { width: '60%', height: 20, marginBottom: 8 },
+  loadingNarrow: { width: '40%', height: 16, marginBottom: 8 },
+  loadingCard: { width: '100%', height: 160, borderRadius: 16, marginBottom: 8 },
+  loadingSmallCard: { flex: 1, height: 80, borderRadius: 12 },
   scroll: { flex: 1 },
   scrollContent: { paddingBottom: 32 },
 

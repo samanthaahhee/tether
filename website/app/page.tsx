@@ -81,7 +81,7 @@ export default function Home() {
           <div className="reality-row">
             <ScrollReveal delay={0}><div className="reality-card"><p className="reality-num" style={{color:'#4ea989'}}>69%</p><p className="reality-label">of conflicts are perpetual — they never fully resolve</p></div></ScrollReveal>
             <ScrollReveal delay={100}><div className="reality-card"><p className="reality-num" style={{color:'#92a6f4'}}>6 yrs</p><p className="reality-label">couples wait before seeking any help</p></div></ScrollReveal>
-            <ScrollReveal delay={200}><div className="reality-card"><p className="reality-num" style={{color:'#f67700'}}>96%</p><p className="reality-label">the first 3 minutes predict the outcome</p></div></ScrollReveal>
+            <ScrollReveal delay={200}><div className="reality-card"><p className="reality-num" style={{color:'#f67700'}}>96%</p><p className="reality-label">of conversations are determined by how they start</p></div></ScrollReveal>
             <ScrollReveal delay={300}><div className="reality-card"><p className="reality-num" style={{color:'#bd57f2'}}>5:1</p><p className="reality-label">positive to negative — the magic ratio</p></div></ScrollReveal>
           </div>
           <ScrollReveal delay={200}>

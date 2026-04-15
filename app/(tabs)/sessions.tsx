@@ -90,7 +90,49 @@ const WELCOMES: Record<ModeKey, (name: string) => string> = {
   bridge: () => 'You are ready. Below is your conversation guide: four tools to help you open well, stay grounded, and close with care. Take a moment to read through them before you begin.',
 };
 
-const MIN_MESSAGES_TO_ADVANCE = 3;
+// Per-step minimum messages before transition can trigger
+const MIN_MESSAGES_PER_STEP: Record<string, number> = {
+  vent: 5,
+  understand: 4,
+  prepare: 3,
+  bridge: 999, // never auto-transition from nurture
+};
+
+const TRANSITION_PROMPTS: Record<string, { message: string; nextStep: string }> = {
+  vent: {
+    message: "It sounds like you've gotten a lot off your chest.",
+    nextStep: "In the next step, we'll explore what's really going on underneath the surface.",
+  },
+  understand: {
+    message: "You're starting to see the pattern clearly.",
+    nextStep: "In the next step, we'll work on finding the right words to say to your partner.",
+  },
+  prepare: {
+    message: "You've got clarity on what you want to communicate.",
+    nextStep: "In the next step, we'll plan how to have the conversation with care.",
+  },
+};
+
+// Check if user's messages are getting shorter (sign of winding down)
+function isWindingDown(messages: { role: string; text: string }[]): boolean {
+  const userMsgs = messages.filter(m => m.role === 'user');
+  if (userMsgs.length < 3) return false;
+  const last3 = userMsgs.slice(-3);
+  const avgLength = last3.reduce((sum, m) => sum + m.text.length, 0) / 3;
+  const firstHalf = userMsgs.slice(0, Math.ceil(userMsgs.length / 2));
+  const firstAvg = firstHalf.reduce((sum, m) => sum + m.text.length, 0) / firstHalf.length;
+  // Messages are getting noticeably shorter
+  return avgLength < firstAvg * 0.6;
+}
+
+// Check if language is softening (moving from reacting to reflecting)
+function isSoftening(messages: { role: string; text: string }[]): boolean {
+  const userMsgs = messages.filter(m => m.role === 'user');
+  if (userMsgs.length < 2) return false;
+  const lastMsg = userMsgs[userMsgs.length - 1].text.toLowerCase();
+  const softWords = ['i think', 'maybe', 'i guess', 'i suppose', 'probably', 'it makes sense', 'i see', 'you\'re right', 'that helps', 'i understand', 'i realize'];
+  return softWords.some(w => lastMsg.includes(w));
+}
 
 function TypingIndicator() {
   const [dot, setDot] = useState(0);
@@ -679,8 +721,17 @@ function ActiveSessionView({ session, state, dispatch: d, onBack }: { session: S
   });
 
   const userMsgCount = useMemo(() => messages.filter((m) => m.role === 'user').length, [messages]);
-  const canAdvance = userMsgCount >= MIN_MESSAGES_TO_ADVANCE && SESSION_STEPS.indexOf(step) < SESSION_STEPS.length - 1;
+  const minMsgs = MIN_MESSAGES_PER_STEP[step] || 5;
+  const canAdvance = userMsgCount >= minMsgs && SESSION_STEPS.indexOf(step) < SESSION_STEPS.length - 1;
   const isBridgeStep = step === 'bridge';
+  const [transitionShown, setTransitionShown] = useState(false);
+  const [showTransition, setShowTransition] = useState(false);
+
+  // Reset transition state when step changes
+  useEffect(() => {
+    setTransitionShown(false);
+    setShowTransition(false);
+  }, [step]);
 
   useEffect(() => {
     if (messages.length === 0) {
@@ -740,6 +791,22 @@ function ActiveSessionView({ session, state, dispatch: d, onBack }: { session: S
     }));
     const reply = await send(text, history, session.summary);
     d({ type: 'ADD_SESSION_MESSAGE', sessionId: session.id, step, message: { role: 'ai', text: reply, id: (Date.now() + 1).toString() } });
+
+    // Show transition prompt when user seems ready — not just message count
+    const allMsgsNow = [...messages, userMsg, { role: 'ai' as const, text: reply, id: '' }];
+    const newUserCount = allMsgsNow.filter((m) => m.role === 'user').length;
+    const nextStepIdx = SESSION_STEPS.indexOf(step) + 1;
+    const meetsMinimum = newUserCount >= (MIN_MESSAGES_PER_STEP[step] || 5);
+    const winding = isWindingDown(allMsgsNow);
+    const softening = isSoftening(allMsgsNow);
+
+    // Trigger when: met minimum AND (winding down OR softening OR well past minimum)
+    if (meetsMinimum && (winding || softening || newUserCount >= (MIN_MESSAGES_PER_STEP[step] || 5) + 2) && nextStepIdx < SESSION_STEPS.length && !transitionShown) {
+      setTimeout(() => {
+        setShowTransition(true);
+        setTransitionShown(true);
+      }, 1500);
+    }
 
     // Update rolling summary in the background — fire and forget, non-blocking
     const updatedHistory = [...history, { role: 'user' as const, content: text }, { role: 'assistant' as const, content: reply }];
@@ -937,21 +1004,48 @@ function ActiveSessionView({ session, state, dispatch: d, onBack }: { session: S
               renderItem={({ item }) => (
                 <ChatBubble item={item} theme={theme} profileInitial={state.profile.name?.[0] || '?'} />
               )}
-              ListFooterComponent={loading ? (
-                <View style={styles.msgRow}>
-                  <Image source={require('../../assets/otis-avatar.png')} style={styles.msgAvatarImg} />
-                  <View style={styles.msgBubble}><TypingIndicator /></View>
-                </View>
-              ) : null}
+              ListFooterComponent={
+                loading ? (
+                  <View style={styles.msgRow}>
+                    <Image source={require('../../assets/otis-avatar.png')} style={styles.msgAvatarImg} />
+                    <View style={styles.msgBubble}><TypingIndicator /></View>
+                  </View>
+                ) : showTransition ? (
+                  <View style={styles.msgRow}>
+                    <Image source={require('../../assets/otis-avatar.png')} style={styles.msgAvatarImg} />
+                    <View style={styles.transitionCard}>
+                      <Text style={styles.transitionText}>
+                        {TRANSITION_PROMPTS[step]?.message || "Ready to move to the next step?"}
+                      </Text>
+                      {TRANSITION_PROMPTS[step]?.nextStep && (
+                        <Text style={styles.transitionNextStep}>
+                          {TRANSITION_PROMPTS[step].nextStep}
+                        </Text>
+                      )}
+                      <View style={styles.transitionBtns}>
+                        <TouchableOpacity
+                          style={styles.transitionBtnSecondary}
+                          onPress={() => setShowTransition(false)}
+                          activeOpacity={0.8}
+                        >
+                          <Text style={styles.transitionBtnSecondaryText}>Not yet</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                          style={styles.transitionBtnPrimary}
+                          onPress={() => { setShowTransition(false); advanceStep(); }}
+                          activeOpacity={0.8}
+                        >
+                          <Text style={styles.transitionBtnPrimaryText}>I'm ready</Text>
+                        </TouchableOpacity>
+                      </View>
+                    </View>
+                  </View>
+                ) : null
+              }
             />
           </View>
         )}
 
-        {canAdvance && (
-          <TouchableOpacity style={[styles.advanceBanner, { backgroundColor: '#96d35f' }]} onPress={advanceStep} activeOpacity={0.85}>
-            <Text style={styles.advanceText}>Ready? Move to {MODE_CONFIG[SESSION_STEPS[SESSION_STEPS.indexOf(step) + 1]].label} →</Text>
-          </TouchableOpacity>
-        )}
 
         {session.status !== 'resolved' && !isBridgeStep && (
           <>
@@ -985,6 +1079,8 @@ function ActiveSessionView({ session, state, dispatch: d, onBack }: { session: S
                   onFocus={() => setInputFocused(true)}
                   onBlur={() => setInputFocused(false)}
                   blurOnSubmit={false}
+                  multiline
+                  textAlignVertical="center"
                 />
                 {speechAvailable && (
                   <TouchableOpacity
@@ -1230,6 +1326,14 @@ const styles = StyleSheet.create({
   msgAvatar: { width: 32, height: 32, borderRadius: 16, backgroundColor: '#bcb8c3', alignItems: 'center', justifyContent: 'center', flexShrink: 0 },
   msgAvatarImg: { width: 32, height: 32, borderRadius: 16, flexShrink: 0 },
   msgBubble: { backgroundColor: '#ffffff', borderWidth: 1, borderColor: '#dedde8', borderRadius: 16, padding: 12, maxWidth: '85%', ...Shadows.xs },
+  transitionCard: { backgroundColor: '#ffffff', borderWidth: 1.5, borderColor: '#96d35f', borderRadius: 16, padding: 16, maxWidth: '85%', ...Shadows.xs },
+  transitionText: { fontFamily: 'Inter_400Regular', fontSize: 14, color: '#211e28', lineHeight: 21, marginBottom: 6 },
+  transitionNextStep: { fontFamily: 'Inter_400Regular', fontSize: 13, color: '#80798c', lineHeight: 20, marginBottom: 14 },
+  transitionBtns: { flexDirection: 'row', gap: 10 },
+  transitionBtnPrimary: { flex: 1, backgroundColor: '#96d35f', borderRadius: 9999, paddingVertical: 10, alignItems: 'center' },
+  transitionBtnPrimaryText: { fontFamily: 'Inter_600SemiBold', fontSize: 14, color: '#001c14' },
+  transitionBtnSecondary: { flex: 1, backgroundColor: '#ffffff', borderWidth: 1.5, borderColor: '#dedde8', borderRadius: 9999, paddingVertical: 10, alignItems: 'center' },
+  transitionBtnSecondaryText: { fontFamily: 'Inter_500Medium', fontSize: 14, color: '#80798c' },
   // msgBubbleUser now set inline via theme.pale
   msgText: { fontFamily: Fonts.body, fontSize: 14, color: '#211e28', lineHeight: 21 },
   qaWrap: { flexDirection: 'row', alignItems: 'center', paddingBottom: 12, paddingHorizontal: 0 },
@@ -1237,7 +1341,7 @@ const styles = StyleSheet.create({
   qaText: { fontFamily: 'Inter_400Regular', fontSize: 13, color: '#211e28', letterSpacing: 0.026 },
   inputArea: { backgroundColor: '#fbf9ff', borderTopWidth: 1, borderTopColor: '#dedde8', padding: 16 },
   inputRow: { flexDirection: 'row', alignItems: 'flex-end', gap: 8 },
-  input: { flex: 1, backgroundColor: '#ffffff', borderWidth: 1.5, borderColor: '#dedde8', borderRadius: 9999, paddingHorizontal: 20, paddingVertical: 0, fontFamily: 'Inter_400Regular', fontSize: 14, color: '#211e28', maxHeight: 80, height: 44, outlineStyle: 'none' } as any,
+  input: { flex: 1, backgroundColor: '#ffffff', borderWidth: 1.5, borderColor: '#dedde8', borderRadius: 20, paddingHorizontal: 16, paddingTop: 12, paddingBottom: 12, fontFamily: 'Inter_400Regular', fontSize: 14, color: '#211e28', maxHeight: 120, minHeight: 44, outlineStyle: 'none' } as any,
   inputFocused: { borderColor: '#96d35f' },
   micBtn: { width: 44, height: 44, borderRadius: 22, alignItems: 'center', justifyContent: 'center', backgroundColor: '#96d35f' },
   recordingBanner: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 4, paddingBottom: 8 },

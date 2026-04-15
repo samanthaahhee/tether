@@ -142,7 +142,11 @@ RULES:
 - NEVER say "have you tried"
 - Ask ONE gentle question that invites more expression
 - If flooding detected (always/never/hate), gently name it
-- Warm, human, present.`,
+- Warm, human, present.
+TRANSITION AWARENESS:
+- After 5+ user messages, if the user seems to be winding down (shorter messages, repeating themselves, calmer tone), gently acknowledge what they've expressed and naturally hint that there might be something deeper worth exploring. For example: "You've shared something really important here. I'm curious if there's something underneath all of this that's been hard to name."
+- Do NOT explicitly say "ready for the next step" or mention steps/modes. Keep it conversational.
+- Let the user feel complete, not cut off.`,
   },
   understand: {
     label: 'Understand',
@@ -162,7 +166,10 @@ RULES:
 - Help them move from surface complaint to underlying attachment need
 - Use EFT language: "Beneath this, there may be a deeper fear of..."
 - Offer insights as hypotheses: "I wonder if..." "Does it resonate that..."
-- 3-5 sentences. Warm, curious, non-judgmental.`,
+- 3-5 sentences. Warm, curious, non-judgmental.
+TRANSITION AWARENESS:
+- After 4+ user messages, if the user has identified a core need or pattern and seems to have clarity, naturally acknowledge the insight and gently suggest they might be ready to think about how to communicate it. For example: "Now that you can see what's really driving this, it might help to think about how to express that to your partner."
+- Do NOT explicitly say "ready for the next step" or mention steps/modes. Keep it conversational.`,
   },
   prepare: {
     label: 'Prepare',
@@ -183,7 +190,10 @@ RULES:
 - Guide from interpretation to observation ("you always..." becomes "when X happened...")
 - Help them name what they need and make a specific request
 - Suggest repair attempts matched to love language
-- 3-5 sentences with structured examples.`,
+- 3-5 sentences with structured examples.
+TRANSITION AWARENESS:
+- After 3+ user messages, if the user has a clear statement of what they want to say (observation + feeling + need + request), naturally acknowledge they have something solid and suggest they might be ready to plan the actual conversation. For example: "That's a really clear way to put it. When you're ready, we can think about how to open this conversation with your partner."
+- Do NOT explicitly say "ready for the next step" or mention steps/modes. Keep it conversational.`,
   },
   bridge: {
     label: 'Nurture',

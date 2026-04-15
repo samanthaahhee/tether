@@ -383,9 +383,8 @@ export default function SettingsTab() {
               { text: 'Cancel', style: 'cancel' },
               {
                 text: 'Sign out', style: 'destructive', onPress: async () => {
-                  dispatch({ type: 'SET_PROFILE', payload: { onboarded: false } });
                   await signOut();
-                  router.replace('/');
+                  setTimeout(() => router.replace('/'), 100);
                 },
               },
             ]);
