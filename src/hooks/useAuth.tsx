@@ -12,6 +12,7 @@ export interface SupabaseProfile {
   need: string;
   context: string;
   onboarded: boolean;
+  avatar_color: string;
 }
 
 export interface CoupleInfo {
@@ -127,10 +128,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const signOut = async () => {
     if (guestMode) {
       setGuestMode(false);
-      setUser(null);
-      setProfile(null);
-      return;
     }
+    // Clear state immediately so RouteGuard redirects
+    setUser(null);
+    setSession(null);
+    setProfile(null);
+    setPartnerProfile(null);
+    setCouple(null);
+    setGuestMode(false);
+    // Then sign out from Supabase
     await supabase.auth.signOut();
   };
 

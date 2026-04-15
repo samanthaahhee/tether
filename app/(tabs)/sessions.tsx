@@ -617,7 +617,7 @@ const SESSION_CAPTURE = {
   ],
 };
 
-function ChatBubble({ item, theme, profileInitial }: { item: Message; theme: typeof STEP_THEME[ModeKey]; profileInitial: string }) {
+function ChatBubble({ item, theme, profileInitial, avatarColor }: { item: Message; theme: typeof STEP_THEME[ModeKey]; profileInitial: string; avatarColor?: string }) {
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const slideAnim = useRef(new Animated.Value(8)).current;
 
@@ -633,8 +633,8 @@ function ChatBubble({ item, theme, profileInitial }: { item: Message; theme: typ
       {item.role === 'ai' ? (
         <Image source={require('../../assets/otis-avatar.png')} style={styles.msgAvatarImg} />
       ) : (
-        <View style={[styles.msgAvatar]}>
-          <Text style={{ fontFamily: 'Inter_400Regular', fontSize: 14, color: '#001c14' }}>{profileInitial}</Text>
+        <View style={[styles.msgAvatar, { backgroundColor: avatarColor || '#bcb8c3' }]}>
+          <Text style={{ fontFamily: 'Inter_600SemiBold', fontSize: 14, color: '#ffffff' }}>{profileInitial}</Text>
         </View>
       )}
       <View style={[styles.msgBubble, item.role === 'user' && { backgroundColor: theme.pale, borderColor: '#dedde8' }]}>
@@ -1002,7 +1002,7 @@ function ActiveSessionView({ session, state, dispatch: d, onBack }: { session: S
               contentContainerStyle={[styles.msgList, { paddingBottom: 130 }]}
               showsVerticalScrollIndicator={false}
               renderItem={({ item }) => (
-                <ChatBubble item={item} theme={theme} profileInitial={state.profile.name?.[0] || '?'} />
+                <ChatBubble item={item} theme={theme} profileInitial={state.profile.name?.[0] || '?'} avatarColor={state.profile.avatarColor} />
               )}
               ListFooterComponent={
                 loading ? (

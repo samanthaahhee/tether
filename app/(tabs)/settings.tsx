@@ -58,7 +58,7 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 
 export default function SettingsTab() {
   const { state, dispatch } = useAppState();
-  const { couple, partnerProfile: supabasePartner, signOut, generateInvite } = useAuth();
+  const { couple, partnerProfile: supabasePartner, signOut, generateInvite, syncProfile } = useAuth();
   const p = state.profile;
   const pp: PartnerProfile = state.partnerProfile;
   const partnerSet = !!pp.attachment;
@@ -187,6 +187,46 @@ export default function SettingsTab() {
               </View>
             ))}
           </View>
+          {/* Name and Age */}
+          <View style={styles.editFieldRow}>
+            <Text style={styles.editFieldLabel}>Name</Text>
+            <TextInput
+              value={p.name}
+              onChangeText={(v) => dispatch({ type: 'SET_PROFILE', payload: { name: v } })}
+              placeholder="Your name"
+              placeholderTextColor={Colors.lightBrown}
+              style={styles.editFieldInput}
+              selectionColor="#96d35f"
+            />
+          </View>
+          <View style={styles.editFieldRow}>
+            <Text style={styles.editFieldLabel}>Age</Text>
+            <TextInput
+              value={p.age || ''}
+              onChangeText={(v) => dispatch({ type: 'SET_PROFILE', payload: { age: v } })}
+              placeholder="Your age"
+              placeholderTextColor={Colors.lightBrown}
+              style={styles.editFieldInput}
+              selectionColor="#96d35f"
+              keyboardType="number-pad"
+            />
+          </View>
+
+          {/* Avatar colour picker */}
+          <View style={styles.avatarSection}>
+            <Text style={styles.avatarLabel}>Avatar colour</Text>
+            <View style={styles.avatarColors}>
+              {['#B8D8CA', '#DFC2EE', '#BFC6E8', '#EDDCAA'].map((color) => (
+                <TouchableOpacity
+                  key={color}
+                  style={[styles.avatarColorDot, { backgroundColor: color }, (p.avatarColor || '#B8D8CA') === color && styles.avatarColorSelected]}
+                  onPress={() => { dispatch({ type: 'SET_PROFILE', payload: { avatarColor: color } }); syncProfile({ avatar_color: color }); }}
+                  activeOpacity={0.7}
+                />
+              ))}
+            </View>
+          </View>
+
           <SettingsRow icon={<IconEdit size={18} color={Colors.midBrown} />} label="Retake onboarding" sub="Start fresh and update your answers" onPress={() => {
             Alert.alert(
               'Retake onboarding',
@@ -384,7 +424,9 @@ export default function SettingsTab() {
               {
                 text: 'Sign out', style: 'destructive', onPress: async () => {
                   await signOut();
-                  setTimeout(() => router.replace('/'), 100);
+                  // Navigate to root — dismiss entire tab stack
+                  router.dismissAll();
+                  router.replace('/');
                 },
               },
             ]);
@@ -418,6 +460,14 @@ const styles = StyleSheet.create({
   profilePill: { backgroundColor: Colors.creamDark, borderRadius: Radius.sm, paddingHorizontal: 12, paddingVertical: 8 },
   pillLabel: { fontFamily: Fonts.bodyMedium, fontSize: 10, letterSpacing: 0.5, textTransform: 'uppercase', color: Colors.midBrown, marginBottom: 2 },
   pillValue: { fontFamily: Fonts.bodyMedium, fontSize: 12, color: Colors.charcoal },
+  editFieldRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, paddingVertical: 14, borderBottomWidth: 1, borderBottomColor: Colors.sand },
+  editFieldLabel: { fontFamily: Fonts.bodyMedium, fontSize: 14, color: Colors.midBrown },
+  editFieldInput: { fontFamily: Fonts.body, fontSize: 14, color: Colors.charcoal, textAlign: 'right', flex: 1, marginLeft: 16, padding: 0 },
+  avatarSection: { paddingHorizontal: 20, paddingVertical: 16, borderBottomWidth: 1, borderBottomColor: Colors.sand },
+  avatarLabel: { fontFamily: Fonts.bodyMedium, fontSize: 13, color: Colors.midBrown, marginBottom: 12 },
+  avatarColors: { flexDirection: 'row', gap: 12 },
+  avatarColorDot: { width: 40, height: 40, borderRadius: 20 },
+  avatarColorSelected: { borderWidth: 3, borderColor: '#211e28' },
   signOut: { marginHorizontal: 20, marginTop: 8, borderWidth: 1.5, borderColor: Colors.sandDark, borderRadius: Radius.full, paddingVertical: 14, alignItems: 'center' },
   signOutText: { fontFamily: Fonts.bodyMedium, fontSize: 15, color: Colors.warmBrown },
   connectedBadge: { flexDirection: 'row', alignItems: 'center', gap: 8, padding: 14, borderBottomWidth: 1, borderBottomColor: Colors.creamDark },

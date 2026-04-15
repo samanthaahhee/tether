@@ -94,6 +94,7 @@ export default function Onboarding() {
   const { syncProfile } = useAuth();
   const [step, setStep] = useState(1);
   const [name, setName] = useState('');
+  const [age, setAge] = useState('');
   const [picks, setPicks] = useState<Record<string, string>>({});
   const scrollRef = useRef<ScrollView>(null);
 
@@ -118,6 +119,7 @@ export default function Onboarding() {
     if (step === 8) {
       const profilePayload = {
         name: name.trim(),
+        age: age.trim(),
         attachment: picks.attach || 'secure',
         conflict: picks.conflict || 'defensive',
         love: picks.love || 'words',
@@ -125,6 +127,7 @@ export default function Onboarding() {
         need: picks.need || 'seen',
         context: picks.context || 'conflict',
         onboarded: true,
+        avatar_color: '#B8D8CA',
       };
       dispatch({ type: 'SET_PROFILE', payload: profilePayload });
       // Sync to Supabase
@@ -161,7 +164,8 @@ export default function Onboarding() {
               <Text style={styles.stepTag}>Step 1 of 8</Text>
               <Text style={styles.stepH}>Let us start with you</Text>
               <Text style={styles.stepSub}>This takes about 4 minutes. Your answers help Hey Otis understand how you experience relationships so every session feels made for you.</Text>
-              <TextInput value={name} onChangeText={setName} placeholder="Your first name" placeholderTextColor={Colors.lightBrown} selectionColor="#96d35f" cursorColor="#96d35f" style={styles.nameInput} autoFocus returnKeyType="done" onSubmitEditing={next} />
+              <TextInput value={name} onChangeText={setName} placeholder="Your first name" placeholderTextColor={Colors.lightBrown} selectionColor="#96d35f" cursorColor="#96d35f" style={styles.nameInput} autoFocus returnKeyType="next" />
+              <TextInput value={age} onChangeText={setAge} placeholder="Your age" placeholderTextColor={Colors.lightBrown} selectionColor="#96d35f" cursorColor="#96d35f" style={styles.nameInput} keyboardType="number-pad" returnKeyType="done" onSubmitEditing={next} />
               <View style={styles.hintBox}>
                 <IconLock size={16} color={Colors.midBrown} />
                 <Text style={styles.hintText}>Everything you share here stays private. Hey Otis never shows your answers to your partner.</Text>

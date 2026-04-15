@@ -256,7 +256,7 @@ export default function GrowthTab() {
               {pp ? (
                 <View style={sc.card}>
                   <View style={sc.avatarRow}>
-                    <View style={sc.avatar}>
+                    <View style={[sc.avatar, { backgroundColor: pp?.avatar_color || '#92a6f4' }]}>
                       <Text style={sc.avatarText}>{partnerName.charAt(0).toUpperCase()}</Text>
                     </View>
                     <View style={{ flex: 1 }}>
@@ -330,13 +330,13 @@ export default function GrowthTab() {
               {pp ? (
                 <View style={sc.card}>
                   <View style={sc.avatarRow}>
-                    <View style={[sc.avatar, { backgroundColor: '#96d35f' }]}>
+                    <View style={[sc.avatar, { backgroundColor: state.profile.avatarColor || '#B8D8CA' }]}>
                       <Text style={sc.avatarText}>{userName.charAt(0)}</Text>
                     </View>
-                    <View style={sc.heartBridge}>
+                    <View style={[sc.heartBridge, { marginLeft: -18, zIndex: 1 }]}>
                       <IconHeart size={16} color="#bd57f2" />
                     </View>
-                    <View style={[sc.avatar, { backgroundColor: '#92a6f4' }]}>
+                    <View style={[sc.avatar, { backgroundColor: pp?.avatar_color || '#92a6f4', marginLeft: -18 }]}>
                       <Text style={sc.avatarText}>{partnerName.charAt(0)}</Text>
                     </View>
                     <View style={{ flex: 1, marginLeft: 12 }}>
@@ -445,7 +445,7 @@ export default function GrowthTab() {
 // ── Summary Card styles ──
 const sc = StyleSheet.create({
   card: { backgroundColor: '#ffffff', borderWidth: 1, borderColor: '#dedde8', borderRadius: 20, padding: 24, marginBottom: 12 },
-  avatarRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 16 },
+  avatarRow: { flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 16 },
   avatar: { width: 44, height: 44, borderRadius: 22, backgroundColor: '#bcb8c3', alignItems: 'center', justifyContent: 'center' },
   avatarText: { fontFamily: Fonts.bodySemiBold, fontSize: 16, color: '#ffffff' },
   heartBridge: { marginHorizontal: -4, zIndex: 1, width: 24, height: 24, borderRadius: 12, backgroundColor: '#fdeaff', alignItems: 'center', justifyContent: 'center' },

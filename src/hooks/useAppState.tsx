@@ -21,6 +21,8 @@ export interface UserProfile {
   sawIntro: boolean;
   streak: number;
   aiConsentGiven: boolean;
+  avatarColor: string;
+  age: string;
 }
 
 export interface PartnerProfile {
@@ -125,6 +127,8 @@ const defaultProfile: UserProfile = {
   sawIntro: false,
   streak: 0,
   aiConsentGiven: false,
+  avatarColor: '#B8D8CA',
+  age: '',
 };
 
 const defaultPartnerProfile: PartnerProfile = {
