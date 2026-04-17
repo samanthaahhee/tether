@@ -10,6 +10,7 @@
 - **Size**: 1290x2796px (iPhone 15 Pro Max)
 - **Quantity**: 2-10 screenshots
 - **Files**: `screenshot-1.png`, `screenshot-2.png`, etc.
+- **Copy**: see [../SCREENSHOT-COPY.md](../SCREENSHOT-COPY.md) for headlines/subheadlines
 
 ### Screenshots (iPhone 6.5" — required)
 - **Size**: 1284x2778px (iPhone 14 Plus)

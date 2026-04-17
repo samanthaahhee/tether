@@ -15,6 +15,7 @@
 - **Size**: min 320px, max 3840px (recommended 1080x1920px)
 - **Quantity**: 2-8 screenshots
 - **Files**: `screenshot-1.png`, `screenshot-2.png`, etc.
+- **Copy**: see [../SCREENSHOT-COPY.md](../SCREENSHOT-COPY.md) for headlines/subheadlines and feature graphic copy
 
 ### Screenshots (Tablet 7" — if supporting)
 - **Size**: 1080x1920px or similar
