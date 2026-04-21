@@ -47,16 +47,20 @@ These unlock €200–400k+ of non-dilutive money. Each takes a few hours of foc
 ## 🔵 Supabase production setup (~2 weeks before App Store submission)
 
 - [ ] **Create second Supabase project** `Hey Otis Production`, same region
-- [ ] **Apply migrations** from `supabase/migrations/` in order
+- [ ] **Apply migrations** from `supabase/migrations/` in order (there are 4 of them)
 - [ ] **Deploy `claude-proxy` Edge Function** (source in `supabase/functions/claude-proxy/`)
+- [ ] **Upgrade to Supabase Pro** ($25/mo) before launch · needed for 7-day log retention; the Free-tier 1-day window is too short for incident response · [why](store-assets/security/DEPLOYMENT-CHECKLIST.md#5a-supabase-native-logs-platform-managed)
 - [ ] **Flip all dashboard security settings** from [SUPABASE-DASHBOARD-CHECKLIST.md](store-assets/security/SUPABASE-DASHBOARD-CHECKLIST.md):
   - [ ] Confirm email = ON
   - [ ] Redirect URLs: `tether://auth/callback` + `tether://auth/reset-password`
   - [ ] Password policy: min 12, letter+number+symbol
   - [ ] Rate limits: /token 10/hr, /signup 10/hr, /recover 5/hr
+- [ ] **Lock down raw Postgres port 5432** · Dashboard → Settings → Database → Network Restrictions → IP allow-list (your dev IP + CI runner IP) · [why](store-assets/security/DEPLOYMENT-CHECKLIST.md#3b-raw-postgres-port-5432-restrict-now)
 - [ ] **Configure custom SMTP** (Resend / Postmark) with `noreply@heyotis.app` + SPF/DKIM DNS records
 - [ ] **Set up production Google OAuth** in Google Cloud Console, paste client ID + secret into Supabase → Auth → Providers
 - [ ] **Add `ANTHROPIC_API_KEY`** as Edge Function secret (new prod key, not dev)
+- [ ] **Audit RLS grants on prod project** — run the two SQL queries in [DEPLOYMENT-CHECKLIST.md §4](store-assets/security/DEPLOYMENT-CHECKLIST.md#4-roles--permissions-hygiene); confirm no `public` or `anon` grants appear
+- [ ] **Run the 10-minute pre-production verification** from [DEPLOYMENT-CHECKLIST.md §7](store-assets/security/DEPLOYMENT-CHECKLIST.md#7-final-pre-production-verification) (curl without JWT → 401, burst-test hits 429, psql from unlisted IP refused)
 
 ---
 
@@ -85,6 +89,7 @@ All headlines + copy are already drafted in `store-assets/SCREENSHOT-COPY.md`. W
 - [ ] **Android phone screenshots** 1080×1920 · 6–8 images
 - [ ] **App description + keywords** copy-paste from `store-assets/app-store/README.md` + `store-assets/google-play/README.md`
 - [ ] **Privacy policy published** at `https://heyotis.app/privacy` (content is ready in `app/privacy.tsx` — needs a static version at that URL)
+- [ ] **Enforce HSTS on heyotis.app** — set `Strict-Transport-Security: max-age=31536000; includeSubDomains; preload` in Vercel project settings, then submit to [hstspreload.org](https://hstspreload.org)
 - [ ] **Complete Data Safety form** (Google) and **age rating questionnaire** (Apple)
 
 ---
@@ -96,6 +101,17 @@ All headlines + copy are already drafted in `store-assets/SCREENSHOT-COPY.md`. W
 - [ ] **Respond to reviewer questions within 24 hrs**
 - [ ] **Clear Supabase dev project's test data** the day before launch
 - [ ] **Monitor for 48 hrs post-launch**: Supabase logs, Anthropic spend, App Store / Play crash reports
+
+---
+
+## 🟤 Ongoing post-launch — weekly hygiene
+
+Not urgent pre-launch but should become weekly habits once real users exist.
+
+- [ ] **Review `recent_security_events` view** weekly (Supabase SQL editor) · look for new event types, user_id spikes, auth anomalies · [query recipes](store-assets/security/DEPLOYMENT-CHECKLIST.md#5c-query-recipes)
+- [ ] **Watch Anthropic usage dashboard** — spend should track expected per-user envelope (~$0.21/user-month blended)
+- [ ] **Check Dependabot alerts** at github.com/samanthaahhee/tether/security/dependabot — merge patch PRs promptly
+- [ ] **Run the monthly secrets hygiene audit** from [SECRETS.md](store-assets/security/SECRETS.md#git-hygiene-audit-run-monthly) — three `git log` commands, expected output: nothing
 
 ---
 
@@ -116,6 +132,7 @@ All headlines + copy are already drafted in `store-assets/SCREENSHOT-COPY.md`. W
 | Raising money in NL | [store-assets/funding/FUNDRAISING-PLAN.md](store-assets/funding/FUNDRAISING-PLAN.md) |
 | What fundraising even means | [store-assets/funding/FUNDRAISING-EXPLAINED.md](store-assets/funding/FUNDRAISING-EXPLAINED.md) |
 | Supabase dashboard settings | [store-assets/security/SUPABASE-DASHBOARD-CHECKLIST.md](store-assets/security/SUPABASE-DASHBOARD-CHECKLIST.md) |
+| Secure deployment (HTTPS, network, logs) | [store-assets/security/DEPLOYMENT-CHECKLIST.md](store-assets/security/DEPLOYMENT-CHECKLIST.md) |
 | Which secrets live where | [store-assets/security/SECRETS.md](store-assets/security/SECRETS.md) |
 | Store screenshot copy | [store-assets/SCREENSHOT-COPY.md](store-assets/SCREENSHOT-COPY.md) |
 | Pre-launch infra costs | [store-assets/PRE-LAUNCH-COSTS.md](store-assets/PRE-LAUNCH-COSTS.md) |
