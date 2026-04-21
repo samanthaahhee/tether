@@ -108,6 +108,14 @@ export default function SignIn() {
                 ? <ActivityIndicator color={Colors.white} />
                 : <Text style={s.btnText}>Sign in</Text>}
             </TouchableOpacity>
+
+            <TouchableOpacity
+              onPress={() => router.push('/auth/forgot-password')}
+              style={s.forgotLink}
+              hitSlop={8}
+            >
+              <Text style={s.forgotText}>Forgot your password?</Text>
+            </TouchableOpacity>
           </View>
 
           <TouchableOpacity onPress={() => router.replace('/auth/sign-up')} style={s.switchLink}>
@@ -145,6 +153,8 @@ const s = StyleSheet.create({
   btn: { backgroundColor: Colors.sageDark, borderRadius: Radius.full, paddingVertical: 15, alignItems: 'center', marginTop: 12, ...Shadows.sm },
   btnDisabled: { opacity: 0.6 },
   btnText: { fontFamily: Fonts.bodyMedium, fontSize: 15, color: Colors.white },
+  forgotLink: { alignSelf: 'center', paddingVertical: 12, marginTop: 4 },
+  forgotText: { fontFamily: Fonts.bodyMedium, fontSize: 13, color: Colors.midBrown },
   switchLink: { marginTop: 8 },
   switchText: { fontFamily: Fonts.body, fontSize: 14, color: Colors.midBrown, textAlign: 'center' },
   switchAction: { fontFamily: Fonts.bodyMedium, color: Colors.sageDark },

@@ -1,7 +1,21 @@
 import React, { createContext, useContext, useEffect, useReducer } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { ModeKey, SESSION_STEPS } from '../constants/data';
-import { encodeForStorage, decodeFromStorage } from '../utils/crypto';
+
+// Legacy storage keys — written by an earlier base64-obfuscation layer that was
+// removed because it misrepresented security (see privacy policy, data-encryption
+// section). We read them for backwards-compatibility so existing users don't lose
+// their local cache on upgrade. New writes are plain JSON.
+const LEGACY_STORAGE_PREFIX = 'tether_enc_';
+function decodeLegacyIfNeeded(raw: string): string {
+  if (!raw.startsWith(LEGACY_STORAGE_PREFIX)) return raw;
+  try {
+    const encoded = raw.slice(LEGACY_STORAGE_PREFIX.length);
+    return decodeURIComponent(escape(atob(encoded)));
+  } catch {
+    return raw;
+  }
+}
 
 export interface Message {
   role: 'ai' | 'user';
@@ -409,7 +423,8 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
     AsyncStorage.getItem('tether_state').then((raw) => {
       if (raw) {
         try {
-          const decoded = decodeFromStorage(raw);
+          // Legacy rows were base64-obfuscated; new rows are plain JSON. Handle both.
+          const decoded = decodeLegacyIfNeeded(raw);
           const saved = JSON.parse(decoded);
           dispatch({ type: 'HYDRATE', state: { ...initialState, ...saved, loaded: true } });
         } catch {
@@ -424,7 +439,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (state.loaded) {
       const { loaded, ...toSave } = state;
-      AsyncStorage.setItem('tether_state', encodeForStorage(JSON.stringify(toSave)));
+      AsyncStorage.setItem('tether_state', JSON.stringify(toSave));
     }
   }, [state]);
 

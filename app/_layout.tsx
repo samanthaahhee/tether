@@ -16,34 +16,61 @@ function RouteGuard() {
     if (loading) return;
 
     const seg0 = segments[0] as string | undefined;
+    const seg1 = (segments as unknown as string[])[1] as string | undefined;
     const inAuthGroup = seg0 === 'auth';
     const inInviteGroup = seg0 === 'invite';
     const inTabs = seg0 === '(tabs)';
+    const onVerifyEmail = inAuthGroup && seg1 === 'verify-email';
+    const onResetPassword = inAuthGroup && seg1 === 'reset-password';
+    const onForgotPassword = inAuthGroup && seg1 === 'forgot-password';
 
     // Let invite links always through
     if (inInviteGroup) return;
+
+    // Password-reset flow has the highest precedence — do not redirect out.
+    // It's an authenticated screen (short-lived session), but it is NOT a
+    // signal that the user should land in tabs.
+    if (onResetPassword) return;
 
     // Opening screen (index) handles its own splash/redirect logic — let it be
     if (seg0 === undefined) return;
 
     if (!user) {
-      // Not signed in — only allow opening screen and auth pages
+      // Not signed in — only allow opening screen and auth pages.
+      // Forgot-password is reachable without a session.
       if (!inAuthGroup) {
         router.replace('/');
       }
-    } else if (!profile) {
-      // Signed in but profile not loaded yet — stay put, don't redirect anywhere
-      // This prevents the flash of intro/onboarding while profile is still fetching
       return;
-    } else if (!profile.onboarded) {
+    }
+
+    // Signed-in user: enforce email verification. OAuth users (e.g. Google)
+    // arrive with `email_confirmed_at` already set, so they pass through.
+    // Email+password users who bypassed confirmation are pinned to the
+    // verify-email screen until they click the link.
+    const emailVerified = !!user.email_confirmed_at || !!(user as any).confirmed_at;
+    if (!emailVerified) {
+      if (!onVerifyEmail) {
+        router.replace('/auth/verify-email');
+      }
+      return;
+    }
+
+    if (!profile) {
+      // Signed in + verified but profile not loaded yet — stay put, don't redirect.
+      // This prevents the flash of intro/onboarding while profile is still fetching.
+      return;
+    }
+
+    if (!profile.onboarded) {
       // Signed in, profile loaded, but not onboarded — allow intro slides and onboarding quiz
       if (seg0 !== 'intro' && seg0 !== 'onboarding' && seg0 !== 'partner-onboarding') {
         router.replace('/intro');
       }
     } else {
-      // Signed in + onboarded — go to tabs (allow standalone pages through)
+      // Signed in + onboarded — go to tabs (allow standalone pages + forgot-password through)
       const standalonePages = ['reflections', 'assessment', 'frameworks', 'privacy'];
-      if (!inTabs && !standalonePages.includes(seg0)) {
+      if (!inTabs && !standalonePages.includes(seg0) && !onForgotPassword) {
         router.replace('/(tabs)');
       }
     }

@@ -29,12 +29,12 @@ const SECTIONS = [
   {
     title: 'Data encryption and storage',
     content:
-      'Your data is protected through multiple layers:\n\n' +
-      '- Local-first storage: Your profile, sessions, and learnings are stored on your device using encrypted local storage.\n' +
-      '- Authentication tokens are stored using your device\'s secure keychain (expo-secure-store on native platforms).\n' +
-      '- Data transmitted to our servers uses TLS encryption in transit.\n' +
-      '- Server-side data is stored in Supabase with row-level security policies ensuring you can only access your own data.\n' +
-      '- Your vent sessions and private reflections are never visible to your partner, even if you are connected.',
+      'Your data is protected through the following layers:\n\n' +
+      '- Authentication tokens are stored in your device\'s secure keychain (iOS Keychain / Android Keystore via expo-secure-store), using hardware-backed encryption where available.\n' +
+      '- Data transmitted to our servers uses TLS 1.2+ encryption in transit.\n' +
+      '- Server-side data is stored in Supabase with AES-256 encryption at rest and row-level security policies, ensuring you can only access your own data.\n' +
+      '- Your vent sessions and private reflections are never visible to your partner, even if you are connected. This is enforced at the database layer.\n\n' +
+      'Session content and profile data are also cached locally on your device so the app works offline. On iOS and Android this cache is protected by the operating system\'s app sandbox — other apps cannot read it. The cache is cleared when you sign out or delete your account.',
   },
   {
     title: 'Data sharing',

@@ -1,4 +1,8 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
+import { AppState, AppStateStatus } from 'react-native';
+import * as Linking from 'expo-linking';
+import * as WebBrowser from 'expo-web-browser';
+import { router } from 'expo-router';
 import { Session, User } from '@supabase/supabase-js';
 import { supabase } from '../lib/supabase';
 
@@ -27,12 +31,13 @@ interface AuthContextValue {
   partnerProfile: SupabaseProfile | null;
   couple: CoupleInfo | null;
   loading: boolean;
-  guestMode: boolean;
-  signUp: (email: string, password: string) => Promise<{ error: string | null }>;
+  signUp: (email: string, password: string) => Promise<{ error: string | null; needsVerification?: boolean }>;
   signIn: (email: string, password: string) => Promise<{ error: string | null }>;
   signOut: () => Promise<void>;
   signInWithGoogle: () => Promise<{ error: string | null }>;
-  signInAsGuest: () => void;
+  resetPassword: (email: string) => Promise<{ error: string | null }>;
+  updatePassword: (newPassword: string) => Promise<{ error: string | null }>;
+  resendVerification: (email: string) => Promise<{ error: string | null }>;
   syncProfile: (data: Partial<SupabaseProfile>) => Promise<void>;
   generateInvite: () => Promise<string>;
   acceptInvite: (code: string) => Promise<{ error: string | null }>;
@@ -48,7 +53,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [partnerProfile, setPartnerProfile] = useState<SupabaseProfile | null>(null);
   const [couple, setCouple] = useState<CoupleInfo | null>(null);
   const [loading, setLoading] = useState(true);
-  const [guestMode, setGuestMode] = useState(false);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -75,6 +79,74 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     });
 
     return () => subscription.unsubscribe();
+  }, []);
+
+  /**
+   * Background-refresh lifecycle. Without this, Supabase's token refresh timer
+   * stops firing when the app is backgrounded — users come back after an hour
+   * and find themselves silently signed out.
+   */
+  useEffect(() => {
+    if (AppState.currentState === 'active') {
+      supabase.auth.startAutoRefresh();
+    }
+    const sub = AppState.addEventListener('change', (state: AppStateStatus) => {
+      if (state === 'active') {
+        supabase.auth.startAutoRefresh();
+      } else {
+        supabase.auth.stopAutoRefresh();
+      }
+    });
+    return () => sub.remove();
+  }, []);
+
+  /**
+   * Deep-link handler — covers both warm (app running) and cold-start
+   * (app launched from the email/OAuth link) cases. Supabase email and
+   * OAuth redirects land here as `tether://auth/callback?code=...` or
+   * `tether://auth/reset-password?code=...`. We exchange the code for a
+   * session and route the user onward if it's a password-reset flow.
+   */
+  useEffect(() => {
+    let cancelled = false;
+
+    const handleUrl = async (incomingUrl: string | null) => {
+      if (cancelled || !incomingUrl) return;
+      let parsed: URL;
+      try { parsed = new URL(incomingUrl); } catch { return; }
+
+      // Expo Linking gives us `tether://auth/callback?...`. In React Native's
+      // URL polyfill, that lands as host='auth' pathname='/callback'. Handle
+      // both scheme-first and pathname-first parsers.
+      const pathParts = [parsed.host, parsed.pathname].join('/').replace(/\/+/g, '/');
+      const isResetPassword = /\/auth\/reset-password/.test(pathParts) || pathParts.includes('reset-password');
+      const isAuthCallback = /\/auth\/callback/.test(pathParts);
+
+      if (!isResetPassword && !isAuthCallback) return;
+
+      const code = parsed.searchParams.get('code');
+      if (!code) return;
+
+      const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(code);
+      if (exchangeError || cancelled) return;
+
+      if (isResetPassword) {
+        router.replace('/auth/reset-password');
+      }
+      // For OAuth callback, onAuthStateChange will fire and RouteGuard routes
+      // onward — no explicit navigation needed here.
+    };
+
+    // Cold start — app was launched by tapping the link
+    Linking.getInitialURL().then(handleUrl);
+
+    // Warm — app already running, link tapped from mail client
+    const sub = Linking.addEventListener('url', ({ url }: { url: string }) => { handleUrl(url); });
+
+    return () => {
+      cancelled = true;
+      sub.remove();
+    };
   }, []);
 
   const fetchUserData = async (userId: string) => {
@@ -116,8 +188,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const signUp = async (email: string, password: string) => {
-    const { error } = await supabase.auth.signUp({ email, password });
-    return { error: error ? error.message : null };
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        // Supabase dashboard must list this redirect URL in the allow-list.
+        emailRedirectTo: 'tether://auth/callback',
+      },
+    });
+    if (error) return { error: error.message };
+    // When dashboard "Confirm email" is ON, Supabase returns a user but no session —
+    // signalling verification is required before the user can sign in.
+    const needsVerification = !data.session && !data.user?.email_confirmed_at;
+    return { error: null, needsVerification };
   };
 
   const signIn = async (email: string, password: string) => {
@@ -125,77 +208,91 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return { error: error ? error.message : null };
   };
 
-  const signOut = async () => {
-    if (guestMode) {
-      setGuestMode(false);
+  const resetPassword = async (email: string) => {
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: 'tether://auth/reset-password',
+    });
+    // Do not surface "user not found" — always return success from the UI to
+    // avoid leaking which emails are registered. Only propagate rate-limit /
+    // infrastructure errors.
+    if (error && !/not found|invalid email/i.test(error.message)) {
+      return { error: error.message };
     }
+    return { error: null };
+  };
+
+  const updatePassword = async (newPassword: string) => {
+    const { error } = await supabase.auth.updateUser({ password: newPassword });
+    if (error) return { error: error.message };
+    // Invalidate any sessions on other devices. "others" keeps the current
+    // session valid so the user stays signed in where they just reset.
+    await supabase.auth.signOut({ scope: 'others' });
+    return { error: null };
+  };
+
+  const resendVerification = async (email: string) => {
+    const { error } = await supabase.auth.resend({
+      type: 'signup',
+      email,
+      options: { emailRedirectTo: 'tether://auth/callback' },
+    });
+    return { error: error ? error.message : null };
+  };
+
+  const signOut = async () => {
     // Clear state immediately so RouteGuard redirects
     setUser(null);
     setSession(null);
     setProfile(null);
     setPartnerProfile(null);
     setCouple(null);
-    setGuestMode(false);
     // Then sign out from Supabase
     await supabase.auth.signOut();
   };
 
-  const signInAsGuest = () => {
-    const guestUser = { id: 'guest', email: 'guest@heyotis.app' } as User;
-    const guestProfile: SupabaseProfile = {
-      id: 'guest',
-      name: 'Sam',
-      attachment: '',
-      conflict: '',
-      love: '',
-      window: '',
-      need: '',
-      context: '',
-      onboarded: true,
-    };
-    setGuestMode(true);
-    setUser(guestUser);
-    setProfile(guestProfile);
-    setLoading(false);
-  };
-
   const signInWithGoogle = async (): Promise<{ error: string | null }> => {
+    const redirectUrl = 'tether://auth/callback';
     try {
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: 'tether://auth/callback',
+          redirectTo: redirectUrl,
           skipBrowserRedirect: true,
         },
       });
       if (error) return { error: error.message };
-      if (data?.url) {
-        const WebBrowser = require('expo-web-browser');
-        const result = await WebBrowser.openAuthSessionAsync(data.url, 'tether://auth/callback');
-        if (result.type === 'success' && result.url) {
-          const url = new URL(result.url);
-          const params = new URLSearchParams(url.hash.substring(1));
-          const accessToken = params.get('access_token');
-          const refreshToken = params.get('refresh_token');
-          if (accessToken && refreshToken) {
-            await supabase.auth.setSession({ access_token: accessToken, refresh_token: refreshToken });
-            return { error: null };
-          }
-        }
+      if (!data?.url) return { error: 'Could not start Google sign-in.' };
+
+      const result = await WebBrowser.openAuthSessionAsync(data.url, redirectUrl);
+
+      if (result.type !== 'success' || !result.url) {
+        // User dismissed the browser, cancelled, or the OAuth flow failed.
+        // We do NOT surface the internal reason — avoid leaking state to the user.
         return { error: 'Google sign-in was cancelled.' };
       }
-      return { error: 'Could not start Google sign-in.' };
+
+      // PKCE flow: callback URL has a `?code=...` query param. Exchange it
+      // for a session via Supabase, which handles the PKCE verifier from
+      // secure storage internally.
+      let code: string | null = null;
+      try {
+        const parsed = new URL(result.url);
+        code = parsed.searchParams.get('code');
+      } catch {
+        return { error: 'Malformed callback URL.' };
+      }
+      if (!code) return { error: 'No authorisation code returned.' };
+
+      const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(code);
+      if (exchangeError) return { error: exchangeError.message };
+      return { error: null };
     } catch (e: any) {
-      return { error: e.message || 'Google sign-in failed.' };
+      return { error: e?.message || 'Google sign-in failed.' };
     }
   };
 
   const syncProfile = async (data: Partial<SupabaseProfile>) => {
     if (!user) return;
-    if (guestMode) {
-      setProfile(prev => prev ? { ...prev, ...data } : null);
-      return;
-    }
     await supabase.from('profiles').upsert({ id: user.id, ...data, updated_at: new Date().toISOString() });
     setProfile(prev => prev ? { ...prev, ...data } : null);
   };
@@ -243,8 +340,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   return (
     <AuthContext.Provider value={{
-      user, session, profile, partnerProfile, couple, loading, guestMode,
-      signUp, signIn, signOut, signInWithGoogle, signInAsGuest, syncProfile, generateInvite, acceptInvite, refreshCouple,
+      user, session, profile, partnerProfile, couple, loading,
+      signUp, signIn, signOut, signInWithGoogle,
+      resetPassword, updatePassword, resendVerification,
+      syncProfile, generateInvite, acceptInvite, refreshCouple,
     }}>
       {children}
     </AuthContext.Provider>

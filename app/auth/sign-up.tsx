@@ -8,6 +8,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Colors, Fonts, Radius, Shadows } from '../../src/constants/theme';
 import { useAuth } from '../../src/hooks/useAuth';
 import { IconLeaf, IconHeart } from '../../src/components/Icons';
+import { checkPassword, passwordStrengthLabel, PASSWORD_MIN_LENGTH } from '../../src/utils/passwordPolicy';
 
 export default function SignUp() {
   const { invite } = useLocalSearchParams<{ invite?: string }>();
@@ -24,19 +25,30 @@ export default function SignUp() {
     setError('');
     if (!email.trim() || !password.trim()) return setError('Please fill in all fields.');
     if (password !== confirm) return setError('Passwords do not match.');
-    if (password.length < 6) return setError('Password must be at least 6 characters.');
+
+    const check = checkPassword(password);
+    if (!check.ok) return setError(check.error || 'Password is not strong enough.');
 
     setLoading(true);
-    const { error: signUpError } = await signUp(email.trim(), password);
+    const { error: signUpError, needsVerification } = await signUp(email.trim(), password);
     if (signUpError) {
       setError(signUpError);
       setLoading(false);
       return;
     }
 
-    if (invite) await acceptInvite(invite);
-    router.replace('/intro');
+    // If invite code present, stash it for after verification — accepting it
+    // now without a session will fail RLS. (The RouteGuard picks up invite
+    // params once the user is fully signed in.)
+    if (invite && !needsVerification) await acceptInvite(invite);
+
     setLoading(false);
+
+    if (needsVerification) {
+      router.replace({ pathname: '/auth/verify-email', params: { email: email.trim() } });
+    } else {
+      router.replace('/intro');
+    }
   };
 
   const handleGoogle = async () => {
@@ -109,12 +121,17 @@ export default function SignUp() {
               style={s.input}
               value={password}
               onChangeText={setPassword}
-              placeholder="At least 6 characters"
+              placeholder={`At least ${PASSWORD_MIN_LENGTH} characters`}
               placeholderTextColor={Colors.lightBrown}
               selectionColor="#96d35f"
               cursorColor="#96d35f"
               secureTextEntry
             />
+            {password.length > 0 && (
+              <Text style={s.hint}>
+                Strength: <Text style={s.hintBold}>{passwordStrengthLabel(password)}</Text> — needs letter, number, symbol, min {PASSWORD_MIN_LENGTH}.
+              </Text>
+            )}
 
             <Text style={s.label}>Confirm password</Text>
             <TextInput
@@ -176,6 +193,8 @@ const s = StyleSheet.create({
   form: { width: '100%', gap: 6, marginBottom: 24 },
   label: { fontFamily: Fonts.bodyMedium, fontSize: 12, color: Colors.midBrown, letterSpacing: 0.3, marginBottom: 2, marginTop: 4 },
   input: { width: '100%', padding: 14, borderRadius: Radius.md, borderWidth: 1.5, borderColor: Colors.sand, backgroundColor: Colors.warmWhite, fontFamily: Fonts.body, fontSize: 15, color: Colors.charcoal },
+  hint: { fontFamily: Fonts.body, fontSize: 12, color: Colors.midBrown, marginTop: 2 },
+  hintBold: { fontFamily: Fonts.bodyMedium, color: Colors.charcoal },
   error: { fontFamily: Fonts.body, fontSize: 13, color: Colors.errorText, marginTop: 4 },
   btn: { backgroundColor: Colors.sageDark, borderRadius: Radius.full, paddingVertical: 15, alignItems: 'center', marginTop: 12, ...Shadows.sm },
   btnDisabled: { opacity: 0.6 },
