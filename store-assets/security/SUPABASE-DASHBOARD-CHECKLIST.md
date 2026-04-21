@@ -65,7 +65,7 @@ These protect against brute force on sign-in and abuse on password-reset email s
 
 - Provider: `hCaptcha` (free)
 - Sign up for a site at [hcaptcha.com](https://www.hcaptcha.com), paste the site key + secret.
-- Enabling this requires a small client change — Supabase docs: [Enabling CAPTCHA protection](https://supabase.com/docs/guides/auth/auth-captcha). Defer this until abuse appears in logs.
+- Enabling this requires a small client change — Supabase docs: [Enabling CAPTCHA protection](https://supabase.com/docs/guides/auth/auth-captcha). Defer this until abuse appears in logs — the IP-level rate limits from §4 + per-user rate limits on the AI proxy (see §12 below) cover the expected threat model at launch.
 
 ### 6. Customise auth email templates
 
@@ -112,6 +112,20 @@ Without this, real users will complain that "verify email" and "reset password" 
 **Path:** Authentication → Logs
 
 - Confirm log retention is at the Pro plan's default 7 days, or upgrade if longer audit trails are required for compliance.
+
+### 12. AI endpoint per-user rate limits (already deployed — verify)
+
+**Path:** Edge Functions → claude-proxy → Logs; Database → Tables → rate_limit_buckets
+
+Not a toggle — this is enforced by the deployed `claude-proxy` Edge Function (see `supabase/functions/claude-proxy/index.ts`) and the `check_rate_limit` RPC (see `supabase/migrations/20260421130000_add_rate_limit_buckets.sql`). Current limits per user:
+
+- **Burst:** 20 requests / minute → returns 429 with `Retry-After`
+- **Daily:** 200 requests / day → returns 429, shown to user as "come back tomorrow"
+
+**Operator actions:**
+- [ ] Verify the `rate_limit_buckets` table exists and has **no** RLS policies (intentional — only service_role may touch it)
+- [ ] Confirm the Edge Function has access to `SUPABASE_SERVICE_ROLE_KEY` in its env (Supabase auto-injects this — should be present by default)
+- [ ] Watch the function logs for rate-limit rejections; if legitimate users are hitting limits, raise them in `supabase/functions/claude-proxy/index.ts` → `RL_*` constants and redeploy
 
 ### 11. Confirm RLS on all tables
 

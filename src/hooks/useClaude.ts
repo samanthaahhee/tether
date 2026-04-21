@@ -180,6 +180,20 @@ export function useClaude({ systemPrompt, userProfile, userMemory }: UseClaudeOp
           messages: [...windowedHistory, { role: 'user', content: cleanText }],
         }),
       });
+
+      // Surface rate-limit responses from the claude-proxy Edge Function
+      // (per-user burst/daily windows) as warm, human messages rather than
+      // the generic fallback. Giving users a clear signal prevents them
+      // from retrying in a tight loop and making the problem worse.
+      if (response.status === 429) {
+        setLoading(false);
+        const body = await response.json().catch(() => ({}));
+        if (body?.scope === 'daily') {
+          return "You've reached today's limit of AI replies. Come back tomorrow — taking a pause is often its own kind of progress.";
+        }
+        return "I'm getting a lot of messages at once. Could you give me a moment, then try again?";
+      }
+
       const data = await response.json();
       setLoading(false);
 
