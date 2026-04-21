@@ -129,6 +129,31 @@ Already capturing all of these — nothing to configure:
 | `upstream.non_2xx` | warn/error | Anthropic returned a non-2xx status |
 | `upstream.exception` | error | Fetch to Anthropic threw |
 
+**IP privacy:** client IPs passed into `log_security_event` are automatically HMAC-SHA256 hashed using a Vault-stored secret before being persisted. The audit log contains `ip_hash`, never the plaintext `ip`. Repeated offenders are still detectable by comparing hashes; reverse-resolving an IP from its hash is not possible without the Vault secret.
+
+### 5b-2. Automated retention (pg_cron)
+
+Three scheduled jobs prune old data automatically so the DB doesn't accumulate forever:
+
+| Job | Schedule | Retention |
+|---|---|---|
+| `hey-otis-prune-security-events` | 03:15 UTC daily | 90 days |
+| `hey-otis-prune-rate-limit-buckets` | 03:30 UTC daily | 7 days |
+| `hey-otis-prune-stale-invites` | 03:45 UTC daily | 30 days (only used / expired invites) |
+
+Verify with `select jobname, schedule from cron.job where jobname like 'hey-otis-%';`
+
+### 5b-3. What is NOT encrypted at the column level (and why)
+
+Column-level encryption of the server-side DB is deliberately deferred. The reasoning:
+
+- The genuinely sensitive content (vent messages, session transcripts, reflections) is currently **client-local only** — it lives in the device's sandboxed AsyncStorage, never touches the DB. Nothing to encrypt.
+- The server-side fields (`profiles.name`, `profiles.context`, assessment categories) are modest in sensitivity and small in volume. Encrypting a 4-row table buys little vs. the complexity.
+- Supabase already encrypts the entire DB at rest with AES-256 (protects against disk theft, cloned backups).
+- PostgREST + RLS protects against external attackers; `log_security_event` hides plaintext IPs from the audit log.
+
+**When this changes:** the day session content moves to the server (for cross-device sync / couple sharing), pgsodium-based column encryption goes in alongside the schema migration, applied to the sensitive fields from day 1. Don't retrofit — build encryption into the new tables.
+
 ### 5c. Query recipes
 
 Run these in Supabase SQL editor (which has service_role context) for ad-hoc monitoring:
