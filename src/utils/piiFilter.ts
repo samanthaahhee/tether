@@ -31,6 +31,15 @@ export function filterPII(text: string): { cleaned: string; piiFound: boolean } 
 /**
  * Check AI output for harmful content patterns that should never appear
  * in a relationship wellness context. Returns a safe fallback if detected.
+ *
+ * IMPORTANT — these patterns are English-only by design. Multilingual
+ * jailbreaks work by asking the model to respond in another language to
+ * bypass English-language filters exactly like this one. We close that
+ * gap at the system-prompt layer by instructing the model to ALWAYS
+ * respond in English, regardless of the user's input language (see
+ * INJECTION_GUARD in src/hooks/useClaude.ts). If multilingual responses
+ * are ever enabled, these patterns MUST be extended to every supported
+ * language BEFORE that feature ships.
  */
 const HARMFUL_PATTERNS: RegExp[] = [
   /you should (leave|divorce|break up|end (the|your) relationship)/i,
