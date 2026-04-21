@@ -2,9 +2,25 @@ import React, { createContext, useContext, useEffect, useState } from 'react';
 import { AppState, AppStateStatus } from 'react-native';
 import * as Linking from 'expo-linking';
 import * as WebBrowser from 'expo-web-browser';
+import * as Crypto from 'expo-crypto';
 import { router } from 'expo-router';
 import { Session, User } from '@supabase/supabase-js';
 import { supabase } from '../lib/supabase';
+
+// Base-36 char pool; 12 chars = 36^12 ≈ 4.7e18 combinations. Upper-case only
+// so users can read/type the code from a message without case confusion.
+const INVITE_CODE_LENGTH = 12;
+const INVITE_CODE_ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+
+async function generateSecureInviteCode(): Promise<string> {
+  // Use a CSPRNG rather than Math.random for guessing-resistance.
+  const bytes = await Crypto.getRandomBytesAsync(INVITE_CODE_LENGTH);
+  let out = '';
+  for (let i = 0; i < INVITE_CODE_LENGTH; i++) {
+    out += INVITE_CODE_ALPHABET[bytes[i] % INVITE_CODE_ALPHABET.length];
+  }
+  return out;
+}
 
 export interface SupabaseProfile {
   id: string;
@@ -299,39 +315,58 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const generateInvite = async () => {
     if (!user) return '';
-    const code = Math.random().toString(36).substring(2, 10).toUpperCase();
-    await supabase.from('couple_invites').insert({
+    const code = await generateSecureInviteCode();
+    // RLS "Users can create invites" with check `inviter_id = auth.uid()`
+    // prevents spoofing inviter_id, but we also set it explicitly here as
+    // defence-in-depth.
+    const { error } = await supabase.from('couple_invites').insert({
       code,
       inviter_id: user.id,
       expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
     });
+    if (error) return '';
     return code;
   };
 
+  /**
+   * Invite acceptance goes through an atomic Postgres RPC (public.accept_invite)
+   * rather than a 3-step client dance. That:
+   *   - Re-verifies the caller's identity via auth.uid() server-side, so even
+   *     a spoofed client payload can't impersonate another user.
+   *   - Holds a row-level lock on the invite for the duration, preventing
+   *     race conditions where two clients accept the same invite.
+   *   - Returns a well-defined status code the UI can switch on.
+   *
+   * The RLS policies on couple_invites are now scoped to the inviter only —
+   * accepters have no direct read/write access to the table, closing the
+   * previous enumeration hole.
+   */
   const acceptInvite = async (code: string) => {
-    if (!user) return { error: 'Not signed in' };
+    if (!user) return { error: 'You must be signed in to accept an invite.' };
 
-    const { data: invite } = await supabase
-      .from('couple_invites')
-      .select('*')
-      .eq('code', code.toUpperCase().trim())
-      .eq('used', false)
-      .maybeSingle();
-
-    if (!invite) return { error: 'Invalid or expired invite code' };
-    if (invite.inviter_id === user.id) return { error: 'You cannot accept your own invite' };
-    if (new Date(invite.expires_at) < new Date()) return { error: 'This invite has expired' };
-
-    const { error: coupleError } = await supabase.from('couples').insert({
-      user1_id: invite.inviter_id,
-      user2_id: user.id,
+    const { data, error } = await supabase.rpc('accept_invite', {
+      invite_code: code.toUpperCase().trim(),
     });
 
-    if (coupleError) return { error: 'Failed to link accounts. You may already be linked.' };
+    if (error) return { error: 'We couldn\'t accept the invite right now. Please try again.' };
 
-    await supabase.from('couple_invites').update({ used: true, used_by: user.id }).eq('id', invite.id);
-    await fetchUserData(user.id);
-    return { error: null };
+    // RPC returns a single-row table: [{ status, message, couple_id }].
+    const result = Array.isArray(data) ? data[0] : data;
+    if (!result) return { error: 'Invalid or expired invite code.' };
+
+    switch (result.status) {
+      case 'ok':
+      case 'already_linked':
+        await fetchUserData(user.id);
+        return { error: null };
+      case 'invalid':
+      case 'expired':
+      case 'used':
+      case 'self':
+        return { error: result.message || 'Invalid or expired invite code.' };
+      default:
+        return { error: 'We couldn\'t accept the invite right now.' };
+    }
   };
 
   const refreshCouple = async () => {
