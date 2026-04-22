@@ -1,5 +1,6 @@
 import StepsSection from './StepsSection';
 import ScrollReveal from './ScrollReveal';
+import WaitlistForm from './WaitlistForm';
 
 export default function Home() {
   return (
@@ -37,7 +38,7 @@ export default function Home() {
             </ScrollReveal>
             <ScrollReveal delay={300}>
               <div className="hero-actions">
-                <a href="#get-started" className="btn-primary">Download now</a>
+                <a href="#get-started" className="btn-primary">Join the waitlist</a>
                 <a href="#how" className="btn-ghost">See how it works</a>
               </div>
             </ScrollReveal>
@@ -146,10 +147,12 @@ export default function Home() {
         <ScrollReveal>
           <h2 className="cta-title">Your next argument could be<br />your next breakthrough.</h2>
           <p className="cta-sub">
-            No couples therapy waitlist. No awkward first sessions.
-            Just you, your feelings, and a path forward.
+            The first 500 on the waitlist get the couple plan free for life.
+            I&apos;ll email once, when it opens — no spam, no drip.
           </p>
-          <a href="#" className="btn-primary btn-lg">Get early access</a>
+          <div className="cta-form">
+            <WaitlistForm variant="cta" />
+          </div>
         </ScrollReveal>
       </section>
 
