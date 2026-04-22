@@ -6,8 +6,7 @@ All IG launch content for the first 8 weeks. Start from `CONTENT-CALENDAR.md` fo
 
 | File | What it is |
 |---|---|
-| [CONTENT-CALENDAR.md](CONTENT-CALENDAR.md) | Week-by-week schedule for 8 weeks. 32 posts. Every post has a caption + hashtag set + format notes. |
-| [REEL-SCRIPTS.md](REEL-SCRIPTS.md) | Shot-by-shot scripts for the 5 reels in the first two weeks. Filmable on iPhone, editable in CapCut. |
+| [CONTENT-CALENDAR.md](CONTENT-CALENDAR.md) | Week-by-week schedule for 8 weeks. 32 posts, **carousels + image tiles only** (no reels). Every post has a caption + hashtag set + design direction. |
 | This README | Export + production workflow |
 
 ## The Figma file
