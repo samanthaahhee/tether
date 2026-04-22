@@ -38,8 +38,8 @@ export default function Home() {
             </ScrollReveal>
             <ScrollReveal delay={300}>
               <div className="hero-actions">
-                <a href="#get-started" className="btn-primary">Join the waitlist</a>
-                <a href="#how" className="btn-ghost">See how it works</a>
+                <a href="#get-started" className="btn-primary btn-lg">Join the waitlist</a>
+                <a href="#how" className="btn-ghost btn-lg">See how it works</a>
               </div>
             </ScrollReveal>
           </div>

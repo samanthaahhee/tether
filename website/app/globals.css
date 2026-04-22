@@ -10,9 +10,15 @@ body { font-family: 'Inter', sans-serif; color: #211e28; background: #fff; -webk
 /* ═══ BUTTONS ═══ */
 .btn-primary { display: inline-flex; align-items: center; background: #96d35f; color: #211e28; font: 600 15px/1 'Inter',sans-serif; padding: 15px 32px; border-radius: 999px; text-decoration: none; transition: all 0.25s; box-shadow: 0 4px 16px rgba(150,211,95,0.3); }
 .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(150,211,95,0.4); }
-.btn-lg { padding: 18px 44px; font-size: 17px; }
 .btn-ghost { display: inline-flex; align-items: center; color: #211e28; font: 600 15px/1 'Inter',sans-serif; padding: 15px 24px; text-decoration: none; border-radius: 999px; border: 1.5px solid #dedde8; background: #fff; transition: all 0.2s; }
 .btn-ghost:hover { border-color: #211e28; }
+/* Size modifier — declared after both button classes so it overrides them. */
+.btn-lg { padding: 18px 44px; font-size: 17px; }
+
+/* Hero primary gets a grounding outline — the cream background needs
+   the extra structure; the CTA's green gradient doesn't. */
+.hero .btn-primary { border: 1.5px solid #211e28; }
+.hero .btn-primary:hover { border-color: #000; }
 
 /* ═══ NAV ═══ */
 .nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; background: rgba(255,255,255,0.9); backdrop-filter: blur(16px); border-bottom: 1px solid rgba(222,221,232,0.5); }
