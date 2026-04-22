@@ -91,9 +91,11 @@ export default function WaitlistForm({ variant = 'cta' }: { variant?: 'cta' | 'h
           {status === 'sending' ? 'Sending…' : status === 'success' ? 'Added ✓' : 'Join the waitlist'}
         </button>
       </div>
-      <p className={`wl-msg ${status === 'error' ? 'wl-msg--error' : status === 'success' ? 'wl-msg--success' : ''}`}>
-        {message || 'No spam. One email when it opens.'}
-      </p>
+      {message && (
+        <p className={`wl-msg ${status === 'error' ? 'wl-msg--error' : status === 'success' ? 'wl-msg--success' : ''}`}>
+          {message}
+        </p>
+      )}
     </form>
   );
 }

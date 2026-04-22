@@ -145,10 +145,9 @@ export default function Home() {
       {/* ── Final CTA ── */}
       <section className="cta" id="get-started">
         <ScrollReveal>
-          <h2 className="cta-title">Your next argument could be<br />your next breakthrough.</h2>
+          <h2 className="cta-title">Your next argument could be your next breakthrough.</h2>
           <p className="cta-sub">
-            The first 500 on the waitlist get the couple plan free for life.
-            I&apos;ll email once, when it opens — no spam, no drip.
+            Join the waitlist and have healthier conversations.
           </p>
           <div className="cta-form">
             <WaitlistForm variant="cta" />
