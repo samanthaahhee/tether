@@ -19,9 +19,6 @@ export default function Home() {
       <section className="hero">
         <div className="hero-container">
           <div className="hero-text">
-            <ScrollReveal>
-              <img src="/header-logo.png" alt="Hey Otis" className="hero-logo" />
-            </ScrollReveal>
             <ScrollReveal delay={100}>
               <h1 className="hero-h1">
                 Every couple argues.<br />

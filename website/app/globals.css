@@ -166,11 +166,12 @@ body { font-family: 'Inter', sans-serif; color: #211e28; background: #fff; -webk
 @media (max-width: 900px) {
   .nav-inner { padding: 12px 24px; }
   .hero { padding: 100px 24px 60px; }
-  .hero-container { flex-direction: column; text-align: center; width: 100%; }
-  .hero-text { align-items: center; width: 100%; }
-  .hero-logo { align-self: center; }
+  .hero-container { flex-direction: column; text-align: left; width: 100%; }
+  .hero-text { align-items: flex-start; width: 100%; }
+  .hero-h1 { font-size: 40px; line-height: 1.1; letter-spacing: -1px; }
   .hero-sub { width: 100%; }
-  .hero-actions { justify-content: center; }
+  .hero-actions { flex-direction: column; align-items: stretch; width: 100%; gap: 12px; }
+  .hero-actions .btn-primary, .hero-actions .btn-ghost { justify-content: center; width: 100%; }
   .hero-image-wrap { width: 100%; }
   .hero-image-wrap { width: 100%; height: auto; }
   .hero-image { position: static; width: 100%; max-width: 400px; height: auto; margin: 0 auto; display: block; }
