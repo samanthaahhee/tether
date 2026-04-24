@@ -190,7 +190,16 @@ body { font-family: 'Inter', sans-serif; color: #211e28; background: #fff; -webk
     font-size: 16px;
     min-height: 56px;       /* iOS HIG-friendly tap size */
   }
-  .hero-image-wrap { width: 100%; height: auto; }
+  /* Every .btn-primary on mobile carries the ink outline — applies to
+     the hero CTA AND the bottom waitlist submit, so both read as buttons
+     against lime gradients rather than floating pills. */
+  .btn-primary { border: 1.5px solid #211e28; }
+  .btn-primary:hover { border-color: #000; }
+  .hero-image-wrap {
+    width: 100%;
+    height: auto;
+    padding-top: 20px;       /* breathing room between CTAs and the phone mockup */
+  }
   .hero-image { position: static; width: 100%; max-width: 400px; height: auto; margin: 0 auto; display: block; }
 
   /* ── Reality (Content Block 2) ── */
@@ -226,10 +235,17 @@ body { font-family: 'Inter', sans-serif; color: #211e28; background: #fff; -webk
   .ub-container, .gt-container { flex-direction: column; }
   .ub-left, .gt-right { width: 100%; }
   .ub-image, .gt-image { width: 100%; }
+  /* Grow-together: flip stack order so content reads first, image sits at
+     the end. Leaves the periwinkle→cream section gradient untouched. */
+  .gt-right { order: 0; }
+  .gt-left  { order: 1; }
+
   .how-layout { flex-direction: column; }
   .how-left { width: 100%; }
   /* How-it-works image: ship it to the end of the stack on mobile */
   .how-right { order: 1; }
+  /* "From rupture to repair" eyebrow + heading + subtitle — left-aligned on mobile */
+  .how-header { text-align: left; margin: 0 0 40px; }
   .proof-inner { flex-wrap: wrap; gap: 24px; justify-content: center; }
   .accordion-subtitle { display: none; }
 }

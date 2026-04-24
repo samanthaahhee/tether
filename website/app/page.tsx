@@ -22,7 +22,7 @@ export default function Home() {
             <ScrollReveal delay={100}>
               <h1 className="hero-h1">
                 Every couple argues.
-                The ones that last,<br />
+                The ones that last,
                 learn how to repair.
               </h1>
             </ScrollReveal>
