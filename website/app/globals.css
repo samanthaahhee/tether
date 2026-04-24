@@ -46,8 +46,8 @@ body { font-family: 'Inter', sans-serif; color: #211e28; background: #fff; -webk
 .proof-label { font: 500 14px/1.4 'Inter',sans-serif; color: #211e28; }
 
 /* ═══ THE REALITY — container x=244, w=952, bg gradient white→#f7f5fd ═══ */
-.reality { padding: 100px 0; background: linear-gradient(to bottom, white, #f7f5fd); overflow: hidden; }
-.reality-container { width: 952px; margin: 0 auto; display: flex; flex-direction: column; align-items: center; gap: 27px; }
+.reality { padding: 100px 0; background: linear-gradient(to bottom, white, #f7f5fd); }
+.reality-container { width: 952px; margin: 0 auto; display: flex; flex-direction: column; align-items: center; gap: 27px; overflow: hidden; }
 .reality-header { display: flex; flex-direction: column; align-items: center; gap: 16px; }
 .reality-eyebrow { font: 600 16px/1 'Inter',sans-serif; letter-spacing: 2.5px; color: #81b756; text-align: center; }
 .reality-title { font: 600 40px/1.2 'Inter',sans-serif; color: #211e28; text-align: center; max-width: 600px; }
@@ -55,10 +55,12 @@ body { font-family: 'Inter', sans-serif; color: #211e28; background: #fff; -webk
 /* Auto-scrolling marquee at all viewports — 8 cards (4 originals + 4 clones)
    loop seamlessly via translateX(-50%). Container above clips the overflow. */
 .reality-row {
+  --marquee-gap: 24px;
   display: flex;
   flex-wrap: nowrap;
-  gap: 24px;
+  gap: var(--marquee-gap);
   width: max-content;
+  align-self: flex-start;     /* start at container's left edge so the loop seam is invisible */
   animation: reality-marquee 40s linear infinite;
 }
 .reality-row > * { flex-shrink: 0; }
@@ -220,7 +222,7 @@ body { font-family: 'Inter', sans-serif; color: #211e28; background: #fff; -webk
   .reality-title,
   .reality-sub { text-align: left; max-width: 100%; }
   .reality-title { font-size: 32px; line-height: 1.2; }
-  .reality-row { gap: 16px; padding-left: 24px; animation-duration: 32s; }
+  .reality-row { --marquee-gap: 16px; padding-left: 24px; animation-duration: 32s; }
   .reality-card { width: 220px; height: 180px; }
 
   .reality-quote-wrap { align-items: flex-start; padding: 0 24px; max-width: 100%; }
@@ -253,7 +255,9 @@ body { font-family: 'Inter', sans-serif; color: #211e28; background: #fff; -webk
    seamlessly — translateX(-50%) lands perfectly on the start of the clone set. */
 @keyframes reality-marquee {
   from { transform: translateX(0); }
-  to   { transform: translateX(-50%); }
+  /* Half the row + half a gap = exact distance to land the clone where the
+     original started, so the loop has no visible seam. */
+  to   { transform: translateX(calc(-50% - var(--marquee-gap) / 2)); }
 }
 /* Respect users who've opted out of animation */
 @media (prefers-reduced-motion: reduce) {
