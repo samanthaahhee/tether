@@ -46,14 +46,23 @@ body { font-family: 'Inter', sans-serif; color: #211e28; background: #fff; -webk
 .proof-label { font: 500 14px/1.4 'Inter',sans-serif; color: #211e28; }
 
 /* ═══ THE REALITY — container x=244, w=952, bg gradient white→#f7f5fd ═══ */
-.reality { padding: 100px 0; background: linear-gradient(to bottom, white, #f7f5fd); }
+.reality { padding: 100px 0; background: linear-gradient(to bottom, white, #f7f5fd); overflow: hidden; }
 .reality-container { width: 952px; margin: 0 auto; display: flex; flex-direction: column; align-items: center; gap: 27px; }
 .reality-header { display: flex; flex-direction: column; align-items: center; gap: 16px; }
 .reality-eyebrow { font: 600 16px/1 'Inter',sans-serif; letter-spacing: 2.5px; color: #81b756; text-align: center; }
 .reality-title { font: 600 40px/1.2 'Inter',sans-serif; color: #211e28; text-align: center; max-width: 600px; }
 .reality-sub { font: 400 17px/1.7 'Inter',sans-serif; color: #3a3630; text-align: center; max-width: 684px; }
-.reality-row { display: flex; gap: 24px; }
-.reality-card--clone { display: none; } /* shown only on mobile for the marquee */
+/* Auto-scrolling marquee at all viewports — 8 cards (4 originals + 4 clones)
+   loop seamlessly via translateX(-50%). Container above clips the overflow. */
+.reality-row {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 24px;
+  width: max-content;
+  animation: reality-marquee 40s linear infinite;
+}
+.reality-row > * { flex-shrink: 0; }
+.reality-card--clone { display: flex; }
 .reality-card { background: #fff; border: 1px solid #dedde8; border-radius: 16px; width: 220px; padding: 32px 20px; display: flex; flex-direction: column; align-items: center; gap: 16px; height: 185px; justify-content: center; }
 .reality-num { font: 600 40px/1 'Instrument Sans',sans-serif; }
 .reality-label { font: 400 14px/1.5 'Inter',sans-serif; color: #80798c; width: 180px; text-align: center; }
@@ -203,28 +212,16 @@ body { font-family: 'Inter', sans-serif; color: #211e28; background: #fff; -webk
   .hero-image { position: static; width: 100%; max-width: 400px; height: auto; margin: 0 auto; display: block; }
 
   /* ── Reality (Content Block 2) ── */
-  /* Left-align everything; the container breaks full-bleed so the marquee
-     can scroll edge-to-edge while header/quote keep 24px side padding. */
-  .reality { padding: 100px 0; overflow: hidden; }
+  /* Left-align header/quote; marquee inherits its base styles. */
+  .reality { padding: 100px 0; }
   .reality-container { width: 100%; padding: 0; gap: 40px; align-items: stretch; }
   .reality-header { align-items: flex-start; padding: 0 24px; gap: 12px; }
   .reality-eyebrow,
   .reality-title,
   .reality-sub { text-align: left; max-width: 100%; }
   .reality-title { font-size: 32px; line-height: 1.2; }
-
-  /* Auto-moving card marquee */
-  .reality-row {
-    display: flex;
-    flex-wrap: nowrap;           /* single horizontal line */
-    gap: 16px;
-    width: max-content;          /* fit the full animated track */
-    padding-left: 24px;          /* breathing room at the leading edge */
-    animation: reality-marquee 32s linear infinite;
-  }
-  .reality-row > * { flex-shrink: 0; } /* stop ScrollReveal wrappers from squishing cards */
+  .reality-row { gap: 16px; padding-left: 24px; animation-duration: 32s; }
   .reality-card { width: 220px; height: 180px; }
-  .reality-card--clone { display: flex; } /* show clones on mobile only */
 
   .reality-quote-wrap { align-items: flex-start; padding: 0 24px; max-width: 100%; }
   .reality-quote,
@@ -248,6 +245,8 @@ body { font-family: 'Inter', sans-serif; color: #211e28; background: #fff; -webk
   .how-header { text-align: left; margin: 0 0 40px; }
   .proof-inner { flex-wrap: wrap; gap: 24px; justify-content: center; }
   .accordion-subtitle { display: none; }
+  /* Push the +/- toggle to the far right on mobile (subtitle is hidden) */
+  .accordion-toggle { margin-left: auto; }
 }
 
 /* Auto-scrolling reality marquee. Duplicates in the DOM make this loop

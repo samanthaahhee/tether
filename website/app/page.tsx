@@ -28,9 +28,9 @@ export default function Home() {
             </ScrollReveal>
             <ScrollReveal delay={200}>
               <p className="hero-sub">
-                Hey Otis is your private, AI-powered guide from rupture to
-                repair. Process conflict, uncover what&apos;s really going on, and
-                find the words that open doors.
+                A private space to process your conflict, figure out what&apos;s
+                really going on, and help you find the words to have a healthier
+                conversation your partner can hear.
               </p>
             </ScrollReveal>
             <ScrollReveal delay={300}>
@@ -72,7 +72,7 @@ export default function Home() {
           <ScrollReveal>
             <div className="reality-header">
               <p className="reality-eyebrow">THE REALITY</p>
-              <h2 className="reality-title">Conflict isn&apos;t the problem.<br />Silence is.</h2>
+              <h2 className="reality-title">Conflict isn&apos;t the problem. Silence is.</h2>
               <p className="reality-sub">Most couples don&apos;t break up because they fight. They break up because they stop trying to understand each other.</p>
             </div>
           </ScrollReveal>
