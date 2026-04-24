@@ -11,9 +11,9 @@ export default function robots(): MetadataRoute.Robots {
       {
         userAgent: '*',
         allow: '/',
-        // Block the Vercel preview URLs from being indexed — only the
-        // canonical domain should show up in search results.
-        disallow: [],
+        // Keep the admin dashboard out of search engines (the data is also
+        // password-protected, but no need to advertise the URL).
+        disallow: ['/admin', '/admin/'],
       },
     ],
     sitemap: 'https://heyotis.app/sitemap.xml',
