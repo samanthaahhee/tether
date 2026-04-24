@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import ResearchForm from './ResearchForm';
 
 export const metadata: Metadata = {
-  title: 'Research — Hey Otis',
+  title: 'Research, Hey Otis',
   description:
     'Help shape Hey Otis. A 3-minute questionnaire on relationships, communication, conflict, and AI.',
 };
@@ -29,9 +29,9 @@ export default function ResearchPage() {
             couples actually want.
           </h1>
           <p className="rs-sub">
-            We&apos;re building Hey Otis — a private guide that helps couples move from rupture
+            We&apos;re building Hey Otis, a private guide that helps couples move from rupture
             to repair. Before we go further, we want to hear from you. This takes about
-            4 minutes. Honest answers welcome — even uncomfortable ones.
+            4 minutes. Honest answers welcome, even uncomfortable ones.
           </p>
           <p className="rs-meta">
             Anonymous by default · Email is optional at the end · ~16 questions

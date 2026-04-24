@@ -49,7 +49,7 @@ const FIGHTS_RESOLVED: Choice[] = [
   { value: 'always', label: 'Almost always' },
   { value: 'sometimes', label: 'Sometimes' },
   { value: 'rarely', label: 'Rarely' },
-  { value: 'never', label: 'Never — they just get dropped' },
+  { value: 'never', label: 'Never, they just get dropped' },
 ];
 
 const FRAMEWORKS_MULTI: Choice[] = [
@@ -70,8 +70,8 @@ const REAL_ISSUE: Choice[] = [
 const THERAPY_STATUS: Choice[] = [
   { value: 'currently', label: 'Yes, currently' },
   { value: 'past', label: 'Yes, in the past' },
-  { value: 'no_open', label: "No — open to it" },
-  { value: 'no_closed', label: "No — not for me" },
+  { value: 'no_open', label: "No, open to it" },
+  { value: 'no_closed', label: "No, not for me" },
 ];
 
 const THERAPY_HELP: Choice[] = [
@@ -392,7 +392,7 @@ export default function ResearchForm() {
       </Section>
 
       {/* SECTION 7 */}
-      <Section eyebrow="07 · IN YOUR OWN WORDS" title="Optional — but the most useful answers we get.">
+      <Section eyebrow="07 · IN YOUR OWN WORDS" title="Optional, but the most useful answers we get.">
         <div className="rs-q">
           <label className="rs-q-label">What&apos;s the hardest part of communicating with your partner?</label>
           <textarea className="rs-textarea" rows={4} value={a.hardest_part} onChange={(e) => set('hardest_part', e.target.value)} placeholder="Take your time. There&apos;s no wrong answer." maxLength={1000} />
