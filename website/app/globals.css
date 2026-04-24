@@ -53,6 +53,7 @@ body { font-family: 'Inter', sans-serif; color: #211e28; background: #fff; -webk
 .reality-title { font: 600 40px/1.2 'Inter',sans-serif; color: #211e28; text-align: center; max-width: 600px; }
 .reality-sub { font: 400 17px/1.7 'Inter',sans-serif; color: #3a3630; text-align: center; max-width: 684px; }
 .reality-row { display: flex; gap: 24px; }
+.reality-card--clone { display: none; } /* shown only on mobile for the marquee */
 .reality-card { background: #fff; border: 1px solid #dedde8; border-radius: 16px; width: 220px; padding: 32px 20px; display: flex; flex-direction: column; align-items: center; gap: 16px; height: 185px; justify-content: center; }
 .reality-num { font: 600 40px/1 'Instrument Sans',sans-serif; }
 .reality-label { font: 400 14px/1.5 'Inter',sans-serif; color: #80798c; width: 180px; text-align: center; }
@@ -165,28 +166,83 @@ body { font-family: 'Inter', sans-serif; color: #211e28; background: #fff; -webk
 }
 @media (max-width: 900px) {
   .nav-inner { padding: 12px 24px; }
+
+  /* ── Hero ── */
   .hero { padding: 100px 24px 60px; }
   .hero-container { flex-direction: column; text-align: left; width: 100%; }
-  .hero-text { align-items: flex-start; width: 100%; }
+  /* stretch so the ScrollReveal wrappers fill the column — otherwise the
+     action buttons shrink to their content width */
+  .hero-text { align-items: stretch; width: 100%; }
   .hero-h1 { font-size: 40px; line-height: 1.1; letter-spacing: -1px; }
   .hero-sub { width: 100%; }
-  .hero-actions { flex-direction: column; align-items: stretch; width: 100%; gap: 12px; }
-  .hero-actions .btn-primary, .hero-actions .btn-ghost { justify-content: center; width: 100%; }
-  .hero-image-wrap { width: 100%; }
+  .hero-actions {
+    flex-direction: column;
+    align-items: stretch;
+    width: 100%;
+    gap: 12px;
+    margin-top: 8px;
+  }
+  .hero-actions .btn-primary,
+  .hero-actions .btn-ghost {
+    width: 100%;
+    justify-content: center;
+    padding: 20px 24px;     /* generous touch target, text-centered */
+    font-size: 16px;
+    min-height: 56px;       /* iOS HIG-friendly tap size */
+  }
   .hero-image-wrap { width: 100%; height: auto; }
   .hero-image { position: static; width: 100%; max-width: 400px; height: auto; margin: 0 auto; display: block; }
-  .reality-container, .ub-container, .gt-container, .how-container, .proof-inner { width: calc(100% - 48px); }
-  .reality-title, .reality-sub { max-width: 100%; }
-  .reality-row { flex-wrap: wrap; justify-content: center; }
-  .reality-quote-wrap { max-width: 100%; }
+
+  /* ── Reality (Content Block 2) ── */
+  /* Left-align everything; the container breaks full-bleed so the marquee
+     can scroll edge-to-edge while header/quote keep 24px side padding. */
+  .reality { padding: 100px 0; overflow: hidden; }
+  .reality-container { width: 100%; padding: 0; gap: 40px; align-items: stretch; }
+  .reality-header { align-items: flex-start; padding: 0 24px; gap: 12px; }
+  .reality-eyebrow,
+  .reality-title,
+  .reality-sub { text-align: left; max-width: 100%; }
+  .reality-title { font-size: 32px; line-height: 1.2; }
+
+  /* Auto-moving card marquee */
+  .reality-row {
+    display: flex;
+    flex-wrap: nowrap;           /* single horizontal line */
+    gap: 16px;
+    width: max-content;          /* fit the full animated track */
+    padding-left: 24px;          /* breathing room at the leading edge */
+    animation: reality-marquee 32s linear infinite;
+  }
+  .reality-row > * { flex-shrink: 0; } /* stop ScrollReveal wrappers from squishing cards */
+  .reality-card { width: 220px; height: 180px; }
+  .reality-card--clone { display: flex; } /* show clones on mobile only */
+
+  .reality-quote-wrap { align-items: flex-start; padding: 0 24px; max-width: 100%; }
+  .reality-quote,
+  .reality-cite { text-align: left; }
+
+  /* ── Other layouts ── */
+  .ub-container, .gt-container, .how-container, .proof-inner { width: calc(100% - 48px); }
   .ub-container, .gt-container { flex-direction: column; }
   .ub-left, .gt-right { width: 100%; }
   .ub-image, .gt-image { width: 100%; }
   .how-layout { flex-direction: column; }
   .how-left { width: 100%; }
-  .how-right { order: -1; }
+  /* How-it-works image: ship it to the end of the stack on mobile */
+  .how-right { order: 1; }
   .proof-inner { flex-wrap: wrap; gap: 24px; justify-content: center; }
   .accordion-subtitle { display: none; }
+}
+
+/* Auto-scrolling reality marquee. Duplicates in the DOM make this loop
+   seamlessly — translateX(-50%) lands perfectly on the start of the clone set. */
+@keyframes reality-marquee {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+/* Respect users who've opted out of animation */
+@media (prefers-reduced-motion: reduce) {
+  .reality-row { animation: none; }
 }
 @media (max-width: 900px) {
   .cta { padding: 80px 24px; }
@@ -194,7 +250,8 @@ body { font-family: 'Inter', sans-serif; color: #211e28; background: #fff; -webk
   .cta-sub { font-size: 16px; }
 }
 @media (max-width: 480px) {
-  .reality-card { width: 100%; }
+  /* reality-card stays 220px even on narrow phones — the marquee
+     needs a fixed card width so the translateX(-50%) loop aligns */
   .step-image { max-height: 400px; }
   .cta { padding: 64px 20px; }
   .cta-title { font-size: 28px; }

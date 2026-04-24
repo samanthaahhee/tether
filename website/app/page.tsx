@@ -21,7 +21,7 @@ export default function Home() {
           <div className="hero-text">
             <ScrollReveal delay={100}>
               <h1 className="hero-h1">
-                Every couple argues.<br />
+                Every couple argues.
                 The ones that last,<br />
                 learn how to repair.
               </h1>
@@ -81,6 +81,13 @@ export default function Home() {
             <ScrollReveal delay={100}><div className="reality-card"><p className="reality-num" style={{color:'#92a6f4'}}>6 yrs</p><p className="reality-label">couples wait before seeking any help</p></div></ScrollReveal>
             <ScrollReveal delay={200}><div className="reality-card"><p className="reality-num" style={{color:'#f67700'}}>96%</p><p className="reality-label">of conversations are determined by how they start</p></div></ScrollReveal>
             <ScrollReveal delay={300}><div className="reality-card"><p className="reality-num" style={{color:'#bd57f2'}}>5:1</p><p className="reality-label">positive to negative — the magic ratio</p></div></ScrollReveal>
+
+            {/* Marquee clones — visible only on mobile for the auto-scrolling carousel.
+                Hidden on desktop via `.reality-card--clone { display: none; }` in globals.css. */}
+            <div className="reality-card reality-card--clone" aria-hidden="true"><p className="reality-num" style={{color:'#4ea989'}}>69%</p><p className="reality-label">of conflicts are perpetual — they never fully resolve</p></div>
+            <div className="reality-card reality-card--clone" aria-hidden="true"><p className="reality-num" style={{color:'#92a6f4'}}>6 yrs</p><p className="reality-label">couples wait before seeking any help</p></div>
+            <div className="reality-card reality-card--clone" aria-hidden="true"><p className="reality-num" style={{color:'#f67700'}}>96%</p><p className="reality-label">of conversations are determined by how they start</p></div>
+            <div className="reality-card reality-card--clone" aria-hidden="true"><p className="reality-num" style={{color:'#bd57f2'}}>5:1</p><p className="reality-label">positive to negative — the magic ratio</p></div>
           </div>
           <ScrollReveal delay={200}>
             <div className="reality-quote-wrap">
