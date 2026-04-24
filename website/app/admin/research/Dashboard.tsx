@@ -241,6 +241,9 @@ function DashboardView({ rows, onLogout, onRefresh }: { rows: Row[]; onLogout: (
         <BarCard title="Therapy blockers (if didn't go)" data={multi('therapy_blockers')} group="therapy_blockers" total={rows.filter(r => r.therapy_blockers && r.therapy_blockers.length).length} />
       </div>
 
+      {/* Email opt-ins */}
+      <EmailList rows={rows} />
+
       {/* Open text */}
       <section className="db-card">
         <h2 className="db-card-title">Open responses · Hardest part of communicating</h2>
@@ -274,6 +277,49 @@ function DashboardView({ rows, onLogout, onRefresh }: { rows: Row[]; onLogout: (
         <BarCard data={single('referrer')} group="referrer" total={total} flat />
       </section>
     </main>
+  );
+}
+
+function EmailList({ rows }: { rows: Row[] }) {
+  const withEmail = rows.filter((r) => r.email);
+  const optIns = withEmail.filter((r) => r.wants_early_access);
+
+  function copyAll(list: Row[]) {
+    const text = list.map((r) => r.email).join(', ');
+    navigator.clipboard?.writeText(text);
+  }
+
+  return (
+    <section className="db-card">
+      <div className="db-emails-head">
+        <h2 className="db-card-title" style={{ marginBottom: 0 }}>Emails ({withEmail.length} total · {optIns.length} opted-in)</h2>
+        {withEmail.length > 0 && (
+          <div style={{ display: 'flex', gap: 8 }}>
+            <button className="btn-ghost" style={{ padding: '8px 14px', fontSize: 12 }} onClick={() => copyAll(withEmail)}>
+              Copy all
+            </button>
+            <button className="btn-ghost" style={{ padding: '8px 14px', fontSize: 12 }} onClick={() => copyAll(optIns)} disabled={!optIns.length}>
+              Copy opted-in
+            </button>
+          </div>
+        )}
+      </div>
+      {withEmail.length === 0 ? (
+        <p className="db-empty">No emails submitted yet.</p>
+      ) : (
+        <ul className="db-email-list">
+          {withEmail.map((r) => (
+            <li key={`e-${r.id}`} className="db-email-row">
+              <a href={`mailto:${r.email}`}>{r.email}</a>
+              {r.wants_early_access && <span className="db-pill db-pill--green">early access</span>}
+              <span className="db-email-meta">
+                {label('rel_state', r.rel_state || '')} · {new Date(r.created_at).toLocaleDateString()}
+              </span>
+            </li>
+          ))}
+        </ul>
+      )}
+    </section>
   );
 }
 

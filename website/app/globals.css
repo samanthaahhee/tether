@@ -395,6 +395,15 @@ body { font-family: 'Inter', sans-serif; color: #211e28; background: #fff; -webk
 .db-likert-fill { height: 100%; background: linear-gradient(90deg, #92a6f4, #4ea989); border-radius: 8px; transition: width 0.4s ease; }
 .db-likert-value { font: 600 16px/1 'Instrument Sans',sans-serif; color: #211e28; text-align: right; font-variant-numeric: tabular-nums; }
 
+.db-emails-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 16px; }
+.db-email-list { list-style: none; padding: 0; display: flex; flex-direction: column; gap: 4px; }
+.db-email-row { display: flex; align-items: center; gap: 10px; padding: 10px 12px; background: #f7f5fd; border-radius: 8px; font: 400 13px/1.3 'Inter',sans-serif; flex-wrap: wrap; }
+.db-email-row a { color: #211e28; font-weight: 600; text-decoration: none; }
+.db-email-row a:hover { text-decoration: underline; }
+.db-email-meta { color: #80798c; margin-left: auto; font-size: 12px; }
+.db-pill { font: 600 10px/1 'Inter',sans-serif; letter-spacing: 0.5px; text-transform: uppercase; padding: 4px 8px; border-radius: 999px; }
+.db-pill--green { background: #c8ecb0; color: #4a7a23; }
+
 .db-quotes { display: flex; flex-direction: column; gap: 12px; }
 .db-quote { background: #f7f5fd; border-left: 3px solid #96d35f; padding: 14px 18px; border-radius: 0 12px 12px 0; }
 .db-quote p { font: 400 14px/1.6 'Inter',sans-serif; color: #211e28; margin-bottom: 6px; white-space: pre-wrap; }
