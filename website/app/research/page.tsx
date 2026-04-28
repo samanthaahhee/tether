@@ -25,8 +25,8 @@ export default function ResearchPage() {
         <div className="rs-hero-inner">
           <p className="rs-eyebrow">EARLY ACCESS</p>
           <h1 className="rs-h1">
-            Get early access by helping<br />
-            us build something truly meaningful.
+            Help us build something<br />
+            truly meaningful.
           </h1>
           <p className="rs-sub">
             Fill in this short survey and you&apos;ll be first in line for Hey Otis, a private
