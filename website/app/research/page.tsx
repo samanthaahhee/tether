@@ -23,15 +23,15 @@ export default function ResearchPage() {
       {/* Hero */}
       <section className="rs-hero">
         <div className="rs-hero-inner">
-          <p className="rs-eyebrow">RESEARCH</p>
+          <p className="rs-eyebrow">EARLY ACCESS</p>
           <h1 className="rs-h1">
-            Help us build something<br />
-            couples actually want.
+            Get early access by helping<br />
+            us build something truly meaningful.
           </h1>
           <p className="rs-sub">
-            We&apos;re building Hey Otis, a private guide that helps couples move from rupture
-            to repair. Before we go further, we want to hear from you. This takes about
-            4 minutes. Honest answers welcome, even uncomfortable ones.
+            Fill in this short survey and you&apos;ll be first in line for Hey Otis, a private
+            guide that helps couples move from rupture to repair. Honest answers welcome,
+            even uncomfortable ones. It takes about 4 minutes.
           </p>
           <p className="rs-meta">
             Anonymous by default · Email is optional at the end · ~16 questions

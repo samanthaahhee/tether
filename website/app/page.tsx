@@ -11,7 +11,7 @@ export default function Home() {
           <div className="nav-brand">
             <img src="/header-logo.png" alt="Hey Otis" className="nav-icon" />
           </div>
-          <a href="#get-started" className="nav-cta">Get early access</a>
+          <a href="/research?src=nav" className="nav-cta">Get early access</a>
         </div>
       </nav>
 
