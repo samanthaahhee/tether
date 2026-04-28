@@ -25,7 +25,7 @@ export default function ResearchPage() {
         <div className="rs-hero-inner">
           <p className="rs-eyebrow">EARLY ACCESS</p>
           <h1 className="rs-h1">
-            Help us build something<br />
+            Help us build something{' '}<br />
             truly meaningful.
           </h1>
           <p className="rs-sub">

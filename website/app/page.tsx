@@ -131,7 +131,7 @@ export default function Home() {
           <div className="gt-right">
             <ScrollReveal>
               <p className="gt-eyebrow">GROW TOGETHER</p>
-              <h2 className="gt-title">The more you share, the better it understands.</h2>
+              <h2 className="gt-title">The more you share, the better Otis understands.</h2>
               <p className="gt-body">
                 Every answer you and your partner give tells Otis something new about your relationship.
                 Those insights help shape every conversation. So when you&apos;re stuck in the same argument again,
