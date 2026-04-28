@@ -13,7 +13,7 @@ export default function robots(): MetadataRoute.Robots {
         allow: '/',
         // Keep the admin dashboard out of search engines (the data is also
         // password-protected, but no need to advertise the URL).
-        disallow: ['/admin', '/admin/'],
+        disallow: ['/admin', '/admin/', '/pitch', '/pitch/'],
       },
     ],
     sitemap: 'https://heyotis.app/sitemap.xml',
