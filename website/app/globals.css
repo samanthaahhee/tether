@@ -237,6 +237,21 @@ body { font-family: 'Inter', sans-serif; color: #211e28; background: #fff; -webk
 .rs-consent-title { font: 600 22px/1.25 'Inter',sans-serif; color: #211e28; }
 .rs-consent p { font: 400 15px/1.65 'Inter',sans-serif; color: #3a3630; }
 
+/* SurveyCircle PS line */
+.rs-sc-ps {
+  max-width: 720px;
+  margin: 32px auto 0;
+  font: 400 13px/1.6 'Inter',sans-serif;
+  color: #80798c;
+  text-align: center;
+  background: #fff;
+  border: 1px solid #dedde8;
+  border-radius: 12px;
+  padding: 16px 22px;
+}
+.rs-sc-ps a { color: #4a7a23; font-weight: 600; text-decoration: none; }
+.rs-sc-ps a:hover { text-decoration: underline; }
+
 /* Inline disqualification notice (single user) */
 .rs-disq {
   font: 400 14px/1.6 'Inter',sans-serif;

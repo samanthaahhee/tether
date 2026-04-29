@@ -405,7 +405,7 @@ const CURRENCY_SYMBOL: Record<string, string> = {
 
 // ── Component ───────────────────────────────────────────────────────────
 
-export default function ResearchFormV2() {
+export default function ResearchFormV2({ defaultSrc }: { defaultSrc?: string } = {}) {
   const [a, setA] = useState<Answers>(EMPTY);
   const [status, setStatus] = useState<Status>('idle');
   const [message, setMessage] = useState('');
@@ -477,7 +477,7 @@ export default function ResearchFormV2() {
 
     const referrer = document.referrer
       ? new URL(document.referrer).hostname
-      : new URLSearchParams(window.location.search).get('src') || 'direct';
+      : new URLSearchParams(window.location.search).get('src') || defaultSrc || 'direct';
 
     const body = {
       consent_acknowledged: true, // implicit by reaching submit
