@@ -37,7 +37,7 @@ export default function ResearchSurveyCirclePage() {
             even uncomfortable ones. It takes about 8 minutes.
           </p>
           <p className="rs-meta">
-            Anonymous by default · Email is optional at the end · ~25 questions
+            Anonymous · 8 minutes · ~25 questions
           </p>
         </div>
       </section>

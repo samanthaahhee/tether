@@ -644,9 +644,8 @@ export default function ResearchFormV2({
         <h2 className="rs-consent-title">Thank you for taking 8 minutes for this.</h2>
         <p>
           The questions ask about your relationship and how you handle conflict. Some are personal.
-          All your answers are anonymous and will only be used to shape Hey Otis. You can leave any
-          optional question blank, or close the tab at any point. Your answers are not saved until
-          you submit.
+          All your answers are anonymous and will only be used to shape Hey Otis. You can close the
+          tab at any point. Your answers are not saved until you submit.
         </p>
       </div>
 
@@ -695,7 +694,7 @@ export default function ResearchFormV2({
               choices={AI_USAGE_FOR} values={a.ai_usage_for_emotional}
               onToggle={(v) => toggleMulti('ai_usage_for_emotional', v)} />
             <div className="rs-q">
-              <label className="rs-q-label">If you used AI for any of the above, what worked, and what felt off about it? (optional)</label>
+              <label className="rs-q-label">If you used AI for any of the above, what worked, and what felt off about it?</label>
               <textarea className="rs-textarea" rows={3} value={a.ai_usage_what_worked}
                 onChange={(e) => set('ai_usage_what_worked', e.target.value)}
                 placeholder="Be honest. The off bits are the most useful." maxLength={500} />
@@ -759,7 +758,7 @@ export default function ResearchFormV2({
                 placeholder="Be honest. The hardest answers are the most useful." maxLength={300} required />
             </div>
             <div className="rs-q">
-              <label className="rs-q-label">What would make you trust an app like this enough to use it during a fight? (optional)</label>
+              <label className="rs-q-label">What would make you trust an app like this enough to use it during a fight?</label>
               <textarea className="rs-textarea" rows={3} value={a.trust_requirement}
                 onChange={(e) => set('trust_requirement', e.target.value)}
                 placeholder="The thing that has to be true for you to open it." maxLength={400} />
@@ -799,7 +798,7 @@ export default function ResearchFormV2({
               label="At what monthly price would it be SO EXPENSIVE that you&apos;d definitely not buy it?"
               value={a.vw_too_expensive} onChange={(v) => set('vw_too_expensive', v)} />
             <Choices dataKey="pricing_model_preference"
-              label="Which pricing model would feel most natural? (optional)"
+              label="Which pricing model would feel most natural?"
               choices={PRICING_MODEL} value={a.pricing_model_preference}
               onChange={(v) => set('pricing_model_preference', v)} />
             <Choices dataKey="partner_buy_in"
@@ -818,13 +817,13 @@ export default function ResearchFormV2({
           {/* SECTION 7 — OPEN + INTERVIEW */}
           <Section eyebrow="07 · IN YOUR OWN WORDS" title="The most useful answers we get.">
             <div className="rs-q">
-              <label className="rs-q-label">If you could change one thing about how you and your partner handle hard moments, what would it be? (optional)</label>
+              <label className="rs-q-label">If you could change one thing about how you and your partner handle hard moments, what would it be?</label>
               <textarea className="rs-textarea" rows={4} value={a.tape_recorder}
                 onChange={(e) => set('tape_recorder', e.target.value)}
                 placeholder="There&apos;s no wrong answer." maxLength={600} />
             </div>
             <div className="rs-q">
-              <label className="rs-q-label">What do you wish someone was building for couples in conflict? (optional)</label>
+              <label className="rs-q-label">What do you wish someone was building for couples in conflict?</label>
               <textarea className="rs-textarea" rows={3} value={a.open_wish}
                 onChange={(e) => set('open_wish', e.target.value)}
                 placeholder="Dream a little. We&apos;re listening." maxLength={1000} />
@@ -849,20 +848,20 @@ export default function ResearchFormV2({
               onChange={(v) => set('age_band', v)} />
             <Choices dataKey="gender" label="Gender" choices={GENDER} value={a.gender}
               onChange={(v) => set('gender', v)} />
-            <Choices dataKey="sexual_orientation" label="Sexual orientation (optional)"
+            <Choices dataKey="sexual_orientation" label="Sexual orientation"
               choices={ORIENTATION} value={a.sexual_orientation}
               onChange={(v) => set('sexual_orientation', v)} />
             <Choices dataKey="country" label="Country you live in" choices={COUNTRIES}
               value={a.country} onChange={(v) => set('country', v)} />
-            <Choices dataKey="education" label="Highest level of education (optional)"
+            <Choices dataKey="education" label="Highest level of education"
               choices={EDUCATION} value={a.education} onChange={(v) => set('education', v)} />
             <Choices dataKey="household_income"
-              label="Approximate household income, annual (optional)"
+              label="Approximate household income, annual"
               choices={INCOME} value={a.household_income}
               onChange={(v) => set('household_income', v)} />
-            <Choices dataKey="has_kids" label="Do you have children at home? (optional)"
+            <Choices dataKey="has_kids" label="Do you have children at home?"
               choices={KIDS} value={a.has_kids} onChange={(v) => set('has_kids', v)} />
-            <Choices dataKey="therapy_history" label="Have you ever attended therapy? (optional)"
+            <Choices dataKey="therapy_history" label="Have you ever attended therapy?"
               choices={THERAPY_HISTORY} value={a.therapy_history}
               onChange={(v) => set('therapy_history', v)} />
           </Section>
@@ -872,7 +871,7 @@ export default function ResearchFormV2({
       {/* SECTION 9 — EMAIL */}
       <Section eyebrow="09 · STAY IN TOUCH" title="Optional. Only if you want updates.">
         <div className="rs-q">
-          <label className="rs-q-label">Email (optional)</label>
+          <label className="rs-q-label">Email</label>
           <input type="email" className="rs-input" value={a.email}
             onChange={(e) => set('email', e.target.value)}
             placeholder="you@example.com" autoComplete="email" />
