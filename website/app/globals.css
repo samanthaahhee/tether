@@ -222,6 +222,34 @@ body { font-family: 'Inter', sans-serif; color: #211e28; background: #fff; -webk
 /* Question */
 .rs-q { display: flex; flex-direction: column; gap: 12px; }
 .rs-q-label { font: 500 16px/1.45 'Inter',sans-serif; color: #211e28; }
+.rs-q-hint { font: 400 13px/1.4 'Inter',sans-serif; color: #80798c; margin-top: -4px; }
+
+/* Concept block (v2 survey) */
+.rs-concept {
+  background: linear-gradient(180deg, #f7f5fd 0%, #e8eafa 100%);
+  border-left: 3px solid #92a6f4;
+  border-radius: 12px;
+  padding: 20px 22px;
+  display: flex; flex-direction: column; gap: 12px;
+}
+.rs-concept p { font: 400 15px/1.65 'Inter',sans-serif; color: #211e28; }
+
+/* Price input (Van Westendorp) */
+.rs-price-row {
+  display: flex; align-items: center; gap: 8px;
+  background: #f7f5fd; border: 1.5px solid #dedde8; border-radius: 14px;
+  padding: 6px 14px;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+.rs-price-row:focus-within { border-color: #211e28; box-shadow: 0 0 0 4px rgba(33,30,40,0.06); }
+.rs-price-cur { font: 600 18px/1 'Instrument Sans',sans-serif; color: #211e28; }
+.rs-price-input {
+  flex: 1; min-width: 0; background: transparent; border: none; padding: 12px 0;
+  font: 500 18px/1.4 'Inter',sans-serif; color: #211e28;
+  font-variant-numeric: tabular-nums;
+}
+.rs-price-input:focus { outline: none; box-shadow: none; }
+.rs-price-suffix { font: 400 14px/1 'Inter',sans-serif; color: #80798c; white-space: nowrap; }
 
 /* Choices (radio-as-pills) */
 .rs-choices { display: flex; flex-wrap: wrap; gap: 8px; }
