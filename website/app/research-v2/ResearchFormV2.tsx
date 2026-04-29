@@ -416,8 +416,13 @@ export default function ResearchFormV2({
   const [status, setStatus] = useState<Status>('idle');
   const [message, setMessage] = useState('');
 
-  // Hard disqualify: not in a relationship at all
-  const isDisqualified = a.relationship_status === 'single';
+  // Hard disqualify: single (not target) or under 25 (not target)
+  const isDisqualified =
+    a.relationship_status === 'single' || a.age_band === 'lt_25';
+  const disqualifiedReason: 'single' | 'under_25' | null =
+    a.age_band === 'lt_25' ? 'under_25'
+    : a.relationship_status === 'single' ? 'single'
+    : null;
 
   const progress = useMemo(() => {
     const filled = REQUIRED_KEYS.filter((k) => isFilled(a[k] as string | string[])).length;
@@ -590,9 +595,13 @@ export default function ResearchFormV2({
     return (
       <div className="rs-thanks">
         <p className="rs-eyebrow" style={{ color: '#81b756' }}>THANK YOU</p>
-        <h2 className="rs-thanks-title">Hey Otis is built for couples in long-term relationships.</h2>
+        <h2 className="rs-thanks-title">
+          {disqualifiedReason === 'under_25'
+            ? 'Hey Otis is being built for couples 25 and over.'
+            : 'Hey Otis is built for couples in long-term relationships.'}
+        </h2>
         <p className="rs-thanks-sub">
-          Your honesty matters. We&apos;re focused on partnered people for now, but
+          Your honesty matters. We&apos;re focused on a specific audience for now, but
           we&apos;d still love to keep you in the loop.
           <br /><br />
           <a href="/#get-started">Join the waitlist →</a>
@@ -654,10 +663,14 @@ export default function ResearchFormV2({
         <Choices dataKey="relationship_status" label="What best describes your current relationship?"
           choices={RELATIONSHIP_STATUS} value={a.relationship_status}
           onChange={(v) => set('relationship_status', v)} />
+        <Choices dataKey="age_band" label="What's your age?"
+          choices={AGE} value={a.age_band}
+          onChange={(v) => set('age_band', v)} />
         {isDisqualified && (
           <p className="rs-disq">
-            Hey Otis is built for couples. We&apos;re going to keep this short for you, but you&apos;re
-            welcome to join the waitlist below.
+            {disqualifiedReason === 'under_25'
+              ? "Hey Otis is being built for couples 25 and over for now. We'd still love to have you on the waitlist below."
+              : "Hey Otis is built for couples. We're going to keep this short for you, but you're welcome to join the waitlist below."}
           </p>
         )}
         {!isDisqualified && (
@@ -842,10 +855,8 @@ export default function ResearchFormV2({
             )}
           </Section>
 
-          {/* SECTION 8 — DEMOGRAPHICS */}
+          {/* SECTION 8 — DEMOGRAPHICS (age moved up to screening) */}
           <Section eyebrow="08 · ABOUT YOU" title="Last few. Helps us see patterns across people.">
-            <Choices dataKey="age_band" label="Age" choices={AGE} value={a.age_band}
-              onChange={(v) => set('age_band', v)} />
             <Choices dataKey="gender" label="Gender" choices={GENDER} value={a.gender}
               onChange={(v) => set('gender', v)} />
             <Choices dataKey="sexual_orientation" label="Sexual orientation"
