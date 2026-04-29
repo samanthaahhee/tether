@@ -405,7 +405,13 @@ const CURRENCY_SYMBOL: Record<string, string> = {
 
 // ── Component ───────────────────────────────────────────────────────────
 
-export default function ResearchFormV2({ defaultSrc }: { defaultSrc?: string } = {}) {
+export default function ResearchFormV2({
+  defaultSrc,
+  surveyCircleCode,
+}: {
+  defaultSrc?: string;
+  surveyCircleCode?: string;
+} = {}) {
   const [a, setA] = useState<Answers>(EMPTY);
   const [status, setStatus] = useState<Status>('idle');
   const [message, setMessage] = useState('');
@@ -605,6 +611,19 @@ export default function ResearchFormV2({ defaultSrc }: { defaultSrc?: string } =
             ? "You're on the early-access list. We'll be in touch when Hey Otis opens up."
             : <>Want early access too? <a href="/#get-started">Join the waitlist →</a></>}
         </p>
+        {surveyCircleCode && (
+          <div className="rs-sc-code-block">
+            <p className="rs-sc-code-label">Your SurveyCircle reward code</p>
+            <p className="rs-sc-code">{surveyCircleCode}</p>
+            <p className="rs-sc-code-help">
+              Copy this code and paste it back into{' '}
+              <a href="https://www.surveycircle.com" target="_blank" rel="noopener noreferrer">
+                SurveyCircle.com
+              </a>{' '}
+              to claim your points.
+            </p>
+          </div>
+        )}
       </div>
     );
   }

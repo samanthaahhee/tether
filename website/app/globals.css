@@ -237,6 +237,36 @@ body { font-family: 'Inter', sans-serif; color: #211e28; background: #fff; -webk
 .rs-consent-title { font: 600 22px/1.25 'Inter',sans-serif; color: #211e28; }
 .rs-consent p { font: 400 15px/1.65 'Inter',sans-serif; color: #3a3630; }
 
+/* SurveyCircle reward-code block (shown on thank-you screen) */
+.rs-sc-code-block {
+  margin-top: 32px;
+  padding: 24px;
+  background: linear-gradient(180deg, #f0fae0 0%, #c8ecb0 100%);
+  border: 2px solid #96d35f;
+  border-radius: 16px;
+  text-align: center;
+}
+.rs-sc-code-label {
+  font: 600 12px/1 'Inter',sans-serif;
+  color: #4a7a23;
+  letter-spacing: 1.4px;
+  text-transform: uppercase;
+}
+.rs-sc-code {
+  font: 700 22px/1 'Instrument Sans',sans-serif;
+  color: #211e28;
+  letter-spacing: 2px;
+  margin: 12px 0;
+  user-select: all;
+  word-break: break-all;
+}
+.rs-sc-code-help {
+  font: 400 13px/1.5 'Inter',sans-serif;
+  color: #3a3630;
+}
+.rs-sc-code-help a { color: #4a7a23; font-weight: 600; text-decoration: none; }
+.rs-sc-code-help a:hover { text-decoration: underline; }
+
 /* SurveyCircle PS line */
 .rs-sc-ps {
   max-width: 720px;

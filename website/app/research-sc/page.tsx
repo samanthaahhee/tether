@@ -43,7 +43,7 @@ export default function ResearchSurveyCirclePage() {
       </section>
 
       <section className="rs-form-section">
-        <ResearchFormV2 defaultSrc="surveycircle" />
+        <ResearchFormV2 defaultSrc="surveycircle" surveyCircleCode="LMFT-QNTY-19B3-QR8K" />
 
         <p className="rs-sc-ps">
           PS: SurveyCircle users receive points for their participation, which can
