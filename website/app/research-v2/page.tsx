@@ -31,10 +31,10 @@ export default function ResearchV2Page() {
           <p className="rs-sub">
             Fill in this short survey and you&apos;ll be first in line for Hey Otis, a private
             guide that helps couples move from rupture to repair. Honest answers welcome,
-            even uncomfortable ones. It takes about 6 minutes.
+            even uncomfortable ones. It takes about 8 minutes.
           </p>
           <p className="rs-meta">
-            Anonymous by default · Email is optional at the end · ~16 questions
+            Anonymous by default · Email is optional at the end · ~25 questions
           </p>
         </div>
       </section>

@@ -14,11 +14,18 @@ type Row = {
   recent_unresolved: boolean | null;
   conflict_frequency: string | null;
   relationship_length: string | null;
+  relationship_status: string | null;
+  unresolved_count_30d: string | null;
+  abusive_relationship: string | null;
+  // tools + AI
+  tools_reached_for: string[] | null;
+  ai_usage_for_emotional: string[] | null;
+  ai_usage_what_worked: string | null;
   // behavioural
   last_conflict_about: string | null;
+  last_conflict_when: string | null;
   first_30_min_actions: string[] | null;
   did_resolve: string | null;
-  tools_reached_for: string[] | null;
   // CSI-4
   csi_happiness: number | null;
   csi_going_well: number | null;
@@ -29,14 +36,32 @@ type Row = {
   maxdiff_best: string | null;
   maxdiff_worst: string | null;
   usage_blockers: string | null;
+  trust_requirement: string | null;
   mode_preference: string | null;
-  // VW pricing
+  // VW pricing + product
+  price_currency: string | null;
   vw_too_cheap: number | null;
   vw_bargain: number | null;
   vw_expensive: number | null;
   vw_too_expensive: number | null;
-  // open
+  pricing_model_preference: string | null;
+  partner_buy_in: number | null;
+  input_modality: string | null;
+  usage_moments: string[] | null;
+  // open + interview
   open_wish: string | null;
+  tape_recorder: string | null;
+  interview_willingness: string | null;
+  interview_email: string | null;
+  // demographics
+  age_band: string | null;
+  gender: string | null;
+  sexual_orientation: string | null;
+  country: string | null;
+  education: string | null;
+  household_income: string | null;
+  has_kids: string | null;
+  therapy_history: string | null;
   // contact
   email: string | null;
   wants_early_access: boolean | null;
@@ -47,14 +72,30 @@ type Row = {
 type State = 'idle' | 'loading' | 'authed' | 'error';
 
 const LABELS: Record<string, Record<string, string>> = {
-  conflict_frequency: { weekly: 'Weekly+', monthly: 'A few/mo', few_times_year: 'A few/yr', rarely: 'Rarely' },
-  relationship_length: { lt_1: '<1 yr', '1_3': '1–3 yrs', '3_7': '3–7 yrs', '7_plus': '7+ yrs', single: 'Single' },
-  did_resolve: { yes: 'Fully', partially: 'Partially', no: 'Dropped' },
-  first_30_min_actions: { shut_down: 'Shut down', vented_friend: 'Vented to friend', googled: 'Googled', journaled: 'Journaled', talked_partner: 'Talked it out', slept: 'Slept on it', used_ai: 'Used AI', other: 'Other' },
-  tools_reached_for: { therapy: 'Therapy', self_help: 'Self-help books', workbooks: 'Workbooks', apps: 'Apps', ai_chat: 'AI chat', podcasts: 'Podcasts', social: 'Social media', friends: 'Friends/family', nothing: 'Nothing' },
+  relationship_status: { married: 'Married/civil', lt_living: 'LT, living together', lt_apart: 'LT, apart', newer: '<1yr', single: 'Single' },
+  conflict_frequency: { daily: 'Daily', several_week: 'Several/wk', weekly: 'Weekly', monthly: 'A few/mo', few_times_year: 'A few/yr', rarely: 'Rarely' },
+  relationship_length: { lt_1: '<1 yr', '1_3': '1–3 yrs', '3_7': '3–7 yrs', '7_15': '7–15 yrs', '15_plus': '15+ yrs', '7_plus': '7+ yrs (legacy)' },
+  unresolved_count_30d: { none: 'None', '1': '1', '2_3': '2–3', '4_6': '4–6', more_6: '6+' },
+  abusive_relationship: { no: 'No', past: 'Past', currently: 'Currently', prefer_not: 'Prefer not' },
+  did_resolve: { yes_fully: 'Fully', yes_days: 'Took days', partially: 'Partially', still: 'Still working', dropped: 'Dropped', yes: 'Fully (legacy)', no: 'Dropped (legacy)' },
+  last_conflict_when: { today: 'Today', past_week: 'Past week', '2_4_weeks': '2–4 wks', '1_3_months': '1–3 mo', longer: 'Longer ago' },
+  first_30_min_actions: { shut_down: 'Shut down', yelled: 'Argued more', cried: 'Cried', walked_out: 'Walked out', vented_friend: 'Vented to friend', texted_partner: 'Texted partner', googled: 'Googled', journaled: 'Journaled', talked_partner: 'Talked it out', slept: 'Slept on it', used_ai: 'Used AI', drink_med: 'Drink/med', other: 'Other' },
+  tools_reached_for: { couples_therapy: 'Couples therapy', individual_therapy: 'Own therapist', therapy: 'Therapy (legacy)', self_help: 'Self-help books', workbooks: 'Workbooks', apps: 'Apps', ai_chat: 'AI chat', podcasts: 'Podcasts', social: 'Social media', friends: 'Friends/family', helpline: 'Helpline', religious: 'Religious', coach: "Coach/mediator", nothing: 'Nothing' },
+  ai_usage_for_emotional: { draft_message: 'Drafting messages', talk_through_fight: 'Talking through fight', understand_partner: 'Understand partner', process_emotions: 'Process emotions', lookup_advice: 'Looking up advice', practise_conversation: 'Practising convo', never: 'Never used AI' },
   maxdiff_best: { vent: 'Vent', understand: 'Understand', prepare: 'Prepare', nurture: 'Nurture' },
   maxdiff_worst: { vent: 'Vent', understand: 'Understand', prepare: 'Prepare', nurture: 'Nurture' },
-  mode_preference: { solo: 'Solo', partner: 'Partner', both: 'Both synced' },
+  mode_preference: { solo: 'Solo', partner: 'Partner', both: 'Both synced', start_solo: 'Start solo, see' },
+  pricing_model_preference: { free_tier: 'Free + paid', sub_monthly: 'Monthly sub', sub_annual: 'Annual sub', one_time: 'One-time', couple_plan: 'Couple plan', pay_per_use: 'Pay per use' },
+  input_modality: { type: 'Type', voice: 'Voice', both: 'Both', depends: 'Depends' },
+  usage_moments: { late_night: 'Late night', right_after: 'Right after fight', next_morning: 'Next morning', weekend_am: 'Weekend AM', work_hours: 'Work hours', before_bed: 'Before bed', commute: 'Commute', other: 'Other' },
+  interview_willingness: { yes: 'Yes', maybe: 'Maybe', no: 'No' },
+  age_band: { lt_25: '<25', '25_34': '25–34', '35_44': '35–44', '45_54': '45–54', '55_64': '55–64', '65_plus': '65+', prefer_not: 'Prefer not' },
+  gender: { woman: 'Woman', man: 'Man', nonbinary: 'Non-binary', other: 'Other', prefer_not: 'Prefer not' },
+  sexual_orientation: { straight: 'Straight', gay: 'Gay/lesbian', bisexual: 'Bisexual', queer: 'Queer', other: 'Other', prefer_not: 'Prefer not' },
+  education: { secondary: 'Secondary', some_uni: 'Some uni', bachelors: "Bachelor's", masters_phd: "Master's/PhD", trade: 'Trade', prefer_not: 'Prefer not' },
+  household_income: { lt_30: '<€30k', '30_60': '€30–60k', '60_100': '€60–100k', '100_150': '€100–150k', '150_plus': '€150k+', prefer_not: 'Prefer not' },
+  has_kids: { no: 'No', under_5: '<5', '5_12': '5–12', teens: 'Teens', adult_home: 'Adult at home', adult_left: 'Adult, left', prefer_not: 'Prefer not' },
+  therapy_history: { never: 'Never', individual_only: 'Individual only', couples_now: 'Couples (now)', couples_past: 'Couples (past)', both: 'Both', prefer_not: 'Prefer not' },
 };
 
 function label(group: string, value: string) {
@@ -268,9 +309,9 @@ function DashboardView({ rows, onLogout, onRefresh }: { rows: Row[]; onLogout: (
             <p className="db-csi-s">{csi.distressed} of {csi.total} respondents scored &lt;13.5 (clinical cutoff for relationship distress)</p>
           </div>
           <div className="db-csi-block">
-            <p className="db-csi-num">{conceptAppealAvg ? conceptAppealAvg.toFixed(2) : '—'}<span> / 5</span></p>
+            <p className="db-csi-num">{conceptAppealAvg ? conceptAppealAvg.toFixed(2) : '—'}<span> / 7</span></p>
             <p className="db-csi-l">Concept appeal</p>
-            <p className="db-csi-s">Average rating across all respondents</p>
+            <p className="db-csi-s">Average rating (7-point scale)</p>
           </div>
         </div>
       </section>
@@ -303,15 +344,51 @@ function DashboardView({ rows, onLogout, onRefresh }: { rows: Row[]; onLogout: (
         </ul>
       </section>
 
+      {/* Partner buy-in (viral coefficient) */}
+      <section className="db-card">
+        <h2 className="db-card-title">Partner buy-in (viral coefficient signal)</h2>
+        <PartnerBuyIn rows={rows} />
+      </section>
+
+      {/* AI usage (the wedge data) */}
+      <div className="db-grid">
+        <BarCard title="What people use AI for in conflict (multi)" data={multi('ai_usage_for_emotional')} group="ai_usage_for_emotional" total={total} />
+        <BarCard title="Pricing model preference" data={single('pricing_model_preference')} group="pricing_model_preference" total={total} />
+      </div>
+
+      <div className="db-grid">
+        <BarCard title="Preferred input modality" data={single('input_modality')} group="input_modality" total={total} />
+        <BarCard title="When they'd reach for it (multi)" data={multi('usage_moments')} group="usage_moments" total={total} />
+      </div>
+
       {/* Email opt-ins */}
       <EmailList rows={rows} />
 
+      {/* Interview pipeline */}
+      <InterviewList rows={rows} />
+
       {/* Single-select bars */}
       <div className="db-grid">
+        <BarCard title="Relationship status" data={single('relationship_status')} group="relationship_status" total={total} />
         <BarCard title="Relationship length" data={single('relationship_length')} group="relationship_length" total={total} />
         <BarCard title="Conflict frequency" data={single('conflict_frequency')} group="conflict_frequency" total={total} />
+        <BarCard title="Unresolved last 30d" data={single('unresolved_count_30d')} group="unresolved_count_30d" total={total} />
+        <BarCard title="When the last fight was" data={single('last_conflict_when')} group="last_conflict_when" total={total} />
         <BarCard title="Did the last fight resolve?" data={single('did_resolve')} group="did_resolve" total={total} />
         <BarCard title="Mode preference" data={single('mode_preference')} group="mode_preference" total={total} />
+        <BarCard title="Abuse screen flag" data={single('abusive_relationship')} group="abusive_relationship" total={total} />
+      </div>
+
+      {/* Demographics */}
+      <div className="db-grid">
+        <BarCard title="Age" data={single('age_band')} group="age_band" total={total} />
+        <BarCard title="Gender" data={single('gender')} group="gender" total={total} />
+        <BarCard title="Country" data={single('country')} group="country" total={total} />
+        <BarCard title="Sexual orientation" data={single('sexual_orientation')} group="sexual_orientation" total={total} />
+        <BarCard title="Education" data={single('education')} group="education" total={total} />
+        <BarCard title="Household income" data={single('household_income')} group="household_income" total={total} />
+        <BarCard title="Children at home" data={single('has_kids')} group="has_kids" total={total} />
+        <BarCard title="Therapy history" data={single('therapy_history')} group="therapy_history" total={total} />
       </div>
 
       {/* Multi-select */}
@@ -344,6 +421,45 @@ function DashboardView({ rows, onLogout, onRefresh }: { rows: Row[]; onLogout: (
             </blockquote>
           ))}
           {!rows.some((r) => r.usage_blockers) && <p className="db-empty">No open responses yet.</p>}
+        </div>
+      </section>
+
+      <section className="db-card">
+        <h2 className="db-card-title">What would make you trust it?</h2>
+        <div className="db-quotes">
+          {rows.filter((r) => r.trust_requirement).map((r) => (
+            <blockquote key={`tr-${r.id}`} className="db-quote">
+              <p>{r.trust_requirement}</p>
+              <cite>{new Date(r.created_at).toLocaleDateString()}</cite>
+            </blockquote>
+          ))}
+          {!rows.some((r) => r.trust_requirement) && <p className="db-empty">No open responses yet.</p>}
+        </div>
+      </section>
+
+      <section className="db-card">
+        <h2 className="db-card-title">If you could change one thing about how you handle hard moments…</h2>
+        <div className="db-quotes">
+          {rows.filter((r) => r.tape_recorder).map((r) => (
+            <blockquote key={`tape-${r.id}`} className="db-quote">
+              <p>{r.tape_recorder}</p>
+              <cite>{new Date(r.created_at).toLocaleDateString()}</cite>
+            </blockquote>
+          ))}
+          {!rows.some((r) => r.tape_recorder) && <p className="db-empty">No open responses yet.</p>}
+        </div>
+      </section>
+
+      <section className="db-card">
+        <h2 className="db-card-title">What worked / felt off about using AI for this?</h2>
+        <div className="db-quotes">
+          {rows.filter((r) => r.ai_usage_what_worked).map((r) => (
+            <blockquote key={`ai-${r.id}`} className="db-quote">
+              <p>{r.ai_usage_what_worked}</p>
+              <cite>{new Date(r.created_at).toLocaleDateString()}</cite>
+            </blockquote>
+          ))}
+          {!rows.some((r) => r.ai_usage_what_worked) && <p className="db-empty">No open responses yet.</p>}
         </div>
       </section>
 
@@ -412,6 +528,81 @@ function Stat({ label, value, small }: { label: string; value: string; small?: b
       <p className={`db-stat-value ${small ? 'db-stat-value--sm' : ''}`}>{value}</p>
       <p className="db-stat-label">{label}</p>
     </div>
+  );
+}
+
+function PartnerBuyIn({ rows }: { rows: Row[] }) {
+  const vals = rows.map((r) => r.partner_buy_in).filter((v): v is number => typeof v === 'number');
+  const avg = vals.length ? vals.reduce((a, b) => a + b, 0) / vals.length : 0;
+  const high = vals.filter((v) => v >= 4).length;
+  const highPct = vals.length ? Math.round((high / vals.length) * 100) : 0;
+  return (
+    <div className="db-csi">
+      <div className="db-csi-block">
+        <p className="db-csi-num">{vals.length ? avg.toFixed(2) : '—'}<span> / 5</span></p>
+        <p className="db-csi-l">Avg partner buy-in</p>
+        <p className="db-csi-s">Predicts solo → couple-tier conversion</p>
+      </div>
+      <div className="db-csi-block db-csi-block--alert">
+        <p className="db-csi-num">{highPct}%<span></span></p>
+        <p className="db-csi-l">Said partner would &ldquo;probably&rdquo; or &ldquo;definitely&rdquo;</p>
+        <p className="db-csi-s">{high} of {vals.length} rated 4–5. The viral coefficient signal.</p>
+      </div>
+      <div className="db-csi-block">
+        <p className="db-csi-num">{vals.filter((v) => v <= 2).length}<span></span></p>
+        <p className="db-csi-l">Rated 1–2 (won&apos;t bring partner)</p>
+        <p className="db-csi-s">These respondents must be served well in solo mode</p>
+      </div>
+    </div>
+  );
+}
+
+function InterviewList({ rows }: { rows: Row[] }) {
+  const yes = rows.filter((r) => r.interview_willingness === 'yes' && r.interview_email);
+  const maybe = rows.filter((r) => r.interview_willingness === 'maybe' && r.interview_email);
+
+  function copyEmails(list: Row[]) {
+    const text = list.map((r) => r.interview_email).join(', ');
+    navigator.clipboard?.writeText(text);
+  }
+
+  return (
+    <section className="db-card">
+      <div className="db-emails-head">
+        <h2 className="db-card-title" style={{ marginBottom: 0 }}>
+          Interview pipeline ({yes.length} yes · {maybe.length} maybe)
+        </h2>
+        {yes.length > 0 && (
+          <div style={{ display: 'flex', gap: 8 }}>
+            <button className="btn-ghost" style={{ padding: '8px 14px', fontSize: 12 }} onClick={() => copyEmails(yes)}>
+              Copy yes-list
+            </button>
+            <button className="btn-ghost" style={{ padding: '8px 14px', fontSize: 12 }} onClick={() => copyEmails([...yes, ...maybe])} disabled={!maybe.length}>
+              Copy yes + maybe
+            </button>
+          </div>
+        )}
+      </div>
+      {yes.length === 0 && maybe.length === 0 ? (
+        <p className="db-empty">No interview opt-ins yet.</p>
+      ) : (
+        <ul className="db-email-list">
+          {[...yes, ...maybe].map((r) => (
+            <li key={`int-${r.id}`} className="db-email-row">
+              <a href={`mailto:${r.interview_email}`}>{r.interview_email}</a>
+              {r.interview_willingness === 'yes' ? (
+                <span className="db-pill db-pill--green">yes</span>
+              ) : (
+                <span className="db-pill" style={{ background: '#fff4e6', color: '#a35200' }}>maybe</span>
+              )}
+              <span className="db-email-meta">
+                {label('age_band', r.age_band || '')} · {label('gender', r.gender || '')} · {label('country', r.country || '')}
+              </span>
+            </li>
+          ))}
+        </ul>
+      )}
+    </section>
   );
 }
 

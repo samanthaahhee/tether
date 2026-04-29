@@ -224,6 +224,29 @@ body { font-family: 'Inter', sans-serif; color: #211e28; background: #fff; -webk
 .rs-q-label { font: 500 16px/1.45 'Inter',sans-serif; color: #211e28; }
 .rs-q-hint { font: 400 13px/1.4 'Inter',sans-serif; color: #80798c; margin-top: -4px; }
 
+/* Consent block at top of v2.1 survey */
+.rs-consent {
+  background: #fff;
+  border: 1px solid #dedde8;
+  border-left: 3px solid #4a7a23;
+  border-radius: 16px;
+  padding: 28px 28px 24px;
+  display: flex; flex-direction: column; gap: 12px;
+  margin-bottom: 8px;
+}
+.rs-consent-title { font: 600 22px/1.25 'Inter',sans-serif; color: #211e28; }
+.rs-consent p { font: 400 15px/1.65 'Inter',sans-serif; color: #3a3630; }
+
+/* Inline disqualification notice (single user) */
+.rs-disq {
+  font: 400 14px/1.6 'Inter',sans-serif;
+  color: #4a7a23;
+  background: #f0fae0;
+  border: 1px solid #c8ecb0;
+  border-radius: 12px;
+  padding: 14px 18px;
+}
+
 /* Concept block (v2 survey) */
 .rs-concept {
   background: linear-gradient(180deg, #f7f5fd 0%, #e8eafa 100%);
