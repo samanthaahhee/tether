@@ -432,6 +432,27 @@ body { font-family: 'Inter', sans-serif; color: #211e28; background: #fff; -webk
 .db-pill { font: 600 10px/1 'Inter',sans-serif; letter-spacing: 0.5px; text-transform: uppercase; padding: 4px 8px; border-radius: 999px; }
 .db-pill--green { background: #c8ecb0; color: #4a7a23; }
 
+/* CSI-4 block */
+.db-csi { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+.db-csi-block { background: #f7f5fd; border: 1px solid #e8e6f0; border-radius: 14px; padding: 22px 20px; }
+.db-csi-block--alert { background: linear-gradient(180deg, #fff4e6 0%, #ffe8d4 100%); border-color: #f67700; }
+.db-csi-num { font: 600 40px/1 'Instrument Sans',sans-serif; color: #211e28; }
+.db-csi-num span { font-size: 16px; color: #80798c; font-weight: 400; margin-left: 6px; }
+.db-csi-l { font: 600 13px/1.2 'Inter',sans-serif; color: #211e28; margin-top: 10px; }
+.db-csi-s { font: 400 12px/1.4 'Inter',sans-serif; color: #80798c; margin-top: 6px; }
+
+/* Van Westendorp prices */
+.db-vw { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+.db-vw-card { background: #f7f5fd; border: 1px solid #e8e6f0; border-radius: 14px; padding: 22px 16px; text-align: center; }
+.db-vw-card--feat { background: linear-gradient(180deg, #f0fae0 0%, #c8ecb0 100%); border-color: #96d35f; }
+.db-vw-amt { font: 600 32px/1 'Instrument Sans',sans-serif; }
+.db-vw-l { font: 600 13px/1.2 'Inter',sans-serif; color: #211e28; margin-top: 10px; }
+.db-vw-s { font: 400 11px/1.4 'Inter',sans-serif; color: #80798c; margin-top: 4px; }
+
+@media (max-width: 800px) {
+  .db-csi, .db-vw { grid-template-columns: 1fr; }
+}
+
 .db-quotes { display: flex; flex-direction: column; gap: 12px; }
 .db-quote { background: #f7f5fd; border-left: 3px solid #96d35f; padding: 14px 18px; border-radius: 0 12px 12px 0; }
 .db-quote p { font: 400 14px/1.6 'Inter',sans-serif; color: #211e28; margin-bottom: 6px; white-space: pre-wrap; }
