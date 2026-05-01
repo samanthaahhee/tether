@@ -19,6 +19,7 @@ import { MODE_CONFIG, ModeKey, SESSION_STEPS, REPAIR_ATTEMPTS } from '../../src/
 import { Button } from '../../src/components/UI';
 import { ChevronLeft } from '../../src/components/Icon';
 import { IconLeaf, IconWind, IconSearch, IconHeart, IconX, IconBookmark, IconVoice, IconMoodLow, IconMoodOkay, IconMoodGood, IconMoodGreat, IconMoodAmazing } from '../../src/components/Icons';
+import BreathingOverlay from '../../src/components/BreathingOverlay';
 
 const STEP_ICON_MAP: Record<string, React.ComponentType<{ size?: number; color?: string }>> = {
   wind: IconWind,
@@ -699,6 +700,8 @@ function ActiveSessionView({ session, state, dispatch: d, onBack }: { session: S
   const [showCrisisBanner, setShowCrisisBanner] = useState(false);
   const [showDurationNudge, setShowDurationNudge] = useState(false);
   const [disclaimerDismissed, setDisclaimerDismissed] = useState(false);
+  const [showBreathing, setShowBreathing] = useState(false);
+  const [breathingMode, setBreathingMode] = useState<'box' | 'grounding'>('box');
   const transcriptRef = useRef('');
   const flatRef = useRef<FlatList>(null);
   const sessionStartRef = useRef(Date.now());
@@ -923,7 +926,15 @@ function ActiveSessionView({ session, state, dispatch: d, onBack }: { session: S
             <View style={styles.sessionStepNameRow}>
               <Text style={styles.sessionStepName}>{SESSION_STEPS.indexOf(step) + 1}. {cfg.label}</Text>
             </View>
-            <View style={{ minWidth: 56 }} />
+            <TouchableOpacity
+              onPress={() => { setBreathingMode('box'); setShowBreathing(true); }}
+              style={styles.breathBtn}
+              activeOpacity={0.7}
+              accessibilityLabel="Take a moment to breathe"
+              accessibilityRole="button"
+            >
+              <IconWind size={18} color={Colors.green700} />
+            </TouchableOpacity>
           </View>
 
           {/* Session name */}
@@ -965,6 +976,13 @@ function ActiveSessionView({ session, state, dispatch: d, onBack }: { session: S
         {floodingDetected && step === 'vent' && (
           <View style={[styles.floodBanner, { backgroundColor: theme.pale, borderBottomColor: theme.light }]}>
             <Text style={[styles.floodText, { color: theme.color }]}>You seem very activated. A short pause can help.</Text>
+            <TouchableOpacity
+              onPress={() => { setBreathingMode('box'); setShowBreathing(true); }}
+              activeOpacity={0.7}
+              style={styles.floodBreathBtn}
+            >
+              <Text style={[styles.floodBreathBtnText, { color: theme.color }]}>Try 60 seconds of breathing</Text>
+            </TouchableOpacity>
           </View>
         )}
 
@@ -1136,6 +1154,13 @@ function ActiveSessionView({ session, state, dispatch: d, onBack }: { session: S
 
       </KeyboardAvoidingView>
     </SafeAreaView>
+
+    {/* Always-available calming overlay (does not navigate away) */}
+    <BreathingOverlay
+      visible={showBreathing}
+      onClose={() => setShowBreathing(false)}
+      initialMode={breathingMode}
+    />
     </View>
   );
 }
@@ -1320,8 +1345,11 @@ const styles = StyleSheet.create({
   sessionStepName: { fontFamily: 'InstrumentSans_600SemiBold', fontSize: 20, color: '#211e28' },
   sessionNameSub: { fontFamily: 'Inter_400Regular', fontSize: 13, color: '#a09bac', textAlign: 'center', marginBottom: 4 },
   sessionNameInput: { fontFamily: 'Inter_400Regular', fontSize: 13, color: '#211e28', textAlign: 'center', marginBottom: 4, padding: 0 },
-  floodBanner: { borderBottomWidth: 1, padding: 10, paddingHorizontal: 16 },
+  floodBanner: { borderBottomWidth: 1, padding: 10, paddingHorizontal: 16, gap: 6 },
   floodText: { fontFamily: Fonts.body, fontSize: 13, color: Colors.warmBrown },
+  floodBreathBtn: { alignSelf: 'flex-start', paddingVertical: 4 },
+  floodBreathBtnText: { fontFamily: Fonts.bodyMedium, fontSize: 13, textDecorationLine: 'underline' },
+  breathBtn: { minWidth: 56, height: 36, alignItems: 'flex-end', justifyContent: 'center', paddingHorizontal: 12 },
   chatMascotWrap: { position: 'absolute', bottom: 8, right: 16, zIndex: 0, width: 110, height: 110 },
   chatMascot: { width: 110, height: 110 },
   msgList: { paddingHorizontal: 16, paddingVertical: 12, gap: 16 },
