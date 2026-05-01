@@ -66,6 +66,8 @@ const ABUSE: RegExp[] = [
   /\bit'?s\s+getting\s+(worse|more\s+violent)\b/i,
   /\b(domestic|partner|intimate\s+partner)\s+(violence|abuse)\b/i,
   /\b(threatened\s+to\s+kill|said\s+he'?ll\s+kill|will\s+kill\s+me)\b/i,
+  /\b(friend|sister|brother|mother|father|cousin|colleague|coworker|neighbour|neighbor|someone\s+i\s+know)\s+(is|was)\s+(being\s+)?(abused|beaten|hit|hurt|raped|controlled|threatened)\b/i,
+  /\bsomeone\s+is\s+(abusing|beating|hurting|raping|controlling|threatening)\s+(my|a)\b/i,
 ];
 
 const CHILD_SAFETY: RegExp[] = [

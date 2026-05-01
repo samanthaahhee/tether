@@ -702,6 +702,10 @@ function ActiveSessionView({ session, state, dispatch: d, onBack }: { session: S
   const [disclaimerDismissed, setDisclaimerDismissed] = useState(false);
   const [showBreathing, setShowBreathing] = useState(false);
   const [breathingMode, setBreathingMode] = useState<'box' | 'grounding'>('box');
+  // Pacing-delay flag: true between Claude returning and the message
+  // actually being shown. Drives the typing indicator the same way
+  // useClaude.loading does, but extends visibility past the API window.
+  const [aiResponding, setAiResponding] = useState(false);
   const transcriptRef = useRef('');
   const flatRef = useRef<FlatList>(null);
   const sessionStartRef = useRef(Date.now());
@@ -791,6 +795,16 @@ function ActiveSessionView({ session, state, dispatch: d, onBack }: { session: S
       content: m.text,
     }));
     const reply = await send(text, history, session.summary);
+
+    // Pacing delay before showing the response. Pure perceived-warmth UX:
+    // an instant reply reads as mechanical; a short delay (scaled to
+    // response length) reads as someone thinking. Range 800–3500ms.
+    // The TypingIndicator below the chat is gated on `aiResponding`.
+    setAiResponding(true);
+    const pacingMs = Math.max(800, Math.min(3500, reply.length * 25));
+    await new Promise((r) => setTimeout(r, pacingMs));
+    setAiResponding(false);
+
     d({ type: 'ADD_SESSION_MESSAGE', sessionId: session.id, step, message: { role: 'ai', text: reply, id: (Date.now() + 1).toString() } });
 
     // After the await, useClaude has updated crisisDetected state. If a
@@ -1027,7 +1041,7 @@ function ActiveSessionView({ session, state, dispatch: d, onBack }: { session: S
                 <ChatBubble item={item} theme={theme} profileInitial={state.profile.name?.[0] || '?'} avatarColor={state.profile.avatarColor} />
               )}
               ListFooterComponent={
-                loading ? (
+                (loading || aiResponding) ? (
                   <View style={styles.msgRow}>
                     <Image source={require('../../assets/otis-avatar.png')} style={styles.msgAvatarImg} />
                     <View style={styles.msgBubble}><TypingIndicator /></View>
@@ -1118,11 +1132,11 @@ function ActiveSessionView({ session, state, dispatch: d, onBack }: { session: S
                 )}
                 <TouchableOpacity
                   onPress={sendMessage}
-                  disabled={loading || !input.trim()}
-                  style={[styles.sendBtn, { opacity: loading || !input.trim() ? 0.5 : 1 }]}
+                  disabled={loading || aiResponding || !input.trim()}
+                  style={[styles.sendBtn, { opacity: (loading || aiResponding) || !input.trim() ? 0.5 : 1 }]}
                   activeOpacity={0.8}
                 >
-                  {loading
+                  {(loading || aiResponding)
                     ? <ActivityIndicator color="#ffffff" size="small" />
                     : <Text style={{ color: '#ffffff', fontSize: 18, fontFamily: 'Inter_600SemiBold', marginTop: -2 }}>↑</Text>
                   }

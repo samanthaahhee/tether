@@ -108,6 +108,12 @@ const ABUSE_PATTERNS: RegExp[] = [
   /\b(domestic|partner|intimate\s+partner)\s+(violence|abuse)\b/i,
   // Threats to user
   /\b(threatened\s+to\s+kill|said\s+he'?ll\s+kill|will\s+kill\s+me)\b/i,
+  // Third-person disclosures — friend / family member / "someone" being abused.
+  // We surface these even when the user isn't the one being harmed because:
+  //   (a) the user may be discreetly disclosing about themselves
+  //   (b) Pillar 3 still requires we hand them resources for the friend
+  /\b(friend|sister|brother|mother|father|cousin|colleague|coworker|neighbour|neighbor|someone\s+i\s+know)\s+(is|was)\s+(being\s+)?(abused|beaten|hit|hurt|raped|controlled|threatened)\b/i,
+  /\bsomeone\s+is\s+(abusing|beating|hurting|raping|controlling|threatening)\s+(my|a)\b/i,
 ];
 
 const CHILD_SAFETY_PATTERNS: RegExp[] = [
@@ -190,9 +196,13 @@ export function detectCrisisCategory(text: string): CrisisCategory | null {
 
 /**
  * Heuristic input quality check. Catches:
+ *   - gibberish (no vowels OR very low character variety, e.g. "akakak")
+ *   - same character repeated 5+ times in a row (asdfff)
  *   - too short (under 10 chars trimmed)
- *   - gibberish (no vowels in a 6+ char string)
- *   - same character repeated 5+ times in a row (akakak, asdfff)
+ *
+ * Order matters: gibberish/repeat checks run BEFORE the length check
+ * because a 6-char gibberish input ("asdfgh") is more diagnostic of
+ * gibberish than of just being short. The length check is the fallback.
  *
  * The thresholds are conservative — better to ask the user to elaborate
  * once than to send "akak" to Claude and get back a confident-sounding
@@ -200,13 +210,23 @@ export function detectCrisisCategory(text: string): CrisisCategory | null {
  */
 export function checkInputQuality(text: string): InputQuality {
   const trimmed = text?.trim() ?? '';
-  if (trimmed.length < 10) return 'too_short';
-
   const cleaned = trimmed.replace(/\s/g, '');
-  if (cleaned.length > 5) {
+
+  // Gibberish & repeat checks first — fire even on shortish inputs because
+  // these are clearer signals than length alone.
+  if (cleaned.length >= 4) {
     if (!/[aeiouAEIOUyY]/.test(cleaned)) return 'gibberish';
     if (/(.)\1{4,}/.test(cleaned)) return 'repeat_char';
+    // Low character variety — e.g. "akakak" has just {a, k}. If 8+ chars
+    // use ≤ 3 distinct characters, it's almost certainly typed-by-rolling-
+    // fingers gibberish, not a real word.
+    if (cleaned.length >= 8) {
+      const distinct = new Set(cleaned.toLowerCase()).size;
+      if (distinct <= 3) return 'gibberish';
+    }
   }
+
+  if (trimmed.length < 10) return 'too_short';
   return 'ok';
 }
 

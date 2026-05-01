@@ -127,25 +127,40 @@ interface UseClaudeOptions {
 }
 
 /**
- * Fire-and-forget security event log. Used when a crisis category is
- * detected client-side so we have an audit trail without coupling
- * the chat flow to log latency or RPC failures.
+ * Fire-and-forget crisis event recorder. Called when a crisis pattern
+ * is detected client-side. Does TWO things atomically via the
+ * `record_safety_event` RPC (SECURITY DEFINER, in the migration
+ * `add_safety_state_to_profiles`):
  *
- * Does NOT log conversation content — only metadata (category, step,
- * timestamp). The LLM itself is never called when this fires.
+ *   1. Updates the user's profiles.safety_state JSONB so the next app
+ *      launch can surface a pinned helpline / check-in card. This is
+ *      Pillar 9 (cross-session risk persistence).
+ *   2. Writes a `crisis.state_updated` row to security_events for audit.
+ *
+ * NEVER logs conversation content — only category + history count.
+ * Failures are non-fatal: the user already received the safety response.
  */
 function logCrisisEvent(category: CrisisCategory, step: string | null) {
   supabase
+    .rpc('record_safety_event', { p_category: category })
+    .then((res: { error: { message: string } | null }) => {
+      if (res.error) {
+        console.warn('record_safety_event failed (non-fatal):', res.error.message);
+      }
+    });
+  // Step is logged separately (low-severity) for analytics — useful to
+  // know which step crisis patterns most often surface in.
+  supabase
     .rpc('log_security_event', {
-      p_event_type: 'crisis.input_pattern_match',
-      p_severity: 'critical',
-      p_user_id: null, // server-side trigger fills this from JWT if present
+      p_event_type: 'crisis.client_step_context',
+      p_severity: 'info',
+      p_user_id: null,
       p_source: 'useClaude.client',
       p_details: { category, step: step || 'unknown' },
     })
     .then((res: { error: { message: string } | null }) => {
       if (res.error) {
-        console.warn('crisis log failed (non-fatal):', res.error.message);
+        console.warn('crisis context log failed (non-fatal):', res.error.message);
       }
     });
 }
