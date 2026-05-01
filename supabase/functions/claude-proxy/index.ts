@@ -1,5 +1,6 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient, SupabaseClient } from "jsr:@supabase/supabase-js@2";
+import { detectCrisis, safetyResponseBody } from "./safety.ts";
 
 // ═════════════════════════════════════════════════════════════════════════════
 // claude-proxy — Anthropic API proxy with per-user rate limits + audit logging
@@ -40,6 +41,35 @@ function json(body: unknown, status = 200, extraHeaders: Record<string, string> 
 function secondsUntil(resetAt: string | Date): number {
   const ms = new Date(resetAt).getTime() - Date.now();
   return Math.max(1, Math.ceil(ms / 1000));
+}
+
+/**
+ * Pull the most recent user-role text out of an Anthropic-shaped messages
+ * array. Returns null if the body doesn't have the expected shape. We
+ * tolerate missing/malformed content rather than throwing so the caller's
+ * own validation reports the better error.
+ */
+function extractLastUserText(body: unknown): string | null {
+  if (!body || typeof body !== "object") return null;
+  const messages = (body as { messages?: unknown }).messages;
+  if (!Array.isArray(messages)) return null;
+  for (let i = messages.length - 1; i >= 0; i--) {
+    const m = messages[i] as { role?: string; content?: unknown };
+    if (m?.role !== "user") continue;
+    const c = m.content;
+    if (typeof c === "string") return c;
+    if (Array.isArray(c)) {
+      const parts: string[] = [];
+      for (const block of c) {
+        if (block?.type === "text" && typeof block.text === "string") {
+          parts.push(block.text);
+        }
+      }
+      if (parts.length) return parts.join("\n");
+    }
+    return null;
+  }
+  return null;
 }
 
 /**
@@ -195,6 +225,45 @@ Deno.serve(async (req: Request) => {
     body = await req.json();
   } catch {
     return json({ error: "Invalid JSON body" }, 400);
+  }
+
+  // ── Server-side crisis check (defense in depth)
+  //
+  // The mobile client (src/utils/safetyDetect.ts) already short-circuits
+  // crisis inputs before they reach this endpoint. This is a backstop for
+  // direct-API access and regressed clients. If a crisis pattern matches
+  // the latest user message, we DO NOT forward to Anthropic — we log
+  // critically and return a synthesised safety response in the same shape
+  // the client expects from a normal Anthropic reply.
+  try {
+    const lastUserMsg = extractLastUserText(body);
+    if (lastUserMsg) {
+      const category = detectCrisis(lastUserMsg);
+      if (category) {
+        logEvent(admin, {
+          event_type: "crisis.proxy_short_circuit",
+          severity: "critical",
+          user_id: userId,
+          details: {
+            category,
+            // Truncated excerpt only — never the full content. Useful for
+            // pattern review without storing the full distress text.
+            excerpt: lastUserMsg.slice(0, 120),
+          },
+        });
+        return json(safetyResponseBody(category), 200);
+      }
+    }
+  } catch (e) {
+    // A failure in the safety check should NOT block the request — the
+    // client-side safety layer is still in front. Log loudly though.
+    console.error("claude-proxy: safety check threw", e);
+    logEvent(admin, {
+      event_type: "safety.check_exception",
+      severity: "error",
+      user_id: userId,
+      details: { message: e instanceof Error ? e.message : String(e) },
+    });
   }
 
   // ── Upstream Anthropic
