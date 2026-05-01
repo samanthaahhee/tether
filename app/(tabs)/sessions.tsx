@@ -15,7 +15,7 @@ try {
 import { useAppState, Message, Session } from '../../src/hooks/useAppState';
 import { useClaude } from '../../src/hooks/useClaude';
 import { Colors, Fonts, Radius, Shadows } from '../../src/constants/theme';
-import { MODE_CONFIG, ModeKey, SESSION_STEPS, CRISIS_WORDS, REPAIR_ATTEMPTS } from '../../src/constants/data';
+import { MODE_CONFIG, ModeKey, SESSION_STEPS, REPAIR_ATTEMPTS } from '../../src/constants/data';
 import { Button } from '../../src/components/UI';
 import { ChevronLeft } from '../../src/components/Icon';
 import { IconLeaf, IconWind, IconSearch, IconHeart, IconX, IconBookmark, IconVoice, IconMoodLow, IconMoodOkay, IconMoodGood, IconMoodGreat, IconMoodAmazing } from '../../src/components/Icons';
@@ -707,7 +707,10 @@ function ActiveSessionView({ session, state, dispatch: d, onBack }: { session: S
   const theme = STEP_THEME[step];
   const messages = session.messages[step] || [];
 
-  const { send, summarise, generateMemoryUpdate, generateCheckIn, loading, floodingDetected } = useClaude({
+  const {
+    send, summarise, generateMemoryUpdate, generateCheckIn,
+    loading, floodingDetected, crisisDetected,
+  } = useClaude({
     systemPrompt: cfg.systemPrompt,
     userProfile: {
       name: state.profile.name,
@@ -718,6 +721,7 @@ function ActiveSessionView({ session, state, dispatch: d, onBack }: { session: S
       need: state.profile.need,
     },
     userMemory: state.userMemory,
+    crisisCountry: state.crisisCountry,
   });
 
   const userMsgCount = useMemo(() => messages.filter((m) => m.role === 'user').length, [messages]);
@@ -771,17 +775,11 @@ function ActiveSessionView({ session, state, dispatch: d, onBack }: { session: S
 
     setInput('');
 
-    const lower = text.toLowerCase();
-    const isCrisis = CRISIS_WORDS.some((w) => lower.includes(w));
-    if (isCrisis) {
-      setShowCrisisBanner(true);
-      Alert.alert(
-        'You are not alone',
-        'It sounds like you may be going through something serious. Please reach out to a crisis helpline — you deserve real support right now.\n\nSA Lifeline: 0800 567 567\nSA Depression & Anxiety: 0800 456 789\nUSA: 988\nUK Samaritans: 116 123',
-        [{ text: 'I understand, continue', style: 'cancel' }]
-      );
-    }
-
+    // Crisis detection happens inside useClaude.send() — it checks the
+    // input against the full pattern taxonomy in src/utils/safetyDetect.ts
+    // and short-circuits the LLM call with a country-specific helpline
+    // response. We mirror that signal into showCrisisBanner here so the
+    // pinned helpline card surfaces in the chat UI.
     const userMsg: Message = { role: 'user', text, id: Date.now().toString() };
     d({ type: 'ADD_SESSION_MESSAGE', sessionId: session.id, step, message: userMsg });
 
@@ -791,6 +789,12 @@ function ActiveSessionView({ session, state, dispatch: d, onBack }: { session: S
     }));
     const reply = await send(text, history, session.summary);
     d({ type: 'ADD_SESSION_MESSAGE', sessionId: session.id, step, message: { role: 'ai', text: reply, id: (Date.now() + 1).toString() } });
+
+    // After the await, useClaude has updated crisisDetected state. If a
+    // crisis category fired, surface the persistent helpline banner.
+    if (crisisDetected) {
+      setShowCrisisBanner(true);
+    }
 
     // Show transition prompt when user seems ready — not just message count
     const allMsgsNow = [...messages, userMsg, { role: 'ai' as const, text: reply, id: '' }];

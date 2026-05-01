@@ -232,7 +232,11 @@ export const DAILY_INSIGHTS = [
 ];
 
 export const FLOODING_WORDS = ['always', 'never', 'hate ', "can't stand", 'every single time'];
-export const CRISIS_WORDS = ['suicide', 'kill myself', 'end my life', "don't want to live", 'hurt myself'];
+
+// Note: the original 5-phrase CRISIS_WORDS list has been replaced by the
+// full crisis taxonomy in src/utils/safetyDetect.ts, which short-circuits
+// the Claude proxy call entirely when a crisis pattern is matched.
+// See docs/GUARDRAILS.md (Section 5) for the full pattern set.
 
 export const SESSION_STEPS: ModeKey[] = ['vent', 'understand', 'prepare', 'bridge'];
 

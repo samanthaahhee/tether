@@ -1,9 +1,16 @@
 import { useState } from 'react';
 import Constants from 'expo-constants';
-import { FLOODING_WORDS, CRISIS_WORDS } from '../constants/data';
+import { FLOODING_WORDS } from '../constants/data';
 import { UserMemory } from './useAppState';
 import { sanitiseInput } from '../utils/sanitise';
 import { filterPII, filterHarmfulContent } from '../utils/piiFilter';
+import {
+  checkSafety,
+  detectCrisisCategory,
+  type CrisisCategory,
+} from '../utils/safetyDetect';
+import { getCrisisResponse, categoryLabel } from '../utils/crisisResponses';
+import { supabase } from '../lib/supabase';
 
 // Proxy through Supabase Edge Function — API key is stored as a server secret, never in client code
 const SUPABASE_URL = Constants.expoConfig?.extra?.supabaseUrl || process.env.EXPO_PUBLIC_SUPABASE_URL || '';
@@ -96,12 +103,47 @@ interface UseClaudeOptions {
     need: string;
   };
   userMemory?: UserMemory | null;
+  /**
+   * The user's currently-set crisis country code, from app state. Used
+   * to surface the right helplines when a crisis pattern is detected.
+   * Defaults to 'international'.
+   */
+  crisisCountry?: string;
 }
 
-export function useClaude({ systemPrompt, userProfile, userMemory }: UseClaudeOptions) {
+/**
+ * Fire-and-forget security event log. Used when a crisis category is
+ * detected client-side so we have an audit trail without coupling
+ * the chat flow to log latency or RPC failures.
+ *
+ * Does NOT log conversation content — only metadata (category, step,
+ * timestamp). The LLM itself is never called when this fires.
+ */
+function logCrisisEvent(category: CrisisCategory, step: string | null) {
+  supabase
+    .rpc('log_security_event', {
+      p_event_type: 'crisis.input_pattern_match',
+      p_severity: 'critical',
+      p_user_id: null, // server-side trigger fills this from JWT if present
+      p_source: 'useClaude.client',
+      p_details: { category, step: step || 'unknown' },
+    })
+    .then((res: { error: { message: string } | null }) => {
+      if (res.error) {
+        console.warn('crisis log failed (non-fatal):', res.error.message);
+      }
+    });
+}
+
+export function useClaude({
+  systemPrompt,
+  userProfile,
+  userMemory,
+  crisisCountry = 'international',
+}: UseClaudeOptions) {
   const [loading, setLoading] = useState(false);
   const [floodingDetected, setFloodingDetected] = useState(false);
-  const [crisisDetected, setCrisisDetected] = useState(false);
+  const [crisisDetected, setCrisisDetected] = useState<CrisisCategory | null>(null);
 
   const buildSystem = (summary?: string) => {
     let system = systemPrompt;
@@ -142,8 +184,42 @@ export function useClaude({ systemPrompt, userProfile, userMemory }: UseClaudeOp
     const cleanText = sanitiseInput(userText);
     const lower = cleanText.toLowerCase();
     setFloodingDetected(FLOODING_WORDS.some((w) => lower.includes(w)));
-    setCrisisDetected(CRISIS_WORDS.some((w) => lower.includes(w)));
+
+    // ─── Layer 1 — Pre-LLM safety check ───────────────────────────────
+    // Crisis pattern matching short-circuits the LLM call entirely. The
+    // user's text is NEVER sent to Claude — they get a categorical
+    // response with country-specific helplines instead.
+    //
+    // Hypothetical, fictional, third-person, and joking framings DO NOT
+    // bypass this. See safetyDetect.ts and Pillar 8 of GUARDRAILS.md.
+    const safety = checkSafety(cleanText);
+
+    if (safety.crisis) {
+      setCrisisDetected(safety.crisis);
+      logCrisisEvent(safety.crisis, deriveStepFromSystemPrompt(systemPrompt));
+      // Tiny pacing delay so the response doesn't feel jarring.
+      await new Promise((r) => setTimeout(r, 600));
+      setLoading(false);
+      return getCrisisResponse(safety.crisis, crisisCountry);
+    }
+
+    setCrisisDetected(null);
     setLoading(true);
+
+    // ─── Layer 1b — Input quality check ───────────────────────────────
+    // If input is too short, gibberish, or a single repeated character,
+    // ask the user to elaborate rather than firing a confident-sounding
+    // response at meaningless input.
+    if (safety.quality !== 'ok') {
+      // Tiny delay so it feels like a thoughtful response, not a reflex.
+      await new Promise((r) => setTimeout(r, 700));
+      setLoading(false);
+      if (safety.quality === 'too_short') {
+        return "I want to make sure I understand. Can you tell me a little more about what's going on right now?";
+      }
+      // gibberish + repeat_char → same prompt
+      return "I'm not quite catching that. Could you try again, even just a sentence or two about what's on your mind?";
+    }
 
     if (!SUPABASE_ANON_KEY) {
       await new Promise((r) => setTimeout(r, 1200));
@@ -344,6 +420,19 @@ export function useClaude({ systemPrompt, userProfile, userMemory }: UseClaudeOp
   };
 
   return { send, summarise, generateMemoryUpdate, generateCheckIn, loading, floodingDetected, crisisDetected };
+}
+
+/**
+ * Derive the current chat step from the system prompt for audit logging
+ * purposes. Keeps the crisis log entry useful without coupling the hook
+ * to the parent component's state.
+ */
+function deriveStepFromSystemPrompt(systemPrompt: string): string {
+  if (systemPrompt.includes('VENT')) return 'vent';
+  if (systemPrompt.includes('UNDERSTAND')) return 'understand';
+  if (systemPrompt.includes('PREPARE')) return 'prepare';
+  if (systemPrompt.includes('BRIDGE') || systemPrompt.includes('NURTURE')) return 'nurture';
+  return 'unknown';
 }
 
 function getFallback(systemPrompt: string): string {
