@@ -270,6 +270,13 @@ export default function Onboarding() {
                   {ATTACH_INSIGHTS[picks.attach] || ''} Your core need is to feel {picks.need || 'seen'}. This is the thread underneath most of your conflicts. Hey Otis will help you name it and communicate it.
                 </Text>
               </View>
+
+              <View style={styles.deeperPrompt}>
+                <Text style={styles.deeperPromptLabel}>Want a sharper picture?</Text>
+                <Text style={styles.deeperPromptBody}>
+                  These quick answers give Otis a starting point. One question per dimension is a sketch, not a full portrait. When you&apos;re ready, take the full assessments in <Text style={styles.deeperPromptHi}>Learnings</Text> for a deeper, more accurate read on your attachment style, conflict pattern, love language, and how you respond under stress.
+                </Text>
+              </View>
             </View>
           )}
 
@@ -297,7 +304,9 @@ const styles = StyleSheet.create({
   hintBox: { backgroundColor: Colors.sagePale, borderWidth: 1, borderColor: Colors.sageLight, borderRadius: Radius.sm, padding: 12, flexDirection: 'row', alignItems: 'flex-start', gap: 10, marginTop: 8 },
   hintText: { flex: 1, fontFamily: Fonts.body, fontSize: 13, color: Colors.warmBrown, lineHeight: 19 },
   optCard: { flexDirection: 'row', alignItems: 'flex-start', gap: 12, backgroundColor: Colors.cream, borderWidth: 2, borderColor: Colors.sand, borderRadius: Radius.lg, padding: 14 },
-  optCardSelected: { borderColor: Colors.sage, backgroundColor: Colors.sagePale },
+  // Selected state: white fill + green outline only. The previous sagePale
+  // fill made the description text difficult to read against the wash.
+  optCardSelected: { borderColor: Colors.sage, backgroundColor: '#ffffff' },
   optTitle: { fontFamily: Fonts.bodyMedium, fontSize: 14, color: Colors.charcoal, marginBottom: 3 },
   optDesc: { fontFamily: Fonts.body, fontSize: 12, color: Colors.midBrown, lineHeight: 18 },
   optCheck: { width: 20, height: 20, borderRadius: 10, backgroundColor: Colors.sage, alignItems: 'center', justifyContent: 'center', marginTop: 2, flexShrink: 0 },
@@ -305,8 +314,18 @@ const styles = StyleSheet.create({
   summaryPill: { width: '47%', backgroundColor: Colors.creamDark, borderRadius: Radius.sm, padding: 12 },
   pillLabel: { fontFamily: Fonts.bodyMedium, fontSize: 10, letterSpacing: 0.6, textTransform: 'uppercase', color: Colors.midBrown, marginBottom: 3 },
   pillValue: { fontFamily: Fonts.bodyMedium, fontSize: 13, color: Colors.charcoal },
-  finalInsight: { backgroundColor: Colors.sagePale, borderWidth: 1, borderColor: Colors.sageLight, borderRadius: Radius.lg, padding: 16 },
-  finalInsightLabel: { fontFamily: Fonts.bodyMedium, fontSize: 10, letterSpacing: 0.7, textTransform: 'uppercase', color: Colors.sage, marginBottom: 6 },
-  finalInsightBody: { fontFamily: Fonts.body, fontSize: 13, color: Colors.warmBrown, lineHeight: 20 },
+  // Insight card: white bg + thicker green left-edge accent. Higher
+  // contrast than the previous all-pale-green fill, while keeping the
+  // sage colour as the visual signal that this is "your insight."
+  finalInsight: { backgroundColor: '#ffffff', borderWidth: 1, borderColor: Colors.sand, borderLeftWidth: 4, borderLeftColor: Colors.sage, borderRadius: Radius.lg, padding: 16 },
+  finalInsightLabel: { fontFamily: Fonts.bodyMedium, fontSize: 10, letterSpacing: 0.7, textTransform: 'uppercase', color: Colors.sageDark, marginBottom: 6 },
+  finalInsightBody: { fontFamily: Fonts.body, fontSize: 13, color: Colors.charcoal, lineHeight: 20 },
+  // Soft callout encouraging the user to take the full assessments
+  // post-onboarding. The single onboarding question per dimension is a
+  // hint, not a diagnosis — this sets expectations honestly.
+  deeperPrompt: { backgroundColor: '#ffffff', borderWidth: 1, borderColor: Colors.sand, borderRadius: Radius.lg, padding: 16, marginTop: 12 },
+  deeperPromptLabel: { fontFamily: Fonts.bodyMedium, fontSize: 11, letterSpacing: 0.7, textTransform: 'uppercase', color: Colors.midBrown, marginBottom: 6 },
+  deeperPromptBody: { fontFamily: Fonts.body, fontSize: 13, color: Colors.warmBrown, lineHeight: 20 },
+  deeperPromptHi: { fontFamily: Fonts.bodyMedium, color: Colors.sageDark },
   footer: { paddingHorizontal: 20, paddingTop: 24, paddingBottom: 8 },
 });

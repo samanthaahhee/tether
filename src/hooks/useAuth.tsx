@@ -326,6 +326,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const generateInvite = async () => {
     if (!user) return '';
+    // Hey Otis only supports one partner per user. Refuse to generate
+    // a new invite if the user is already coupled — the DB trigger
+    // also blocks this, but client-side rejection is faster + clearer.
+    if (couple) return '';
     const code = await generateSecureInviteCode();
     // RLS "Users can create invites" with check `inviter_id = auth.uid()`
     // prevents spoofing inviter_id, but we also set it explicitly here as

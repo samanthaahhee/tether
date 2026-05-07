@@ -94,21 +94,14 @@ export default function SettingsTab() {
                   Connected{supabasePartner?.name ? ` with ${supabasePartner.name}` : ''}
                 </Text>
               </View>
-              <SettingsRow
-                icon={<IconLink size={18} color={Colors.midBrown} />}
-                label="Send another invite"
-                sub="Regenerate a link if your partner needs it again"
-                onPress={async () => {
-                  setInviteLoading(true);
-                  const code = await generateInvite();
-                  setInviteLoading(false);
-                  Share.share({
-                    message: `Join me on Hey Otis\n\nDownload the app and use invite code: ${code}\n\nor tap: tether://invite/${code}`,
-                    title: 'Join me on Hey Otis',
-                  });
-                }}
-                right={inviteLoading ? <ActivityIndicator size="small" color={Colors.terracotta} /> : undefined}
-              />
+              {/* Hey Otis only supports one partner per account. When already
+                  connected we deliberately hide the invite-generation flow —
+                  re-issuing an invite here would let a third user accept and
+                  create a second couple (the server now blocks this too, but
+                  we keep the UI honest as the first line of defence). */}
+              <Text style={styles.singlePartnerHint}>
+                Hey Otis is built for one partner at a time. If you ever need to connect with someone else, please contact support.
+              </Text>
             </View>
           ) : (
             <View>
@@ -480,6 +473,7 @@ const styles = StyleSheet.create({
   connectedBadge: { flexDirection: 'row', alignItems: 'center', gap: 8, padding: 14, borderBottomWidth: 1, borderBottomColor: Colors.creamDark },
   connectedDot: { fontSize: 10, color: Colors.sage },
   connectedText: { fontFamily: Fonts.bodyMedium, fontSize: 13, color: Colors.sage },
+  singlePartnerHint: { paddingHorizontal: 14, paddingVertical: 12, fontFamily: Fonts.body, fontSize: 12, color: Colors.midBrown, lineHeight: 18 },
   notConnectedRow: { padding: 14, borderBottomWidth: 1, borderBottomColor: Colors.creamDark },
   notConnectedText: { fontFamily: Fonts.body, fontSize: 13, color: Colors.midBrown },
   inviteCodeBox: { padding: 16, borderBottomWidth: 1, borderBottomColor: Colors.creamDark, alignItems: 'center' },
