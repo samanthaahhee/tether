@@ -13,6 +13,22 @@
       "developmentClient": true,
       "distribution": "internal"
     },
-    "production": {}
+    "production": {
+      "ios": {
+        "autoIncrement": "buildNumber"
+      },
+      "android": {
+        "autoIncrement": "versionCode"
+      }
+    }
+  },
+  "submit": {
+    "production": {
+      "ios": {
+        "appleId": "gregdale.schneider@gmail.com",
+        "ascAppId": "6767241662",
+        "appleTeamId": "2VN8ULSCMS"
+      }
+    }
   }
 }
