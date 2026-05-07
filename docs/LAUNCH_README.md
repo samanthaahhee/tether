@@ -58,7 +58,7 @@ These shape everything that follows.
 
 | Decision | Options | What it depends on |
 |---|---|---|
-| **Bundle identifier** | Keep `com.tether.app` · change to `com.heyotis.app` | Once registered with Apple, can't easily change. Decide before registering App ID. |
+| ~~Bundle identifier~~ | ✅ **Decided:** `com.heyotis.app` | Locked in `app.json`. Will be registered with Apple as the App ID. |
 | **App display name** | "Hey Otis" (current) · variation | App Store visibility. "Hey Otis" is fine — the app.json already uses it. |
 | **Launch type** | Soft (waitlist only) · Public (open download) · Phased rollout | How much you want to control v1 feedback before scaling |
 | **Pricing model** | Free · Free with Plus tier · Subscription from day 1 | Your survey data should answer this |
@@ -86,7 +86,7 @@ Ordered by **dependency** (top-down) and **urgency** (sub-grouped). Tick as you 
 - [ ] **Privacy policy live** at heyotis.app/privacy as a public page
 - [ ] **Terms of service live** at heyotis.app/terms
 - [ ] **Wire safety_state read on app launch** — when `elevated_until` is in the future, surface pinned helpline + check-in (DB-write half done; read-on-launch deferred for husband review)
-- [ ] **Decide bundle ID** (`com.tether.app` vs `com.heyotis.app`) and update `app.json` if changing
+- [x] ~~Decide bundle ID~~ — locked in: `com.heyotis.app`
 - [ ] **Configure EAS production build profile** — see APP_STORE_SUBMISSION.md Section 3
 - [ ] **Set up App Store Connect listing** — see APP_STORE_SUBMISSION.md Section 4
 - [ ] **Upload screenshots** — 6.7" iPhone (mandatory), 6.5" iPhone (mandatory), iPad if `supportsTablet=true` (currently false, so skip)
@@ -213,7 +213,7 @@ Single source of truth.
 ### Config
 | File | Status |
 |---|---|
-| `app.json` | ✅ App name, bundle ID, icons configured. **Bundle ID: `com.tether.app` — decide whether to change to `com.heyotis.app` before App ID registration.** |
+| `app.json` | ✅ App name, bundle ID (`com.heyotis.app`), icons configured. |
 | `eas.json` | ⚠️ `"production": {}` block is empty — needs configuration before first production build |
 | `.env / EAS Secrets` | ✅ Supabase URL, anon key, Anthropic API key configured |
 
@@ -267,7 +267,7 @@ You have an Apple Developer account. The product is built and the safety archite
 In order:
 
 1. **Read [APP_STORE_SUBMISSION.md](./APP_STORE_SUBMISSION.md)** end-to-end — it's the step-by-step playbook
-2. **Decide on bundle ID** — `com.tether.app` (current) vs `com.heyotis.app` (preferred for brand alignment) — and update `app.json` if changing
+2. ~~Decide on bundle ID~~ ✅ Done — `com.heyotis.app` locked in
 3. **Email the clinical advisor candidate** with GUARDRAILS.md + CLINICAL_ADVISOR_AGREEMENT.md (the legal/clinical track runs in parallel and unblocks Section 17 sign-off)
 4. **Email the AI lawyer** with all 3 docs and ask for the EU AI Act + MDR memo
 5. **Set up App ID + signing in Apple Developer Portal** (or let EAS handle it via `eas credentials`)

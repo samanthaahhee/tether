@@ -14,7 +14,7 @@
     },
     "ios": {
       "supportsTablet": false,
-      "bundleIdentifier": "com.tether.app",
+      "bundleIdentifier": "com.heyotis.app",
       "infoPlist": {
         "NSSpeechRecognitionUsageDescription": "Allow $(PRODUCT_NAME) to use speech recognition.",
         "NSMicrophoneUsageDescription": "Allow $(PRODUCT_NAME) to use the microphone."
@@ -25,7 +25,7 @@
         "foregroundImage": "./assets/android-icon-foreground.png",
         "backgroundColor": "#f7f5fd"
       },
-      "package": "com.tether.app",
+      "package": "com.heyotis.app",
       "permissions": [
         "android.permission.RECORD_AUDIO"
       ]

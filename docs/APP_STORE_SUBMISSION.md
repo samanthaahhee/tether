@@ -8,18 +8,11 @@
 
 ---
 
-## 1. Decide bundle identifier (5 minutes — do this first)
+## 1. Bundle identifier ✅ DECIDED
 
-**Current value in `app.json`:** `com.tether.app`
+**Bundle ID:** `com.heyotis.app`
 
-**Recommendation:** change to `com.heyotis.app` for brand alignment. Once you register the App ID with Apple, the bundle ID is hard to change without re-creating the entire submission. Decide now.
-
-**If changing:**
-1. Open `app.json`
-2. Update `expo.ios.bundleIdentifier` and `expo.android.package` to `com.heyotis.app`
-3. Commit: `git commit -am "chore: align bundle id with brand"`
-
-**If keeping `com.tether.app`:** skip this step. Note that App Store search and reviews will not see the bundle ID — only the display name "Hey Otis" — so this is mostly a backend choice.
+Locked into `app.json` (both `ios.bundleIdentifier` and `android.package`). Use this exact string when registering the App ID in Section 2a — they must match precisely.
 
 ---
 
