@@ -5,7 +5,7 @@ import { router } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Colors, Fonts, Radius } from '../../src/constants/theme';
 import { IconHeart, IconUser, IconBell, IconLeaf, IconBookmark, IconLink, IconMail, IconKey, IconEdit, IconShield, IconBox, IconPhone, IconInfo, IconLock, IconSun, IconSearch, IconX } from '../../src/components/Icons';
-import { ChevronRight } from '../../src/components/Icon';
+import { ChevronLeft, ChevronRight } from '../../src/components/Icon';
 import { CRISIS_COUNTRIES, getCrisisLines } from '../../src/constants/crisisLines';
 import { useAppState } from '../../src/hooks/useAppState';
 import { ATTACHMENT_LABELS, LOVE_LABELS, CONFLICT_LABELS, WINDOW_LABELS, NEED_LABELS } from '../../src/constants/data';
@@ -79,6 +79,20 @@ export default function SettingsTab() {
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
       <ScrollView style={styles.scroll} contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+
+        {/* Top nav: back button (settings is a hidden tab reached via the
+            cog on home; without an explicit back affordance the user has
+            no obvious return path). */}
+        <TouchableOpacity
+          onPress={() => router.replace('/(tabs)')}
+          style={styles.settingsBackBtn}
+          activeOpacity={0.7}
+          accessibilityLabel="Back"
+          accessibilityRole="button"
+        >
+          <ChevronLeft size={11} color={Colors.midBrown} style={{ marginTop: 1 }} />
+          <Text style={styles.settingsBackText}>Back</Text>
+        </TouchableOpacity>
 
         <View style={styles.header}>
           <Text style={styles.title}>Settings</Text>
@@ -474,6 +488,8 @@ const styles = StyleSheet.create({
   connectedDot: { fontSize: 10, color: Colors.sage },
   connectedText: { fontFamily: Fonts.bodyMedium, fontSize: 13, color: Colors.sage },
   singlePartnerHint: { paddingHorizontal: 14, paddingVertical: 12, fontFamily: Fonts.body, fontSize: 12, color: Colors.midBrown, lineHeight: 18 },
+  settingsBackBtn: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 4, paddingVertical: 8, alignSelf: 'flex-start', marginBottom: 4 },
+  settingsBackText: { fontFamily: Fonts.bodyMedium, fontSize: 13, color: Colors.midBrown },
   notConnectedRow: { padding: 14, borderBottomWidth: 1, borderBottomColor: Colors.creamDark },
   notConnectedText: { fontFamily: Fonts.body, fontSize: 13, color: Colors.midBrown },
   inviteCodeBox: { padding: 16, borderBottomWidth: 1, borderBottomColor: Colors.creamDark, alignItems: 'center' },

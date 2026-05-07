@@ -259,6 +259,36 @@ const CAROUSEL_GAP = 12;
 const CAROUSEL_LEFT = 16;
 const CARD_WIDTH = 294;
 
+/**
+ * Subtle pulsing skeleton block. Used during initial home-tab load so the
+ * UI feels structured rather than blank-with-spinner while AppState
+ * hydrates and the Supabase profile fetch resolves.
+ */
+function SkeletonBlock({ width, height, radius = 8 }: { width: number | string; height: number; radius?: number }) {
+  const opacity = useRef(new Animated.Value(0.6)).current;
+  useEffect(() => {
+    const loop = Animated.loop(
+      Animated.sequence([
+        Animated.timing(opacity, { toValue: 0.95, duration: 700, useNativeDriver: true }),
+        Animated.timing(opacity, { toValue: 0.6, duration: 700, useNativeDriver: true }),
+      ]),
+    );
+    loop.start();
+    return () => loop.stop();
+  }, [opacity]);
+  return (
+    <Animated.View
+      style={{
+        width: width as any,
+        height,
+        borderRadius: radius,
+        backgroundColor: '#e8e6f0',
+        opacity,
+      }}
+    />
+  );
+}
+
 export default function HomeTab() {
   const { state, dispatch } = useAppState();
   const { loading: authLoading } = useAuth();
@@ -296,10 +326,39 @@ export default function HomeTab() {
   };
 
   if (!state.loaded || authLoading) {
+    // Skeleton placeholder while local state hydrates + Supabase profile
+    // resolves. A spinner alone left the home screen feeling broken on
+    // first launch — this gives a sense of structure (greeting, hero
+    // card, journey carousel) so the user understands content is on the
+    // way. Pulse animation is handled by SkeletonBlock.
     return (
       <SafeAreaView style={s.safe} edges={['top']}>
-        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-          <ActivityIndicator size="small" color="#96d35f" />
+        <View style={s.scrollContent}>
+          {/* Top bar (cog placeholder) */}
+          <View style={s.topBar}>
+            <View style={{ flex: 1 }} />
+            <SkeletonBlock width={36} height={36} radius={18} />
+          </View>
+          {/* Greeting */}
+          <View style={{ paddingHorizontal: 20, marginTop: 8 }}>
+            <SkeletonBlock width={180} height={26} radius={6} />
+            <View style={{ height: 8 }} />
+            <SkeletonBlock width={240} height={14} radius={4} />
+          </View>
+          {/* Hero card */}
+          <View style={{ paddingHorizontal: 20, marginTop: 28 }}>
+            <SkeletonBlock width={'100%'} height={140} radius={20} />
+          </View>
+          {/* Journey carousel cards */}
+          <View style={{ paddingLeft: 20, marginTop: 28, flexDirection: 'row', gap: 12 }}>
+            <SkeletonBlock width={CARD_WIDTH} height={180} radius={16} />
+            <SkeletonBlock width={CARD_WIDTH * 0.6} height={180} radius={16} />
+          </View>
+          {/* Stats row */}
+          <View style={{ flexDirection: 'row', gap: 12, paddingHorizontal: 20, marginTop: 24 }}>
+            <SkeletonBlock width={'48%'} height={72} radius={12} />
+            <SkeletonBlock width={'48%'} height={72} radius={12} />
+          </View>
         </View>
       </SafeAreaView>
     );

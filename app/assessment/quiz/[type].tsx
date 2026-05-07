@@ -43,7 +43,7 @@ const LIKERT_LABELS = ['Not at all like me', 'Not really', 'Sometimes', 'Mostly 
 
 export default function AssessmentQuiz() {
   const { type } = useLocalSearchParams<{ type: string }>();
-  const { syncProfile } = useAuth();
+  const { syncProfile, profile } = useAuth();
   const { dispatch } = useAppState();
 
   const questions: Question[] = ASSESSMENT_QUESTIONS[type] ?? [];
@@ -81,23 +81,23 @@ export default function AssessmentQuiz() {
     });
   };
 
+  // Selecting an option no longer auto-advances. Users explicitly tap
+  // Next — which lets them re-read the question, change their answer,
+  // and pace themselves. Auto-advance was disorienting in usability
+  // testing, especially for the first question of each section.
   const selectLikert = (value: number) => {
-    const updated = { ...responses, [current.id]: value };
-    setResponses(updated);
-    setTimeout(() => advance(updated), 250);
+    setResponses({ ...responses, [current.id]: value });
   };
 
   const selectChoice = (dimension: string) => {
-    const updated = { ...responses, [current.id]: dimension };
-    setResponses(updated);
-    setTimeout(() => advance(updated), 250);
+    setResponses({ ...responses, [current.id]: dimension });
   };
 
-  const advance = (updatedResponses: Record<string, number | string>) => {
+  const goNext = () => {
     if (currentIndex < questions.length - 1) {
       animateTransition(() => setCurrentIndex(i => i + 1));
     } else {
-      const scored = scoreAssessment(type, updatedResponses);
+      const scored = scoreAssessment(type, responses);
       setResult(scored);
       setPhase('result');
     }
@@ -107,7 +107,12 @@ export default function AssessmentQuiz() {
     if (currentIndex > 0) {
       animateTransition(() => setCurrentIndex(i => i - 1));
     } else {
-      router.back();
+      // From question 1, "Back" returns to the assessment summary page
+      // (the detail/landing screen for this assessment type) rather than
+      // wherever the user came from. This gives a predictable mental model:
+      // the quiz is a sub-flow of a specific assessment, and back means
+      // "out of the quiz, into the overview."
+      router.replace({ pathname: '/assessment/[type]', params: { type } });
     }
   };
 
@@ -120,6 +125,24 @@ export default function AssessmentQuiz() {
     dispatch({ type: 'COMPLETE_FULL_ASSESSMENT', assessmentType: type });
     await syncProfile(update);
     setSaving(false);
+
+    // CRITICAL — if the user reached the assessment quiz before completing
+    // basic onboarding (their profile.onboarded is still false), routing
+    // them to /assessment/[type] will trip RouteGuard, which sees
+    // !profile.onboarded and forcibly redirects to /intro. The user
+    // experiences this as "completing the assessment took me to the
+    // beginning of onboarding."
+    //
+    // We can't mark the user onboarded here — they haven't filled in name,
+    // context, or the other dimensions, and skipping that would harm the
+    // product's understanding of them. Instead we route them BACK INTO the
+    // 8-question onboarding so they finish setup before seeing the
+    // assessment detail screen.
+    if (profile && !profile.onboarded) {
+      router.replace('/onboarding');
+      return;
+    }
+
     // Navigate to the detail page for the new result
     router.replace({ pathname: '/assessment/[type]', params: { type, value: result.primary } });
   };
@@ -319,6 +342,35 @@ export default function AssessmentQuiz() {
 
         </Animated.View>
       </ScrollView>
+
+      {/* Bottom nav: Back + Next pinned below the question. Selecting
+          no longer auto-advances, so we need an explicit Next button. */}
+      <View style={s.quizNav}>
+        <TouchableOpacity
+          onPress={goBack}
+          style={s.quizNavSecondary}
+          activeOpacity={0.8}
+          accessibilityLabel="Previous question"
+        >
+          <ChevronLeft size={11} color={Colors.midBrown} style={{ marginTop: 1 }} />
+          <Text style={s.quizNavSecondaryText}>Back</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          onPress={goNext}
+          disabled={answered === undefined}
+          style={[
+            s.quizNavPrimary,
+            { backgroundColor: accentColor },
+            answered === undefined && { opacity: 0.4 },
+          ]}
+          activeOpacity={0.8}
+          accessibilityLabel={currentIndex < questions.length - 1 ? 'Next question' : 'See result'}
+        >
+          <Text style={s.quizNavPrimaryText}>
+            {currentIndex < questions.length - 1 ? 'Next' : 'See result'}
+          </Text>
+        </TouchableOpacity>
+      </View>
     </SafeAreaView>
   );
 }
@@ -392,6 +444,12 @@ const s = StyleSheet.create({
   snippetText: { fontFamily: Fonts.body, fontSize: 13, color: Colors.charcoal, lineHeight: 21 },
   saveBtn: { backgroundColor: Colors.sageDark, borderRadius: Radius.full, paddingVertical: 16, alignItems: 'center', marginBottom: 12 },
   saveBtnText: { fontFamily: Fonts.bodyMedium, fontSize: 15, color: Colors.white },
+  // Quiz bottom nav (Back / Next)
+  quizNav: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 12, paddingHorizontal: 20, paddingVertical: 16, borderTopWidth: 1, borderTopColor: Colors.creamDark, backgroundColor: Colors.cream },
+  quizNavSecondary: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingVertical: 10, paddingHorizontal: 14 },
+  quizNavSecondaryText: { fontFamily: Fonts.bodyMedium, fontSize: 14, color: Colors.midBrown },
+  quizNavPrimary: { flexShrink: 1, paddingVertical: 14, paddingHorizontal: 28, borderRadius: Radius.full, alignItems: 'center', justifyContent: 'center', minWidth: 140 },
+  quizNavPrimaryText: { fontFamily: Fonts.bodyMedium, fontSize: 15, color: Colors.white },
   discardBtn: { alignItems: 'center', paddingVertical: 8 },
   discardText: { fontFamily: Fonts.body, fontSize: 13, color: Colors.midBrown },
 });
