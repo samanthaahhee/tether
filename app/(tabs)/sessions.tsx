@@ -20,6 +20,7 @@ import { Button } from '../../src/components/UI';
 import { ChevronLeft } from '../../src/components/Icon';
 import { IconLeaf, IconWind, IconSearch, IconHeart, IconX, IconBookmark, IconVoice, IconMoodLow, IconMoodOkay, IconMoodGood, IconMoodGreat, IconMoodAmazing } from '../../src/components/Icons';
 import BreathingOverlay from '../../src/components/BreathingOverlay';
+import { detectCrisisCategory } from '../../src/utils/safetyDetect';
 
 const STEP_ICON_MAP: Record<string, React.ComponentType<{ size?: number; color?: string }>> = {
   wind: IconWind,
@@ -794,23 +795,30 @@ function ActiveSessionView({ session, state, dispatch: d, onBack }: { session: S
       role: m.role === 'ai' ? 'assistant' as const : 'user' as const,
       content: m.text,
     }));
+    // Detect crisis BEFORE calling send() so we have an authoritative
+    // local flag for this specific turn. We can't rely on the
+    // crisisDetected state value after `await send()` — that closure was
+    // captured before the hook ran setState, so it's stale here.
+    const turnIsCrisis = detectCrisisCategory(text) !== null;
+
     const reply = await send(text, history, session.summary);
 
-    // Pacing delay before showing the response. Pure perceived-warmth UX:
-    // an instant reply reads as mechanical; a short delay (scaled to
-    // response length) reads as someone thinking. Range 800–3500ms.
-    // The TypingIndicator below the chat is gated on `aiResponding`.
-    setAiResponding(true);
-    const pacingMs = Math.max(800, Math.min(3500, reply.length * 25));
-    await new Promise((r) => setTimeout(r, pacingMs));
-    setAiResponding(false);
-
-    d({ type: 'ADD_SESSION_MESSAGE', sessionId: session.id, step, message: { role: 'ai', text: reply, id: (Date.now() + 1).toString() } });
-
-    // After the await, useClaude has updated crisisDetected state. If a
-    // crisis category fired, surface the persistent helpline banner.
-    if (crisisDetected) {
+    if (turnIsCrisis) {
+      // Crisis response is the most important message Otis ever sends.
+      // Skip the typing pacing entirely so helpline resources reach the
+      // user immediately. Surface the persistent banner.
+      d({ type: 'ADD_SESSION_MESSAGE', sessionId: session.id, step, message: { role: 'ai', text: reply, id: (Date.now() + 1).toString() } });
       setShowCrisisBanner(true);
+    } else {
+      // Pacing delay before showing the response. Pure perceived-warmth UX:
+      // an instant reply reads as mechanical; a short delay (scaled to
+      // response length) reads as someone thinking. Range 800–3500ms.
+      // The TypingIndicator below the chat is gated on `aiResponding`.
+      setAiResponding(true);
+      const pacingMs = Math.max(800, Math.min(3500, reply.length * 25));
+      await new Promise((r) => setTimeout(r, pacingMs));
+      setAiResponding(false);
+      d({ type: 'ADD_SESSION_MESSAGE', sessionId: session.id, step, message: { role: 'ai', text: reply, id: (Date.now() + 1).toString() } });
     }
 
     // Show transition prompt when user seems ready — not just message count

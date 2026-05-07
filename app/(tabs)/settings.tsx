@@ -234,10 +234,17 @@ export default function SettingsTab() {
               [
                 { text: 'Cancel', style: 'cancel' },
                 {
-                  text: 'Continue', onPress: () => {
+                  text: 'Continue', onPress: async () => {
+                    // Local AsyncStorage reset
                     dispatch({
                       type: 'SET_PROFILE',
                       payload: { attachment: '', conflict: '', love: '', window: '', need: '', context: '', onboarded: false },
+                    });
+                    // Supabase reset — without this, RouteGuard reads onboarded=true from
+                    // Supabase and bounces the user back to /(tabs) before /onboarding renders.
+                    await syncProfile({
+                      attachment: '', conflict: '', love: '', window: '', need: '', context: '',
+                      onboarded: false,
                     });
                     router.replace('/onboarding');
                   },

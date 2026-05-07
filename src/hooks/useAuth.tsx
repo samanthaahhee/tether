@@ -262,6 +262,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setProfile(null);
     setPartnerProfile(null);
     setCouple(null);
+    // Clear locally-cached app state so the next person to sign in on
+    // this device does NOT see the previous user's sessions, learnings,
+    // partner observations, or profile name. Imported lazily to keep this
+    // module side-effect free at boot.
+    try {
+      const AsyncStorage = (await import('@react-native-async-storage/async-storage')).default;
+      await AsyncStorage.multiRemove(['tether_state', 'tether_app_state']);
+    } catch (e) {
+      // Don't block sign-out on a cache-clear failure — the auth wipe is
+      // the security-critical part. Log so we know if it's failing in the wild.
+      console.warn('signOut: failed to clear local cache', e);
+    }
     // Then sign out from Supabase
     await supabase.auth.signOut();
   };
