@@ -153,7 +153,28 @@ export default function Onboarding() {
           <View style={styles.progressTrack}>
             <View style={[styles.progressFill, { width: ((step / TOTAL_STEPS) * 100) + '%' as any }]} />
           </View>
-          <TouchableOpacity onPress={() => router.replace('/(tabs)')}>
+          <TouchableOpacity onPress={async () => {
+            // Skip used to just navigate to /(tabs) without marking the
+            // user onboarded — so RouteGuard would immediately bounce
+            // them back to /intro because profile.onboarded was still
+            // false. Mark onboarded=true on skip with empty/default
+            // dimensions; users can come back via Settings → Retake
+            // onboarding or via the per-dimension assessments to fill
+            // these in properly.
+            const skipPayload = {
+              name: name.trim() || '',
+              attachment: picks.attach || '',
+              conflict: picks.conflict || '',
+              love: picks.love || '',
+              window: picks.window || '',
+              need: picks.need || '',
+              context: picks.context || '',
+              onboarded: true,
+            };
+            dispatch({ type: 'SET_PROFILE', payload: skipPayload });
+            await syncProfile(skipPayload);
+            router.replace('/(tabs)');
+          }}>
             <Text style={styles.skipText}>Skip</Text>
           </TouchableOpacity>
         </View>
