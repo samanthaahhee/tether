@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { AppState, AppStateStatus } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Linking from 'expo-linking';
 import * as WebBrowser from 'expo-web-browser';
 import * as Crypto from 'expo-crypto';
@@ -264,10 +265,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setCouple(null);
     // Clear locally-cached app state so the next person to sign in on
     // this device does NOT see the previous user's sessions, learnings,
-    // partner observations, or profile name. Imported lazily to keep this
-    // module side-effect free at boot.
+    // partner observations, or profile name.
     try {
-      const AsyncStorage = (await import('@react-native-async-storage/async-storage')).default;
       await AsyncStorage.multiRemove(['tether_state', 'tether_app_state']);
     } catch (e) {
       // Don't block sign-out on a cache-clear failure — the auth wipe is
