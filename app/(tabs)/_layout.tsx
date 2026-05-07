@@ -28,7 +28,7 @@ export default function TabLayout() {
     >
       <Tabs.Screen name="index" options={{ title: 'Home', tabBarIcon: ({ color }) => <IconHome size={22} color={color} /> }} />
       <Tabs.Screen name="sessions" options={{ title: 'Sessions', tabBarIcon: ({ color }) => <IconCompass size={22} color={color} /> }} />
-      <Tabs.Screen name="learnings" options={{ title: 'Growth', tabBarIcon: ({ color }) => <IconLeaf size={22} color={color} /> }} />
+      <Tabs.Screen name="learnings" options={{ title: 'Learnings', tabBarIcon: ({ color }) => <IconLeaf size={22} color={color} /> }} />
       <Tabs.Screen name="tools" options={{ title: 'Tools', tabBarIcon: ({ color }) => <IconSliders size={22} color={color} /> }} />
       <Tabs.Screen name="settings" options={{ href: null }} />
     </Tabs>

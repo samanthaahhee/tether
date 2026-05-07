@@ -162,18 +162,15 @@ const initialState: AppState = {
   currentMode: 'vent',
   sessions: [],
   activeSessionId: null,
+  // Learnings start empty. Earlier we seeded dummy partnerObservations and
+  // relationshipPatterns to make the Learnings tab feel "alive" pre-launch,
+  // but real users saw fabricated content with no provenance — confusing
+  // and potentially misleading. They're populated as the user actually
+  // generates session reflections and pattern data.
   learnings: {
     reflections: [],
-    partnerObservations: [
-      'They tend to withdraw when they feel criticised, even if no criticism was intended.',
-      'They express love through acts of service more than words. When they tidy up or make coffee, that is their way of saying I care.',
-      'They need about 20 minutes to process before they can talk about something emotional.',
-    ],
-    relationshipPatterns: [
-      'When one of you feels unheard, the other tends to shut down. This creates a pursue-withdraw cycle.',
-      'Arguments about chores are rarely about chores. They are usually about feeling valued and seen.',
-      'You both tend to revisit unresolved topics from weeks ago during new disagreements.',
-    ],
+    partnerObservations: [],
+    relationshipPatterns: [],
     emotionalCaptures: [],
   },
   userMemory: null,
@@ -214,8 +211,8 @@ function reducer(state: AppState, action: Action): AppState {
         learnings: {
           ...initialState.learnings,
           ...(saved.learnings || {}),
-          partnerObservations: saved.learnings?.partnerObservations?.length ? saved.learnings.partnerObservations : initialState.learnings.partnerObservations,
-          relationshipPatterns: saved.learnings?.relationshipPatterns?.length ? saved.learnings.relationshipPatterns : initialState.learnings.relationshipPatterns,
+          partnerObservations: saved.learnings?.partnerObservations || [],
+          relationshipPatterns: saved.learnings?.relationshipPatterns || [],
         },
         userMemory: saved.userMemory || null,
         completedFullAssessments: saved.completedFullAssessments || [],

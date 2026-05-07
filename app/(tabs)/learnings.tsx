@@ -68,47 +68,34 @@ const pc = StyleSheet.create({
 });
 
 
-type Tab = 'you' | 'partner' | 'relationship';
+type Tab = 'you' | 'partner';
 
+// Removed the 'relationship'/Together tab. Without verified live data
+// from a paired partner it could only ever show generic dynamics or
+// dummy content — neither helps a real user. When the couple feature
+// matures, reintroduce it conditionally on couple-paired state.
 const TABS: { key: Tab; label: string }[] = [
   { key: 'you', label: 'You' },
-  { key: 'partner', label: "Partner" },
-  { key: 'relationship', label: 'Together' },
+  { key: 'partner', label: 'Partner' },
 ];
 
 export default function GrowthTab() {
   const { state } = useAppState();
   const { partnerProfile: realPp, generateInvite } = useAuth();
 
-  // TODO: Remove mock data before production
-  const pp = realPp || {
-    name: 'Alex',
-    attachment: 'avoidant',
-    love: 'acts',
-    conflict: 'stonewall',
-    window: 'hypo',
-    need: 'space',
-  };
+  // No more dummy "Alex" fallback. If the user hasn't connected a
+  // partner, pp is null and the Partner tab renders an empty/invite
+  // state instead of fabricated content.
+  const pp = realPp || null;
   const { attachment, love, conflict, window: win, need } = state.profile;
-  // TODO: Remove mock data before production
-  const partnerObservations = state.learnings.partnerObservations.length > 0
-    ? state.learnings.partnerObservations
-    : [
-      'Alex tends to withdraw when he feels criticised, even if that wasn\u2019t the intention. His silence isn\u2019t punishment \u2014 it\u2019s overwhelm.',
-      'He expresses love through actions more than words. When he makes coffee or handles logistics, that\u2019s his way of saying I care.',
-      'He needs about 20 minutes after conflict before he can re-engage. Pushing for resolution before then makes him shut down further.',
-    ];
-  const relationshipPatterns = state.learnings.relationshipPatterns.length > 0
-    ? state.learnings.relationshipPatterns
-    : [
-      'When Sam feels unheard, she pursues. When Alex feels pressured, he withdraws. This creates a loop where both feel increasingly disconnected.',
-      'Arguments about small things (dishes, texting) are usually about bigger things (feeling valued, being remembered).',
-      'You both tend to revisit unresolved topics from the same emotional angle. Approaching from curiosity instead of frustration changes the outcome.',
-    ];
+  // Use whatever the user has actually saved. Empty arrays render
+  // empty state instead of seeded "Alex"/"Sam" placeholders.
+  const partnerObservations = state.learnings.partnerObservations || [];
+  const relationshipPatterns = state.learnings.relationshipPatterns || [];
   const [activeTab, setActiveTab] = useState<Tab>('you');
   const [inviting, setInviting] = useState(false);
   const [showPartnerSheet, setShowPartnerSheet] = useState(false);
-  const [showTogetherSheet, setShowTogetherSheet] = useState(false);
+  // showTogetherSheet removed along with the Together tab block.
 
   const userName = state.profile.name || 'You';
   const partnerName = pp?.name || 'Partner';
@@ -165,7 +152,7 @@ export default function GrowthTab() {
 
       {/* Header */}
       <View style={styles.header}>
-        <Text style={styles.title}>Growth</Text>
+        <Text style={styles.title}>Learnings</Text>
         <Text style={styles.subtitle}>Discover more about yourself & your partner.</Text>
       </View>
 
@@ -319,74 +306,11 @@ export default function GrowthTab() {
           </>
         )}
 
-        {/* Tab 3: Together */}
-        {activeTab === 'relationship' && (
-          <>
-            <View style={styles.sectionHeader}>
-              <Text style={styles.sectionHeaderTitle}>{userName} & {partnerName}</Text>
-            </View>
-
-            <View style={styles.section}>
-              {pp ? (
-                <View style={sc.card}>
-                  <View style={sc.avatarRow}>
-                    <View style={[sc.avatar, { backgroundColor: state.profile.avatarColor || '#B8D8CA' }]}>
-                      <Text style={sc.avatarText}>{userName.charAt(0)}</Text>
-                    </View>
-                    <View style={[sc.heartBridge, { marginLeft: -18, zIndex: 1 }]}>
-                      <IconHeart size={16} color="#bd57f2" />
-                    </View>
-                    <View style={[sc.avatar, { backgroundColor: pp?.avatar_color || '#92a6f4', marginLeft: -18 }]}>
-                      <Text style={sc.avatarText}>{partnerName.charAt(0)}</Text>
-                    </View>
-                    <View style={{ flex: 1, marginLeft: 12 }}>
-                      <Text style={sc.name}>{userName} & {partnerName}</Text>
-                      <Text style={sc.sub}>Your relationship dynamics</Text>
-                    </View>
-                  </View>
-                  <View style={sc.statsRow}>
-                    <View style={sc.statPill}>
-                      <View style={[sc.statDot, { backgroundColor: '#bd57f2' }]} />
-                      <Text style={sc.statText}>{getRelationshipInsights()[0]?.title || 'Your dynamic'}</Text>
-                    </View>
-                  </View>
-                  <TouchableOpacity style={sc.btn} onPress={() => setShowTogetherSheet(true)} activeOpacity={0.8}>
-                    <Text style={sc.btnText}>Explore patterns</Text>
-                    <Text style={{ fontSize: 16, color: '#211e28' }}>{'\u2192'}</Text>
-                  </TouchableOpacity>
-                </View>
-              ) : (
-                <View style={pt.card}>
-                  <IconSparkles size={24} color="#f67700" style={{ marginBottom: 12 }} />
-                  <Text style={pt.title}>Patterns will emerge here</Text>
-                  <Text style={pt.body}>
-                    Complete a few sessions to start seeing relationship patterns. We{'\u2019'}ll identify recurring themes across your conflicts.
-                  </Text>
-                  <TouchableOpacity style={pt.btn} onPress={handleInvite} activeOpacity={0.8} disabled={inviting}>
-                    {inviting ? <ActivityIndicator color="#001c14" /> : <Text style={pt.btnText}>Send invite link</Text>}
-                  </TouchableOpacity>
-                </View>
-              )}
-            </View>
-
-            {/* Relationship patterns from sessions */}
-            {relationshipPatterns.length > 0 && (
-              <>
-                <View style={styles.sectionHeader}>
-                  <Text style={styles.sectionHeaderTitle}>Patterns from your sessions</Text>
-                </View>
-                <View style={styles.section}>
-                  {relationshipPatterns.map((pattern, i) => (
-                    <View key={i} style={pt.card}>
-                      <Text style={[pc.label, { color: '#d2b100' }]}>PATTERN</Text>
-                      <Text style={{ fontFamily: Fonts.body, fontSize: 14, color: '#211e28', lineHeight: 21, textAlign: 'center' }}>{pattern}</Text>
-                    </View>
-                  ))}
-                </View>
-              </>
-            )}
-          </>
-        )}
+        {/* The Together tab block was removed in this iteration \u2014 there
+            wasn't enough genuinely earned content for a paired couple
+            yet, and the unpaired empty state was confusing. Couple
+            dynamics will return as a dedicated surface once we have
+            verified live data flowing from both sides. */}
 
       </ScrollView>
 
@@ -417,26 +341,7 @@ export default function GrowthTab() {
         </View>
       </Modal>
 
-      {/* ── Together Detail Sheet ── */}
-      <Modal visible={showTogetherSheet} animationType="slide" transparent onRequestClose={() => setShowTogetherSheet(false)}>
-        <View style={sh.overlay}>
-          <TouchableOpacity style={{ flex: 0.15 }} activeOpacity={1} onPress={() => setShowTogetherSheet(false)} />
-          <View style={sh.sheet}>
-            <View style={sh.handle} />
-            <View style={sh.header}>
-              <Text style={sh.title}>Your relationship patterns</Text>
-              <TouchableOpacity onPress={() => setShowTogetherSheet(false)} activeOpacity={0.7}>
-                <Text style={sh.close}>{'\u2715'}</Text>
-              </TouchableOpacity>
-            </View>
-            <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 40 }}>
-              {getRelationshipInsights().map((insight, i) => (
-                <PatternCard key={i} label={insight.label} value={insight.title} note={insight.body} accentColor={insight.color} />
-              ))}
-            </ScrollView>
-          </View>
-        </View>
-      </Modal>
+      {/* Together detail sheet removed along with the Together tab. */}
 
     </SafeAreaView>
   );

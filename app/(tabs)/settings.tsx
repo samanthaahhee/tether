@@ -437,9 +437,18 @@ export default function SettingsTab() {
               { text: 'Cancel', style: 'cancel' },
               {
                 text: 'Sign out', style: 'destructive', onPress: async () => {
-                  await signOut();
-                  // Navigate to root — dismiss entire tab stack
-                  router.dismissAll();
+                  try {
+                    await signOut();
+                  } catch (e) {
+                    console.warn('signOut threw:', e);
+                  }
+                  // dismissAll() throws on platforms where there is no
+                  // dismissable stack (a fresh tabs view, for example).
+                  // Wrap it so a throw doesn't block the subsequent
+                  // navigate. RouteGuard will also kick in once user
+                  // becomes null, but explicit replace is the primary
+                  // path.
+                  try { router.dismissAll(); } catch {}
                   router.replace('/');
                 },
               },

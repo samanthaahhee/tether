@@ -294,7 +294,12 @@ export default function HomeTab() {
   const { loading: authLoading } = useAuth();
   const router = useRouter();
   const { width: windowWidth } = useWindowDimensions();
-  const name = state.profile.name || 'Sam';
+  // The user's first name from local state (synced from Supabase via
+  // useAuth.fetchUserData). Falls back to empty string when not yet set
+  // — the JSX below renders just "HELLO" (no trailing space) in that case.
+  // Earlier this fell back to 'Sam' which is the founder's name and showed
+  // confusingly to brand-new users.
+  const name = state.profile.name?.trim() || '';
 
   const activeSession = state.sessions.find((s) => s.id === state.activeSessionId);
   const [journeyIdx, setJourneyIdx] = useState(0);
@@ -382,7 +387,7 @@ export default function HomeTab() {
           <View style={s.heroCard}>
             {/* Label */}
             <View style={s.heroTextBlock}>
-              <Text style={s.helloLabel}>HELLO {name.toUpperCase()}</Text>
+              <Text style={s.helloLabel}>{name ? `HELLO ${name.toUpperCase()}` : 'HELLO'}</Text>
               <Text style={s.heroTitle}>What do you need in this moment?</Text>
 
               {/* Tag chips */}
