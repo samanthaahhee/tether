@@ -1,5 +1,5 @@
 -- ============================================================
--- Tether — Supabase Schema
+-- Hey Otis — Supabase Schema
 -- Run this in: Supabase Dashboard → SQL Editor → New query
 -- ============================================================
 
