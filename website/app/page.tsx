@@ -163,7 +163,12 @@ export default function Home() {
       <footer className="ft">
         <p className="ft-brand">Hey Otis</p>
         <p className="ft-disc">Hey Otis supports but does not replace professional therapy.</p>
-        <p className="ft-copy">&copy; 2026 Hey Otis. All rights reserved. &nbsp;|&nbsp; <a href="mailto:privacy@heyotis.app">privacy@heyotis.app</a></p>
+        <p className="ft-copy">
+          &copy; 2026 Hey Otis. All rights reserved. &nbsp;|&nbsp;
+          <a href="/privacy">Privacy</a> &nbsp;|&nbsp;
+          <a href="/terms">Terms</a> &nbsp;|&nbsp;
+          <a href="mailto:privacy@heyotis.app">privacy@heyotis.app</a>
+        </p>
       </footer>
     </main>
   );
