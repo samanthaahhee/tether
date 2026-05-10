@@ -1,7 +1,7 @@
 import React, { useState, useRef } from 'react';
 import {
   View, Text, TextInput, TouchableOpacity, ScrollView,
-  StyleSheet, KeyboardAvoidingView, Platform,
+  StyleSheet, KeyboardAvoidingView, Platform, Linking,
 } from 'react-native';
 import { router } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -89,6 +89,46 @@ function OptionCard({ option, selected, onPress }: { option: OptionData; selecte
   );
 }
 
+// Bump this when the Terms or Privacy Policy receive a material change —
+// users with an older terms_version will be re-prompted to accept.
+// Keep in sync with the Effective date on heyotis.app/terms + /privacy.
+const TERMS_VERSION = '2026-04-08';
+
+/**
+ * One row in the consent gate. Tappable label + sub-label, with a left
+ * checkbox indicator. Designed for clarity: each row is its own
+ * affirmative tick rather than one big "I agree to everything" box.
+ */
+function ConsentRow({
+  checked,
+  onToggle,
+  label,
+  sub,
+}: {
+  checked: boolean;
+  onToggle: () => void;
+  label: string;
+  sub: React.ReactNode;
+}) {
+  return (
+    <TouchableOpacity
+      onPress={onToggle}
+      activeOpacity={0.7}
+      style={[styles.consentRow, checked && styles.consentRowChecked]}
+      accessibilityRole="checkbox"
+      accessibilityState={{ checked }}
+    >
+      <View style={[styles.consentCheckbox, checked && styles.consentCheckboxChecked]}>
+        {checked && <Text style={styles.consentCheckMark}>✓</Text>}
+      </View>
+      <View style={{ flex: 1 }}>
+        <Text style={styles.consentRowLabel}>{label}</Text>
+        <Text style={styles.consentRowSub}>{sub}</Text>
+      </View>
+    </TouchableOpacity>
+  );
+}
+
 export default function Onboarding() {
   const { dispatch } = useAppState();
   const { syncProfile } = useAuth();
@@ -97,6 +137,16 @@ export default function Onboarding() {
   const [age, setAge] = useState('');
   const [picks, setPicks] = useState<Record<string, string>>({});
   const scrollRef = useRef<ScrollView>(null);
+
+  // Consent gate. Three required confirmations before the user can
+  // proceed to step 1 (name + age). Acceptance is timestamped and
+  // synced to profiles.terms_accepted_at + .terms_version so we have
+  // explicit evidence of consent for legal / App Review purposes.
+  const [consented, setConsented] = useState(false);
+  const [agreedAdult, setAgreedAdult] = useState(false);
+  const [agreedTerms, setAgreedTerms] = useState(false);
+  const [agreedNotTherapy, setAgreedNotTherapy] = useState(false);
+  const canConsent = agreedAdult && agreedTerms && agreedNotTherapy;
 
   const pick = (key: string, value: string) => {
     setPicks((p) => ({ ...p, [key]: value }));
@@ -145,6 +195,88 @@ export default function Onboarding() {
     window: { bg: Colors.amberPale, border: Colors.amberLight, label: Colors.amber },
     love: { bg: Colors.mauvePale, border: Colors.mauveLight, label: Colors.mauve },
   };
+
+  // ── Consent gate ──────────────────────────────────────────────────
+  // Shown before any other onboarding screen. Three required tick boxes
+  // — age, terms acceptance, not-a-therapist understanding. Tapping
+  // Continue records the timestamp + terms version on the user's profile
+  // and unlocks the question flow.
+  if (!consented) {
+    const handleAccept = async () => {
+      if (!canConsent) return;
+      await syncProfile({
+        // The Supabase profile column is snake_case; the local TS
+        // interface accepts the same string keys via Partial<>.
+        terms_accepted_at: new Date().toISOString(),
+        terms_version: TERMS_VERSION,
+      } as any);
+      setConsented(true);
+    };
+    return (
+      <SafeAreaView style={styles.safe} edges={['top', 'bottom']}>
+        <ScrollView
+          contentContainerStyle={styles.consentScroll}
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+        >
+          <Text style={styles.consentTag}>BEFORE WE BEGIN</Text>
+          <Text style={styles.consentH}>A few things to know.</Text>
+          <Text style={styles.consentSub}>
+            Hey Otis is a private wellness tool. To keep you safe and to keep us honest about what
+            this app can and can&apos;t do, please confirm the following before we go further.
+          </Text>
+
+          <ConsentRow
+            checked={agreedAdult}
+            onToggle={() => setAgreedAdult((v) => !v)}
+            label="I am 18 or older."
+            sub="Hey Otis is built for adults in long-term romantic relationships."
+          />
+          <ConsentRow
+            checked={agreedNotTherapy}
+            onToggle={() => setAgreedNotTherapy((v) => !v)}
+            label="I understand Hey Otis is not therapy or a crisis service."
+            sub="It&apos;s a guide for everyday relationship moments. For therapy, medical advice, or a mental-health crisis, I will reach out to a qualified professional or a crisis helpline."
+          />
+          <ConsentRow
+            checked={agreedTerms}
+            onToggle={() => setAgreedTerms((v) => !v)}
+            label="I&apos;ve read and accept the Terms and Privacy Policy."
+            sub={
+              <Text>
+                Read them here:{' '}
+                <Text
+                  style={styles.consentLink}
+                  onPress={() => Linking.openURL('https://heyotis.app/terms')}
+                >
+                  Terms of Service
+                </Text>
+                {' '}·{' '}
+                <Text
+                  style={styles.consentLink}
+                  onPress={() => Linking.openURL('https://heyotis.app/privacy')}
+                >
+                  Privacy Policy
+                </Text>
+              </Text>
+            }
+          />
+
+          <View style={styles.consentFooter}>
+            <Button
+              label="Continue"
+              onPress={handleAccept}
+              disabled={!canConsent}
+            />
+            <Text style={styles.consentFinePrint}>
+              Tapping Continue records your consent. You can revoke it any time by deleting your
+              account in Settings.
+            </Text>
+          </View>
+        </ScrollView>
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView style={styles.safe} edges={['top', 'bottom']}>
@@ -354,5 +486,20 @@ const styles = StyleSheet.create({
   deeperPromptLabel: { fontFamily: Fonts.bodyMedium, fontSize: 11, letterSpacing: 0.7, textTransform: 'uppercase', color: Colors.midBrown, marginBottom: 6 },
   deeperPromptBody: { fontFamily: Fonts.body, fontSize: 13, color: Colors.warmBrown, lineHeight: 20 },
   deeperPromptHi: { fontFamily: Fonts.bodyMedium, color: Colors.sageDark },
+  // Consent gate (pre-onboarding terms acceptance)
+  consentScroll: { paddingHorizontal: 24, paddingTop: 24, paddingBottom: 32 },
+  consentTag: { fontFamily: Fonts.bodyMedium, fontSize: 11, letterSpacing: 1, textTransform: 'uppercase', color: Colors.sage, marginBottom: 12 },
+  consentH: { fontFamily: Fonts.displaySemiBold, fontSize: 28, color: Colors.charcoal, lineHeight: 34, marginBottom: 12 },
+  consentSub: { fontFamily: Fonts.body, fontSize: 14, color: Colors.warmBrown, lineHeight: 22, marginBottom: 24 },
+  consentRow: { flexDirection: 'row', alignItems: 'flex-start', gap: 14, padding: 16, backgroundColor: Colors.warmWhite, borderWidth: 1.5, borderColor: Colors.sand, borderRadius: Radius.lg, marginBottom: 12 },
+  consentRowChecked: { borderColor: Colors.sage, backgroundColor: '#ffffff' },
+  consentCheckbox: { width: 24, height: 24, borderRadius: 6, borderWidth: 2, borderColor: Colors.sand, alignItems: 'center', justifyContent: 'center', marginTop: 1 },
+  consentCheckboxChecked: { borderColor: Colors.sage, backgroundColor: Colors.sage },
+  consentCheckMark: { color: '#ffffff', fontSize: 14, fontFamily: Fonts.bodyMedium, lineHeight: 16 },
+  consentRowLabel: { fontFamily: Fonts.bodyMedium, fontSize: 15, color: Colors.charcoal, marginBottom: 4 },
+  consentRowSub: { fontFamily: Fonts.body, fontSize: 13, color: Colors.midBrown, lineHeight: 19 },
+  consentLink: { color: Colors.sageDark, textDecorationLine: 'underline' },
+  consentFooter: { marginTop: 24 },
+  consentFinePrint: { fontFamily: Fonts.body, fontSize: 11, color: Colors.midBrown, lineHeight: 17, textAlign: 'center', marginTop: 14 },
   footer: { paddingHorizontal: 20, paddingTop: 24, paddingBottom: 8 },
 });
