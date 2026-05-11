@@ -216,6 +216,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       },
     });
     if (error) return { error: error.message };
+
+    // Repeat-signup detection: when "Confirm email" is on and the email is
+    // already registered, Supabase returns 200 with a populated `user` but
+    // `identities: []` (empty array). This is its silent way of hiding
+    // user-enumeration. We surface it as a real error because the cost of
+    // a confused user abandoning signup outweighs the enumeration leak —
+    // attackers can probe via login attempts anyway, and we rate-limit those.
+    if (data.user && Array.isArray(data.user.identities) && data.user.identities.length === 0) {
+      return { error: 'An account with this email already exists. Sign in instead.' };
+    }
+
     // When dashboard "Confirm email" is ON, Supabase returns a user but no session —
     // signalling verification is required before the user can sign in.
     const needsVerification = !data.session && !data.user?.email_confirmed_at;
