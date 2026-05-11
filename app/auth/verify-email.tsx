@@ -6,6 +6,7 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Colors, Fonts, Radius, Shadows } from '../../src/constants/theme';
 import { useAuth } from '../../src/hooks/useAuth';
+import { supabase } from '../../src/lib/supabase';
 import { IconHeart } from '../../src/components/Icons';
 
 /**
@@ -35,6 +36,18 @@ export default function VerifyEmail() {
   }, [cooldownUntil, now]);
   const cooldownRemaining = Math.max(0, Math.ceil((cooldownUntil - now) / 1000));
   const onCooldown = cooldownRemaining > 0;
+
+  // Auto-poll for verification. Once the user taps the link in their inbox,
+  // their email_confirmed_at is set server-side. We refresh the session
+  // every 4s so the app picks up the change without the user having to
+  // tap "I've verified". RouteGuard then auto-routes onward.
+  useEffect(() => {
+    if (user?.email_confirmed_at) return;
+    const t = setInterval(() => {
+      supabase.auth.refreshSession().catch(() => {});
+    }, 4000);
+    return () => clearInterval(t);
+  }, [user?.email_confirmed_at]);
 
   const handleResend = async () => {
     if (!email) {

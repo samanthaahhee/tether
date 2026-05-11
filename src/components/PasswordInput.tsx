@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { forwardRef, useState } from 'react';
 import { View, TextInput, TextInputProps, TouchableOpacity, Text, StyleSheet } from 'react-native';
 import { Colors, Fonts, Radius } from '../constants/theme';
 
@@ -15,11 +15,12 @@ type Props = Omit<TextInputProps, 'secureTextEntry'> & {
   containerStyle?: TextInputProps['style'];
 };
 
-export function PasswordInput({ containerStyle, style, ...rest }: Props) {
+export const PasswordInput = forwardRef<TextInput, Props>(({ containerStyle, style, ...rest }, ref) => {
   const [revealed, setRevealed] = useState(false);
   return (
     <View style={[s.wrap, containerStyle]}>
       <TextInput
+        ref={ref}
         {...rest}
         style={[s.input, style]}
         secureTextEntry={!revealed}
@@ -38,7 +39,8 @@ export function PasswordInput({ containerStyle, style, ...rest }: Props) {
       </TouchableOpacity>
     </View>
   );
-}
+});
+PasswordInput.displayName = 'PasswordInput';
 
 const s = StyleSheet.create({
   wrap: { width: '100%', position: 'relative' },

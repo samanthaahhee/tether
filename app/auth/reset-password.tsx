@@ -100,6 +100,7 @@ export default function ResetPassword() {
               textContentType="newPassword"
               autoComplete="new-password"
               passwordRules={`minlength: ${PASSWORD_MIN_LENGTH}; required: lower; required: upper; required: digit; required: special;`}
+              accessibilityLabel="New password"
             />
             {pw1.length > 0 && (
               <Text style={[s.hint, strength === 'strong' && s.hintStrong]}>
@@ -116,8 +117,10 @@ export default function ResetPassword() {
               selectionColor="#96d35f"
               cursorColor="#96d35f"
               onSubmitEditing={handleSubmit}
+              returnKeyType="go"
               textContentType="newPassword"
               autoComplete="new-password"
+              accessibilityLabel="Confirm new password"
             />
             {pw2.length > 0 && pw2 !== pw1 && (
               <Text style={s.mismatch}>Passwords don&apos;t match yet.</Text>

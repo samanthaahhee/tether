@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import {
   View, Text, TextInput, TouchableOpacity,
   StyleSheet, KeyboardAvoidingView, Platform, ScrollView, ActivityIndicator,
@@ -24,6 +24,8 @@ export default function SignUp() {
   const [appleLoading, setAppleLoading] = useState(false);
   const [error, setError] = useState('');
   const [pwFocused, setPwFocused] = useState(false);
+  const passwordRef = useRef<TextInput>(null);
+  const confirmRef = useRef<TextInput>(null);
 
   const handleSignUp = async () => {
     setError('');
@@ -151,12 +153,16 @@ export default function SignUp() {
               autoCapitalize="none"
               autoCorrect={false}
               spellCheck={false}
+              returnKeyType="next"
+              onSubmitEditing={() => passwordRef.current?.focus()}
               textContentType="emailAddress"
               autoComplete="email"
+              accessibilityLabel="Email address"
             />
 
             <Text style={s.label}>Password</Text>
             <PasswordInput
+              ref={passwordRef}
               value={password}
               onChangeText={setPassword}
               placeholder={`At least ${PASSWORD_MIN_LENGTH} characters`}
@@ -168,11 +174,15 @@ export default function SignUp() {
               passwordRules={`minlength: ${PASSWORD_MIN_LENGTH}; required: lower; required: upper; required: digit; required: special;`}
               onFocus={() => setPwFocused(true)}
               onBlur={() => setPwFocused(false)}
+              returnKeyType="next"
+              onSubmitEditing={() => confirmRef.current?.focus()}
+              accessibilityLabel="Password"
             />
             {(pwFocused || password.length > 0) && <PasswordRules password={password} />}
 
             <Text style={s.label}>Confirm password</Text>
             <PasswordInput
+              ref={confirmRef}
               value={confirm}
               onChangeText={setConfirm}
               placeholder="Repeat your password"
@@ -182,6 +192,8 @@ export default function SignUp() {
               textContentType="newPassword"
               autoComplete="new-password"
               onSubmitEditing={handleSignUp}
+              returnKeyType="go"
+              accessibilityLabel="Confirm password"
             />
             {confirm.length > 0 && confirm !== password && (
               <Text style={s.mismatch}>Passwords don&apos;t match yet.</Text>

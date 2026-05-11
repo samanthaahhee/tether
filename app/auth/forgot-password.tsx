@@ -84,9 +84,11 @@ export default function ForgotPassword() {
                   autoCorrect={false}
                   spellCheck={false}
                   autoFocus
+                  returnKeyType="send"
                   onSubmitEditing={handleSubmit}
                   textContentType="emailAddress"
                   autoComplete="email"
+                  accessibilityLabel="Email address"
                 />
 
                 {error ? <Text style={s.error}>{error}</Text> : null}

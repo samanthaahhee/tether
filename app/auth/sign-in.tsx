@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import {
   View, Text, TextInput, TouchableOpacity, Image,
   StyleSheet, KeyboardAvoidingView, Platform, ScrollView, ActivityIndicator,
@@ -18,6 +18,7 @@ export default function SignIn() {
   const [googleLoading, setGoogleLoading] = useState(false);
   const [appleLoading, setAppleLoading] = useState(false);
   const [error, setError] = useState('');
+  const passwordRef = useRef<TextInput>(null);
 
   const handleSignIn = async () => {
     setError('');
@@ -117,12 +118,15 @@ export default function SignIn() {
               spellCheck={false}
               autoFocus={!params.email}
               returnKeyType="next"
+              onSubmitEditing={() => passwordRef.current?.focus()}
               textContentType="emailAddress"
               autoComplete="email"
+              accessibilityLabel="Email address"
             />
 
             <Text style={s.label}>Password</Text>
             <PasswordInput
+              ref={passwordRef}
               value={password}
               onChangeText={setPassword}
               placeholder="Your password"
@@ -130,9 +134,11 @@ export default function SignIn() {
               selectionColor="#96d35f"
               cursorColor="#96d35f"
               onSubmitEditing={handleSignIn}
+              returnKeyType="go"
               textContentType="password"
               autoComplete="current-password"
               autoFocus={!!params.email}
+              accessibilityLabel="Password"
             />
 
             {error ? <Text style={s.error}>{error}</Text> : null}

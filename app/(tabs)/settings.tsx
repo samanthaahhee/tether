@@ -276,6 +276,12 @@ export default function SettingsTab() {
             'You are in control\nExport or delete your data at any time using the options below.'
           )} />
           <SettingsRow
+            icon={<IconLock size={18} color={Colors.midBrown} />}
+            label="Change password"
+            sub="Set a new password for your account"
+            onPress={() => router.push('/auth/change-password')}
+          />
+          <SettingsRow
             icon={<IconBox size={18} color={Colors.midBrown} />}
             label="Export my data"
             sub="Download a copy of all your data"
