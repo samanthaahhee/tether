@@ -241,11 +241,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const resetPassword = async (email: string) => {
     // Route through the branded /verified page (same as signup) so the
-    // user gets a friendly "✓ Reset your password" confirmation in the
-    // browser before the deep link fires. /verified inspects the `type`
-    // query param to know which deep-link target to use.
+    // user gets a friendly "Reset your password" confirmation in the
+    // browser before the deep link fires.
+    //
+    // We pass `?intent=recovery` so the page can pick the correct copy +
+    // deep-link target without depending on Supabase's `type=recovery`
+    // query param, which isn't always appended consistently.
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: 'https://heyotis.app/verified',
+      redirectTo: 'https://heyotis.app/verified?intent=recovery',
     });
     // Do not surface "user not found" — always return success from the UI to
     // avoid leaking which emails are registered. Only propagate rate-limit /

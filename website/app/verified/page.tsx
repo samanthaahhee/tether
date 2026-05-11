@@ -21,12 +21,18 @@ function VerifiedInner() {
   const code = params.get('code');
   const error = params.get('error');
   const errorDescription = params.get('error_description');
-  // Supabase appends `type=signup`, `type=recovery`, `type=magiclink`,
-  // or `type=invite` to tell us which flow this is. We use it both to
-  // tailor the on-page copy and to pick the right deep-link target —
-  // recovery needs to land on /auth/reset-password inside the app, not
-  // the generic /auth/callback.
-  const type = (params.get('type') || 'signup') as 'signup' | 'recovery' | 'magiclink' | 'invite';
+  // Determine which auth flow this is, in this priority order:
+  //   1. Our explicit `intent` query param (set by useAuth's signUp /
+  //      resetPasswordForEmail calls). Most reliable.
+  //   2. Supabase's `type` query param (sometimes appended, sometimes not
+  //      depending on the flow + Supabase version).
+  //   3. URL fragment for implicit flows (e.g. `#type=recovery&...`).
+  //   4. Default to signup.
+  const fragment = typeof window !== 'undefined' ? window.location.hash.slice(1) : '';
+  const fragmentType = new URLSearchParams(fragment).get('type');
+  const intent = params.get('intent');
+  const supabaseType = params.get('type') || fragmentType;
+  const type = (intent || supabaseType || 'signup') as 'signup' | 'recovery' | 'magiclink' | 'invite';
   const [autoTried, setAutoTried] = useState(false);
 
   const deepLinkPath = type === 'recovery' ? 'auth/reset-password' : 'auth/callback';
