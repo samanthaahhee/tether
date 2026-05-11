@@ -3,6 +3,7 @@ import { AppState, AppStateStatus, Platform } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Linking from 'expo-linking';
 import * as WebBrowser from 'expo-web-browser';
+import { makeRedirectUri } from 'expo-auth-session';
 import * as Crypto from 'expo-crypto';
 import * as AppleAuthentication from 'expo-apple-authentication';
 import { router } from 'expo-router';
@@ -295,7 +296,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const signInWithGoogle = async (): Promise<{ error: string | null }> => {
-    const redirectUrl = 'tether://auth/callback';
+    // makeRedirectUri auto-resolves the right URL per environment:
+    //   - Expo Go (dev):  exp://192.168.x.x:8081/--/auth/callback
+    //   - eas dev build:  tether://auth/callback
+    //   - production:     tether://auth/callback
+    // Hardcoding tether:// only worked in production builds — Expo Go
+    // couldn't intercept it, so OAuth flows broke during local testing.
+    const redirectUrl = makeRedirectUri({ scheme: 'tether', path: 'auth/callback' });
     try {
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
