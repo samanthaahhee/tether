@@ -14,6 +14,12 @@ create table public.profiles (
   need text default '',
   context text default '',
   onboarded boolean default false,
+  -- Optional demographic + acquisition fields captured during onboarding
+  gender text,
+  country text,
+  relationship_status text,
+  has_kids text,
+  acquisition_source text,
   created_at timestamptz default now(),
   updated_at timestamptz default now()
 );

@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import {
   View, Text, TextInput, TouchableOpacity, ScrollView,
   StyleSheet, KeyboardAvoidingView, Platform, Linking,
@@ -14,13 +14,14 @@ import {
   WINDOW_LABELS, NEED_LABELS,
 } from '../src/constants/data';
 import { Button, InsightReveal } from '../src/components/UI';
+import { enableTracking, track } from '../src/lib/posthog';
 import {
   IconWind, IconMoon, IconSearch, IconLeaf, IconCheck, IconActivity,
   IconShield, IconHeart, IconFlame, IconUser, IconClock, IconSparkles,
   IconLock,
 } from '../src/components/Icons';
 
-const TOTAL_STEPS = 8;
+const TOTAL_STEPS = 9;
 
 interface OptionData {
   value: string;
@@ -92,7 +93,7 @@ function OptionCard({ option, selected, onPress }: { option: OptionData; selecte
 // Bump this when the Terms or Privacy Policy receive a material change —
 // users with an older terms_version will be re-prompted to accept.
 // Keep in sync with the Effective date on heyotis.app/terms + /privacy.
-const TERMS_VERSION = '2026-04-08';
+const TERMS_VERSION = '2026-05-11';
 
 /**
  * One row in the consent gate. Tappable label + sub-label, with a left
@@ -137,6 +138,15 @@ export default function Onboarding() {
   const [age, setAge] = useState('');
   const [together, setTogether] = useState('');
 
+  // Step 2 — optional demographics. Each field can be left empty; the
+  // whole step can be advanced without selecting anything. Captured for
+  // aggregate audience insight and inclusive-language tailoring.
+  const [gender, setGender] = useState('');
+  const [country, setCountry] = useState('');
+  const [relationshipStatus, setRelationshipStatus] = useState('');
+  const [hasKids, setHasKids] = useState('');
+  const [acquisitionSource, setAcquisitionSource] = useState('');
+
   const TOGETHER_OPTIONS = [
     'Less than 6 months',
     '6 months – 1 year',
@@ -145,6 +155,11 @@ export default function Onboarding() {
     '5 – 10 years',
     '10+ years',
   ];
+
+  const GENDER_OPTIONS = ['Woman', 'Man', 'Non-binary', 'Other', 'Prefer not to say'];
+  const RELATIONSHIP_STATUS_OPTIONS = ['Dating', 'Engaged', 'Married', 'Cohabiting', 'Long-distance'];
+  const HAS_KIDS_OPTIONS = ['None', 'Yes — with us', 'Yes — not with us'];
+  const ACQUISITION_OPTIONS = ['App Store', 'Friend', 'Instagram', 'TikTok', 'Reddit', 'Podcast', 'Other'];
   const [picks, setPicks] = useState<Record<string, string>>({});
   const scrollRef = useRef<ScrollView>(null);
 
@@ -158,6 +173,25 @@ export default function Onboarding() {
   const [agreedNotTherapy, setAgreedNotTherapy] = useState(false);
   const canConsent = agreedAdult && agreedTerms && agreedNotTherapy;
 
+  // Track which step the user is on, once consent has been granted.
+  // The step-name map keeps the analytics event human-readable in
+  // PostHog without having to maintain a lookup elsewhere.
+  useEffect(() => {
+    if (!consented) return;
+    const stepNames: Record<number, string> = {
+      1: 'name_age_together',
+      2: 'demographics',
+      3: 'context',
+      4: 'attachment',
+      5: 'conflict',
+      6: 'window',
+      7: 'love',
+      8: 'need',
+      9: 'summary',
+    };
+    track('onboarding_step_viewed', { step, step_name: stepNames[step] });
+  }, [step, consented]);
+
   const pick = (key: string, value: string) => {
     setPicks((p) => ({ ...p, [key]: value }));
     setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), 200);
@@ -165,22 +199,30 @@ export default function Onboarding() {
 
   const canProceed = () => {
     if (step === 1) return name.trim().length > 0 && age.trim().length > 0 && together.length > 0;
-    if (step === 2) return !!picks.context;
-    if (step === 3) return !!picks.attach;
-    if (step === 4) return !!picks.conflict;
-    if (step === 5) return !!picks.window;
-    if (step === 6) return !!picks.love;
-    if (step === 7) return !!picks.need;
+    if (step === 2) return true; // Demographics step — all fields optional
+    if (step === 3) return !!picks.context;
+    if (step === 4) return !!picks.attach;
+    if (step === 5) return !!picks.conflict;
+    if (step === 6) return !!picks.window;
+    if (step === 7) return !!picks.love;
+    if (step === 8) return !!picks.need;
     return true;
   };
 
   const next = async () => {
     if (!canProceed()) return;
-    if (step === 8) {
+    if (step === 9) {
       const profilePayload = {
         name: name.trim(),
         age: age.trim(),
         together_for: together,
+        // Optional demographics — empty strings persist as nulls in the
+        // upsert via Supabase (the columns are nullable).
+        gender,
+        country: country.trim(),
+        relationship_status: relationshipStatus,
+        has_kids: hasKids,
+        acquisition_source: acquisitionSource,
         attachment: picks.attach || 'secure',
         conflict: picks.conflict || 'defensive',
         love: picks.love || 'words',
@@ -193,6 +235,22 @@ export default function Onboarding() {
       dispatch({ type: 'SET_PROFILE', payload: profilePayload });
       // Sync to Supabase
       await syncProfile(profilePayload);
+      track('onboarding_completed', {
+        attachment: profilePayload.attachment,
+        conflict: profilePayload.conflict,
+        love: profilePayload.love,
+        window: profilePayload.window,
+        need: profilePayload.need,
+        context: profilePayload.context,
+        // Demographics are user-level traits, captured here as event
+        // props for funnel analysis (not stored on the person profile).
+        gender: profilePayload.gender,
+        country: profilePayload.country,
+        relationship_status: profilePayload.relationship_status,
+        has_kids: profilePayload.has_kids,
+        acquisition_source: profilePayload.acquisition_source,
+        together_for: profilePayload.together_for,
+      });
       router.replace('/(tabs)');
       return;
     }
@@ -221,6 +279,10 @@ export default function Onboarding() {
         terms_accepted_at: new Date().toISOString(),
         terms_version: TERMS_VERSION,
       } as any);
+      // User has accepted terms — opt into analytics. Until this point
+      // PostHog has been opted-out and any track() calls are no-ops.
+      enableTracking();
+      track('consent_accepted', { terms_version: TERMS_VERSION });
       setConsented(true);
     };
     return (
@@ -306,6 +368,11 @@ export default function Onboarding() {
             // these in properly.
             const skipPayload = {
               name: name.trim() || '',
+              gender,
+              country: country.trim(),
+              relationship_status: relationshipStatus,
+              has_kids: hasKids,
+              acquisition_source: acquisitionSource,
               attachment: picks.attach || '',
               conflict: picks.conflict || '',
               love: picks.love || '',
@@ -316,6 +383,7 @@ export default function Onboarding() {
             };
             dispatch({ type: 'SET_PROFILE', payload: skipPayload });
             await syncProfile(skipPayload);
+            track('onboarding_skipped', { last_step: step });
             router.replace('/(tabs)');
           }}>
             <Text style={styles.skipText}>Skip</Text>
@@ -325,7 +393,7 @@ export default function Onboarding() {
 
           {step === 1 && (
             <View style={styles.stepWrap}>
-              <Text style={styles.stepTag}>Step 1 of 8</Text>
+              <Text style={styles.stepTag}>Step 1 of 9</Text>
               <Text style={styles.stepH}>Let us start with you</Text>
               <Text style={styles.stepSub}>This takes about 4 minutes. Your answers help Hey Otis understand how you experience relationships so every session feels made for you.</Text>
               <TextInput value={name} onChangeText={setName} placeholder="Your first name" placeholderTextColor={Colors.lightBrown} selectionColor="#96d35f" cursorColor="#96d35f" style={styles.nameInput} autoFocus returnKeyType="next" />
@@ -361,16 +429,111 @@ export default function Onboarding() {
 
           {step === 2 && (
             <View style={styles.stepWrap}>
-              <Text style={styles.stepTag}>Step 2 of 8: Your situation</Text>
+              <Text style={styles.stepTag}>Step 2 of 9: A little about you</Text>
+              <Text style={styles.stepH}>Help us understand who Hey Otis is for</Text>
+              <Text style={styles.stepSub}>All optional. Skip anything you&apos;d rather not share. This helps us shape the product for the people actually using it.</Text>
+
+              <Text style={styles.fieldLabel}>How do you describe your gender?</Text>
+              <View style={styles.chipWrap}>
+                {GENDER_OPTIONS.map((opt) => {
+                  const selected = gender === opt;
+                  return (
+                    <TouchableOpacity
+                      key={opt}
+                      onPress={() => setGender(selected ? '' : opt)}
+                      activeOpacity={0.85}
+                      style={[styles.chip, selected && styles.chipSelected]}
+                    >
+                      <Text style={[styles.chipText, selected && styles.chipTextSelected]}>{opt}</Text>
+                    </TouchableOpacity>
+                  );
+                })}
+              </View>
+
+              <Text style={styles.fieldLabel}>Where are you based?</Text>
+              <TextInput
+                value={country}
+                onChangeText={setCountry}
+                placeholder="Country (e.g. United Kingdom)"
+                placeholderTextColor={Colors.lightBrown}
+                selectionColor="#96d35f"
+                cursorColor="#96d35f"
+                style={styles.nameInput}
+                autoCapitalize="words"
+                autoCorrect={false}
+                returnKeyType="done"
+              />
+
+              <Text style={styles.fieldLabel}>How would you describe your relationship?</Text>
+              <View style={styles.chipWrap}>
+                {RELATIONSHIP_STATUS_OPTIONS.map((opt) => {
+                  const selected = relationshipStatus === opt;
+                  return (
+                    <TouchableOpacity
+                      key={opt}
+                      onPress={() => setRelationshipStatus(selected ? '' : opt)}
+                      activeOpacity={0.85}
+                      style={[styles.chip, selected && styles.chipSelected]}
+                    >
+                      <Text style={[styles.chipText, selected && styles.chipTextSelected]}>{opt}</Text>
+                    </TouchableOpacity>
+                  );
+                })}
+              </View>
+
+              <Text style={styles.fieldLabel}>Do you have children?</Text>
+              <View style={styles.chipWrap}>
+                {HAS_KIDS_OPTIONS.map((opt) => {
+                  const selected = hasKids === opt;
+                  return (
+                    <TouchableOpacity
+                      key={opt}
+                      onPress={() => setHasKids(selected ? '' : opt)}
+                      activeOpacity={0.85}
+                      style={[styles.chip, selected && styles.chipSelected]}
+                    >
+                      <Text style={[styles.chipText, selected && styles.chipTextSelected]}>{opt}</Text>
+                    </TouchableOpacity>
+                  );
+                })}
+              </View>
+
+              <Text style={styles.fieldLabel}>How did you hear about Hey Otis?</Text>
+              <View style={styles.chipWrap}>
+                {ACQUISITION_OPTIONS.map((opt) => {
+                  const selected = acquisitionSource === opt;
+                  return (
+                    <TouchableOpacity
+                      key={opt}
+                      onPress={() => setAcquisitionSource(selected ? '' : opt)}
+                      activeOpacity={0.85}
+                      style={[styles.chip, selected && styles.chipSelected]}
+                    >
+                      <Text style={[styles.chipText, selected && styles.chipTextSelected]}>{opt}</Text>
+                    </TouchableOpacity>
+                  );
+                })}
+              </View>
+
+              <View style={styles.hintBox}>
+                <IconLock size={16} color={Colors.midBrown} />
+                <Text style={styles.hintText}>Used for aggregate insight only. Never shown to your partner, never sold.</Text>
+              </View>
+            </View>
+          )}
+
+          {step === 3 && (
+            <View style={styles.stepWrap}>
+              <Text style={styles.stepTag}>Step 3 of 9: Your situation</Text>
               <Text style={styles.stepH}>What is bringing you here?</Text>
               <Text style={styles.stepSub}>No right answer. This just helps Hey Otis understand where you are starting from.</Text>
               {CONTEXT_OPTIONS.map((o) => <OptionCard key={o.value} option={o} selected={picks.context === o.value} onPress={() => pick('context', o.value)} />)}
             </View>
           )}
 
-          {step === 3 && (
+          {step === 4 && (
             <View style={styles.stepWrap}>
-              <Text style={styles.stepTag}>Step 3 of 8: How you connect</Text>
+              <Text style={styles.stepTag}>Step 4 of 9: How you connect</Text>
               <Text style={styles.stepH}>Your partner has not replied to your messages for a few hours. What goes through your mind?</Text>
               <Text style={styles.stepSub}>Pick the response that feels most honestly true, even if you wish it were not.</Text>
               {ATTACH_OPTIONS.map((o) => <OptionCard key={o.value} option={o} selected={picks.attach === o.value} onPress={() => pick('attach', o.value)} />)}
@@ -380,9 +543,9 @@ export default function Onboarding() {
             </View>
           )}
 
-          {step === 4 && (
+          {step === 5 && (
             <View style={styles.stepWrap}>
-              <Text style={styles.stepTag}>Step 4 of 8: During conflict</Text>
+              <Text style={styles.stepTag}>Step 5 of 9: During conflict</Text>
               <Text style={styles.stepH}>You and your partner are in the middle of a tense argument. What do you feel the strongest urge to do?</Text>
               <Text style={styles.stepSub}>Your gut instinct, not what you think you should do.</Text>
               {CONFLICT_OPTIONS.map((o) => <OptionCard key={o.value} option={o} selected={picks.conflict === o.value} onPress={() => pick('conflict', o.value)} />)}
@@ -392,9 +555,9 @@ export default function Onboarding() {
             </View>
           )}
 
-          {step === 5 && (
+          {step === 6 && (
             <View style={styles.stepWrap}>
-              <Text style={styles.stepTag}>Step 5 of 8: Your body in conflict</Text>
+              <Text style={styles.stepTag}>Step 6 of 9: Your body in conflict</Text>
               <Text style={styles.stepH}>When an argument escalates, what happens in your body first?</Text>
               <Text style={styles.stepSub}>This helps Hey Otis know when to suggest a pause and what kind of support you need.</Text>
               {WINDOW_OPTIONS.map((o) => <OptionCard key={o.value} option={o} selected={picks.window === o.value} onPress={() => pick('window', o.value)} />)}
@@ -404,9 +567,9 @@ export default function Onboarding() {
             </View>
           )}
 
-          {step === 6 && (
+          {step === 7 && (
             <View style={styles.stepWrap}>
-              <Text style={styles.stepTag}>Step 6 of 8: How you feel loved</Text>
+              <Text style={styles.stepTag}>Step 7 of 9: How you feel loved</Text>
               <Text style={styles.stepH}>After a difficult few days, what would make you feel most reconnected to your partner?</Text>
               <Text style={styles.stepSub}>Imagine the thing that would genuinely shift how you feel.</Text>
               {LOVE_OPTIONS.map((o) => <OptionCard key={o.value} option={o} selected={picks.love === o.value} onPress={() => pick('love', o.value)} />)}
@@ -416,16 +579,16 @@ export default function Onboarding() {
             </View>
           )}
 
-          {step === 7 && (
+          {step === 8 && (
             <View style={styles.stepWrap}>
-              <Text style={styles.stepTag}>Step 7 of 8: What you most need</Text>
+              <Text style={styles.stepTag}>Step 8 of 9: What you most need</Text>
               <Text style={styles.stepH}>When you are hurting in a relationship, which feels most true?</Text>
               <Text style={styles.stepSub}>This helps Hey Otis understand what is beneath your conflicts. The need that is usually unspoken.</Text>
               {NEED_OPTIONS.map((o) => <OptionCard key={o.value} option={o} selected={picks.need === o.value} onPress={() => pick('need', o.value)} />)}
             </View>
           )}
 
-          {step === 8 && (
+          {step === 9 && (
             <View style={styles.stepWrap}>
               <View style={{ alignItems: 'center', marginBottom: 12 }}>
                 <View style={{ width: 56, height: 56, borderRadius: 28, backgroundColor: Colors.sagePale, alignItems: 'center', justifyContent: 'center' }}>
@@ -467,7 +630,7 @@ export default function Onboarding() {
           )}
 
           <View style={styles.footer}>
-            <Button label={step === 8 ? 'Enter Hey Otis' : 'Continue'} onPress={next} disabled={!canProceed()} />
+            <Button label={step === 9 ? 'Enter Hey Otis' : 'Continue'} onPress={next} disabled={!canProceed()} />
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
