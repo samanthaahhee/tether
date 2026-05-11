@@ -64,6 +64,12 @@ These unlock €200–400k+ of non-dilutive money. Each takes a few hours of foc
 
 ---
 
+## 🐛 Pre-build bugs (fix before first eas build)
+
+- [ ] **Sign in with Apple doesn't complete** — code is wired (expo-apple-authentication + signInWithIdToken), Apple Dev capability enabled, Supabase Apple provider configured with `com.heyotis.app` as Client ID, but the flow fails to land a session. Untested paths: native sheet may not open in Expo Go (requires dev build), `signInWithIdToken` may need additional config. Test in a `eas build --profile development` build before assuming the prod build will work. Required by Apple Guideline 4.8 — blocking submission.
+
+---
+
 ## 🟣 EAS build + store submission (~1 week before launch)
 
 - [ ] **Create EAS secrets** for prod keys: `eas secret:create` for `EXPO_PUBLIC_SUPABASE_URL` + `EXPO_PUBLIC_SUPABASE_ANON_KEY`
