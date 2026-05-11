@@ -23,6 +23,7 @@ export default function SignUp() {
   const [googleLoading, setGoogleLoading] = useState(false);
   const [appleLoading, setAppleLoading] = useState(false);
   const [error, setError] = useState('');
+  const [pwFocused, setPwFocused] = useState(false);
 
   const handleSignUp = async () => {
     setError('');
@@ -157,8 +158,10 @@ export default function SignUp() {
               textContentType="newPassword"
               autoComplete="new-password"
               passwordRules={`minlength: ${PASSWORD_MIN_LENGTH}; required: lower; required: upper; required: digit; required: special;`}
+              onFocus={() => setPwFocused(true)}
+              onBlur={() => setPwFocused(false)}
             />
-            <PasswordRules password={password} />
+            {(pwFocused || password.length > 0) && <PasswordRules password={password} />}
 
             <Text style={s.label}>Confirm password</Text>
             <PasswordInput
