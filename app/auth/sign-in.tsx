@@ -1,13 +1,12 @@
 import React, { useState } from 'react';
 import {
-  View, Text, TextInput, TouchableOpacity,
+  View, Text, TextInput, TouchableOpacity, Image,
   StyleSheet, KeyboardAvoidingView, Platform, ScrollView, ActivityIndicator,
 } from 'react-native';
 import { router } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Colors, Fonts, Radius, Shadows } from '../../src/constants/theme';
 import { useAuth } from '../../src/hooks/useAuth';
-import { IconLeaf } from '../../src/components/Icons';
 
 export default function SignIn() {
   const { signIn, signInWithGoogle } = useAuth();
@@ -43,9 +42,11 @@ export default function SignIn() {
       <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
         <ScrollView contentContainerStyle={s.scroll} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
 
-          <View style={s.logoOrb}>
-            <IconLeaf size={28} color={Colors.white} />
-          </View>
+          <Image
+            source={require('../../assets/mascot-nurture.png')}
+            style={s.mascot}
+            resizeMode="contain"
+          />
           <Text style={s.title}>Welcome back</Text>
           <Text style={s.subtitle}>Sign in to continue your journey.</Text>
 
@@ -132,6 +133,7 @@ const s = StyleSheet.create({
   safe: { flex: 1, backgroundColor: Colors.cream },
   scroll: { flexGrow: 1, paddingHorizontal: 28, paddingTop: 48, paddingBottom: 32, alignItems: 'center' },
   logoOrb: { width: 56, height: 56, borderRadius: 28, backgroundColor: Colors.sage, alignItems: 'center', justifyContent: 'center', marginBottom: 20, ...Shadows.sm },
+  mascot: { width: 120, height: 120, marginBottom: 16 },
   title: { fontFamily: Fonts.displaySemiBold, fontSize: 28, color: Colors.charcoal, textAlign: 'center', marginBottom: 8 },
   subtitle: { fontFamily: Fonts.body, fontSize: 14, color: Colors.midBrown, textAlign: 'center', lineHeight: 21, marginBottom: 28 },
 
