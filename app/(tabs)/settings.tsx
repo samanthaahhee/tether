@@ -350,17 +350,22 @@ export default function SettingsTab() {
                                   Alert.alert('Delete failed', 'We couldn\'t delete your account right now. Please try again, or email privacy@heyotis.app if the problem persists.');
                                   return;
                                 }
-                                // Wipe local state immediately so RouteGuard
-                                // sees an empty app on next render. Order
-                                // matters: clear cache, reset state, navigate
-                                // to root, then sign out (which finalises
-                                // the session wipe). The router.replace
-                                // happens before signOut so the user sees
-                                // the welcome screen before any flicker.
+                                // Order matters here.
+                                // 1) signOut FIRST so useAuth clears `user`
+                                //    + `profile`. Without this, RouteGuard
+                                //    sees the (now-deleted) user as still
+                                //    signed in + onboarded and immediately
+                                //    bounces any navigation back to /(tabs).
+                                // 2) Wipe local cache + reset app state to
+                                //    clear anything still hydrated.
+                                // 3) Navigate to root explicitly. RouteGuard
+                                //    would also send us here (because user
+                                //    is null), but doing it explicitly avoids
+                                //    a one-frame flash of the tab UI.
+                                await signOut();
                                 await AsyncStorage.multiRemove(['tether_state', 'tether_app_state']);
                                 dispatch({ type: 'SET_PROFILE', payload: { onboarded: false, name: '', attachment: '', conflict: '', love: '', window: '', need: '', context: '' } });
                                 router.replace('/');
-                                await signOut();
                               } catch {
                                 Alert.alert('Error', 'Something went wrong. Please try again.');
                               }
