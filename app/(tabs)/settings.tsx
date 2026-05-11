@@ -8,6 +8,7 @@ import { IconHeart, IconUser, IconBell, IconLeaf, IconBookmark, IconLink, IconMa
 import { ChevronLeft, ChevronRight } from '../../src/components/Icon';
 import { CRISIS_COUNTRIES, getCrisisLines } from '../../src/constants/crisisLines';
 import { useAppState } from '../../src/hooks/useAppState';
+import { supabase } from '../../src/lib/supabase';
 import { ATTACHMENT_LABELS, LOVE_LABELS, CONFLICT_LABELS, WINDOW_LABELS, NEED_LABELS } from '../../src/constants/data';
 import { PartnerProfile } from '../../src/hooks/useAppState';
 import { useAuth } from '../../src/hooks/useAuth';
@@ -324,11 +325,22 @@ export default function SettingsTab() {
                     style: 'destructive',
                     onPress: async () => {
                       try {
-                        await AsyncStorage.removeItem('tether_state');
+                        // Server-side first: hits the SECURITY DEFINER RPC
+                        // which deletes auth.users and cascades through
+                        // profiles, couples, invites. If this fails we abort
+                        // before clearing local state — otherwise the user
+                        // ends up signed out with a ghost account in the DB.
+                        const { error: rpcError } = await supabase.rpc('delete_account');
+                        if (rpcError) {
+                          Alert.alert('Delete failed', 'We couldn\'t delete your account right now. Please try again, or email privacy@heyotis.app if the problem persists.');
+                          return;
+                        }
+                        // Now safe to wipe local state + sign out.
+                        await AsyncStorage.multiRemove(['tether_state', 'tether_app_state']);
                         dispatch({ type: 'SET_PROFILE', payload: { onboarded: false, name: '', attachment: '', conflict: '', love: '', window: '', need: '', context: '' } });
                         await signOut();
                         router.replace('/');
-                        Alert.alert('Data deleted', 'All your data has been removed.');
+                        Alert.alert('Account deleted', 'Your account and all your data have been permanently removed.');
                       } catch {
                         Alert.alert('Error', 'Something went wrong. Please try again.');
                       }

@@ -9,11 +9,12 @@ import { Colors, Fonts, Radius, Shadows } from '../../src/constants/theme';
 import { useAuth } from '../../src/hooks/useAuth';
 
 export default function SignIn() {
-  const { signIn, signInWithGoogle } = useAuth();
+  const { signIn, signInWithGoogle, signInWithApple } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
+  const [appleLoading, setAppleLoading] = useState(false);
   const [error, setError] = useState('');
 
   const handleSignIn = async () => {
@@ -37,6 +38,14 @@ export default function SignIn() {
     setGoogleLoading(false);
   };
 
+  const handleApple = async () => {
+    setError('');
+    setAppleLoading(true);
+    const { error: aError } = await signInWithApple();
+    if (aError && aError !== 'Apple sign-in was cancelled.') setError(aError);
+    setAppleLoading(false);
+  };
+
   return (
     <SafeAreaView style={s.safe} edges={['top', 'bottom']}>
       <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
@@ -49,6 +58,20 @@ export default function SignIn() {
           />
           <Text style={s.title}>Welcome back</Text>
           <Text style={s.subtitle}>Sign in to continue your journey.</Text>
+
+          {/* Apple Sign-In — iOS only, required by Apple Guideline 4.8
+              when any third-party social sign-in is offered. */}
+          {Platform.OS === 'ios' && (
+            <TouchableOpacity style={s.appleBtn} onPress={handleApple} disabled={appleLoading} activeOpacity={0.85}>
+              {appleLoading
+                ? <ActivityIndicator color={Colors.white} />
+                : <>
+                    <Text style={s.appleLogo}></Text>
+                    <Text style={s.appleText}>Continue with Apple</Text>
+                  </>
+              }
+            </TouchableOpacity>
+          )}
 
           {/* Google Sign-In */}
           <TouchableOpacity style={s.googleBtn} onPress={handleGoogle} disabled={googleLoading} activeOpacity={0.85}>
@@ -138,6 +161,9 @@ const s = StyleSheet.create({
   subtitle: { fontFamily: Fonts.body, fontSize: 14, color: Colors.midBrown, textAlign: 'center', lineHeight: 21, marginBottom: 28 },
 
   // Google
+  appleBtn: { width: '100%', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, backgroundColor: '#000000', borderRadius: Radius.full, paddingVertical: 14, marginBottom: 12 },
+  appleLogo: { fontSize: 18, color: '#ffffff', marginTop: -2 },
+  appleText: { fontFamily: Fonts.bodyMedium, fontSize: 14, color: '#ffffff' },
   googleBtn: { width: '100%', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10, backgroundColor: Colors.warmWhite, borderWidth: 1.5, borderColor: Colors.sand, borderRadius: Radius.full, paddingVertical: 14, marginBottom: 20 },
   googleG: { fontFamily: Fonts.bodyMedium, fontSize: 18, color: Colors.charcoal },
   googleText: { fontFamily: Fonts.bodyMedium, fontSize: 14, color: Colors.charcoal },

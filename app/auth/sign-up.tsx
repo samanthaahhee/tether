@@ -12,13 +12,14 @@ import { checkPassword, passwordStrengthLabel, PASSWORD_MIN_LENGTH } from '../..
 
 export default function SignUp() {
   const { invite } = useLocalSearchParams<{ invite?: string }>();
-  const { signUp, signInWithGoogle, acceptInvite } = useAuth();
+  const { signUp, signInWithGoogle, signInWithApple, acceptInvite } = useAuth();
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirm, setConfirm] = useState('');
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
+  const [appleLoading, setAppleLoading] = useState(false);
   const [error, setError] = useState('');
 
   const handleSignUp = async () => {
@@ -60,6 +61,15 @@ export default function SignUp() {
     setGoogleLoading(false);
   };
 
+  const handleApple = async () => {
+    setError('');
+    setAppleLoading(true);
+    const { error: aError } = await signInWithApple();
+    if (aError && aError !== 'Apple sign-in was cancelled.') setError(aError);
+    if (!aError && invite) await acceptInvite(invite);
+    setAppleLoading(false);
+  };
+
   return (
     <SafeAreaView style={s.safe} edges={['top', 'bottom']}>
       <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
@@ -80,6 +90,20 @@ export default function SignUp() {
               <IconHeart size={14} color={Colors.mauve} />
               <Text style={s.inviteText}>Joining via partner invite</Text>
             </View>
+          )}
+
+          {/* Apple Sign-In — iOS only, required by Apple Guideline 4.8
+              when any third-party social sign-in is offered. */}
+          {Platform.OS === 'ios' && (
+            <TouchableOpacity style={s.appleBtn} onPress={handleApple} disabled={appleLoading} activeOpacity={0.85}>
+              {appleLoading
+                ? <ActivityIndicator color={Colors.white} />
+                : <>
+                    <Text style={s.appleLogo}></Text>
+                    <Text style={s.appleText}>Continue with Apple</Text>
+                  </>
+              }
+            </TouchableOpacity>
           )}
 
           {/* Google Sign-In */}
@@ -178,6 +202,11 @@ const s = StyleSheet.create({
   subtitle: { fontFamily: Fonts.body, fontSize: 14, color: Colors.midBrown, textAlign: 'center', lineHeight: 21, marginBottom: 24 },
   inviteBadge: { flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: Colors.mauvePale, borderWidth: 1, borderColor: Colors.mauveLight, borderRadius: Radius.full, paddingHorizontal: 16, paddingVertical: 8, marginBottom: 20 },
   inviteText: { fontFamily: Fonts.bodyMedium, fontSize: 13, color: Colors.mauveDark },
+
+  // Apple
+  appleBtn: { width: '100%', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, backgroundColor: '#000000', borderRadius: Radius.full, paddingVertical: 14, marginBottom: 12 },
+  appleLogo: { fontSize: 18, color: '#ffffff', marginTop: -2 },
+  appleText: { fontFamily: Fonts.bodyMedium, fontSize: 14, color: '#ffffff' },
 
   // Google
   googleBtn: { width: '100%', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10, backgroundColor: Colors.warmWhite, borderWidth: 1.5, borderColor: Colors.sand, borderRadius: Radius.full, paddingVertical: 14, marginBottom: 20 },

@@ -1,9 +1,10 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { AppState, AppStateStatus } from 'react-native';
+import { AppState, AppStateStatus, Platform } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Linking from 'expo-linking';
 import * as WebBrowser from 'expo-web-browser';
 import * as Crypto from 'expo-crypto';
+import * as AppleAuthentication from 'expo-apple-authentication';
 import { router } from 'expo-router';
 import { Session, User } from '@supabase/supabase-js';
 import { supabase } from '../lib/supabase';
@@ -52,6 +53,7 @@ interface AuthContextValue {
   signIn: (email: string, password: string) => Promise<{ error: string | null }>;
   signOut: () => Promise<void>;
   signInWithGoogle: () => Promise<{ error: string | null }>;
+  signInWithApple: () => Promise<{ error: string | null }>;
   resetPassword: (email: string) => Promise<{ error: string | null }>;
   updatePassword: (newPassword: string) => Promise<{ error: string | null }>;
   resendVerification: (email: string) => Promise<{ error: string | null }>;
@@ -318,6 +320,53 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  /**
+   * Sign in with Apple — required by Apple Guideline 4.8 because we also
+   * offer Google sign-in. Uses the native iOS Sign in with Apple sheet
+   * (no browser redirect), passes the returned identity token straight to
+   * Supabase via signInWithIdToken — which is faster, more reliable, and
+   * doesn't need any redirect-URL allow-list config.
+   *
+   * Apple-only: on Android we no-op with a clear message. The button is
+   * also conditionally rendered on iOS only.
+   */
+  const signInWithApple = async (): Promise<{ error: string | null }> => {
+    if (Platform.OS !== 'ios') {
+      return { error: 'Sign in with Apple is only available on iOS.' };
+    }
+    try {
+      const available = await AppleAuthentication.isAvailableAsync();
+      if (!available) {
+        return { error: 'Sign in with Apple is not available on this device.' };
+      }
+
+      const credential = await AppleAuthentication.signInAsync({
+        requestedScopes: [
+          AppleAuthentication.AppleAuthenticationScope.FULL_NAME,
+          AppleAuthentication.AppleAuthenticationScope.EMAIL,
+        ],
+      });
+
+      if (!credential.identityToken) {
+        return { error: 'Apple sign-in did not return an identity token.' };
+      }
+
+      const { error } = await supabase.auth.signInWithIdToken({
+        provider: 'apple',
+        token: credential.identityToken,
+      });
+      if (error) return { error: error.message };
+      return { error: null };
+    } catch (e: any) {
+      // User-cancellation throws an ERR_REQUEST_CANCELED. Don't surface
+      // that as a real error — the UX is identical to "user dismissed".
+      if (e?.code === 'ERR_REQUEST_CANCELED') {
+        return { error: 'Apple sign-in was cancelled.' };
+      }
+      return { error: e?.message || 'Apple sign-in failed.' };
+    }
+  };
+
   const syncProfile = async (data: Partial<SupabaseProfile>) => {
     if (!user) return;
     await supabase.from('profiles').upsert({ id: user.id, ...data, updated_at: new Date().toISOString() });
@@ -391,7 +440,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   return (
     <AuthContext.Provider value={{
       user, session, profile, partnerProfile, couple, loading,
-      signUp, signIn, signOut, signInWithGoogle,
+      signUp, signIn, signOut, signInWithGoogle, signInWithApple,
       resetPassword, updatePassword, resendVerification,
       syncProfile, generateInvite, acceptInvite, refreshCouple,
     }}>

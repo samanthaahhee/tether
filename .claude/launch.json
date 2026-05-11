@@ -21,6 +21,36 @@
         "NEXT_PUBLIC_SUPABASE_URL": "https://axlarqthzbmqxzyhbrab.supabase.co",
         "NEXT_PUBLIC_SUPABASE_ANON_KEY": "dev-placeholder-set-in-env-local"
       }
+    },
+    {
+      "name": "smallstitch",
+      "runtimeExecutable": "/usr/local/bin/npm",
+      "runtimeArgs": ["run", "dev", "--prefix", "/Users/samanthaahhee/smallstitch"],
+      "port": 3002,
+      "autoPort": true,
+      "env": {
+        "PATH": "/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin"
+      }
+    },
+    {
+      "name": "ten8city",
+      "runtimeExecutable": "/usr/local/bin/npm",
+      "runtimeArgs": ["run", "dev", "--prefix", "/Users/samanthaahhee/ten8city"],
+      "port": 3001,
+      "autoPort": true,
+      "env": {
+        "PATH": "/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin"
+      }
+    },
+    {
+      "name": "ten8city-redesign",
+      "runtimeExecutable": "/usr/local/bin/npm",
+      "runtimeArgs": ["run", "dev", "--prefix", "/Users/samanthaahhee/ten8city-redesign"],
+      "port": 3003,
+      "autoPort": true,
+      "env": {
+        "PATH": "/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin"
+      }
     }
   ]
 }
