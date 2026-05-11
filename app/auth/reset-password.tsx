@@ -8,6 +8,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Colors, Fonts, Radius, Shadows } from '../../src/constants/theme';
 import { useAuth } from '../../src/hooks/useAuth';
 import { IconLeaf } from '../../src/components/Icons';
+import { PasswordInput } from '../../src/components/PasswordInput';
 import { checkPassword, passwordStrengthLabel, PASSWORD_MIN_LENGTH } from '../../src/utils/passwordPolicy';
 
 /**
@@ -88,15 +89,13 @@ export default function ResetPassword() {
 
           <View style={s.form}>
             <Text style={s.label}>New password</Text>
-            <TextInput
-              style={s.input}
+            <PasswordInput
               value={pw1}
               onChangeText={setPw1}
               placeholder="Your new password"
               placeholderTextColor={Colors.lightBrown}
               selectionColor="#96d35f"
               cursorColor="#96d35f"
-              secureTextEntry
               autoFocus
             />
             {pw1.length > 0 && (
@@ -106,15 +105,13 @@ export default function ResetPassword() {
             )}
 
             <Text style={s.label}>Confirm new password</Text>
-            <TextInput
-              style={s.input}
+            <PasswordInput
               value={pw2}
               onChangeText={setPw2}
               placeholder="Repeat your new password"
               placeholderTextColor={Colors.lightBrown}
               selectionColor="#96d35f"
               cursorColor="#96d35f"
-              secureTextEntry
               onSubmitEditing={handleSubmit}
             />
 

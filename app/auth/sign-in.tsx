@@ -7,6 +7,7 @@ import { router } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Colors, Fonts, Radius, Shadows } from '../../src/constants/theme';
 import { useAuth } from '../../src/hooks/useAuth';
+import { PasswordInput } from '../../src/components/PasswordInput';
 
 export default function SignIn() {
   const { signIn, signInWithGoogle, signInWithApple } = useAuth();
@@ -108,15 +109,13 @@ export default function SignIn() {
             />
 
             <Text style={s.label}>Password</Text>
-            <TextInput
-              style={s.input}
+            <PasswordInput
               value={password}
               onChangeText={setPassword}
               placeholder="Your password"
               placeholderTextColor={Colors.lightBrown}
               selectionColor="#96d35f"
               cursorColor="#96d35f"
-              secureTextEntry
               onSubmitEditing={handleSignIn}
             />
 

@@ -224,7 +224,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // a confused user abandoning signup outweighs the enumeration leak —
     // attackers can probe via login attempts anyway, and we rate-limit those.
     if (data.user && Array.isArray(data.user.identities) && data.user.identities.length === 0) {
-      return { error: 'An account with this email already exists. Sign in instead.' };
+      return { error: 'It looks like you already have an account. Try signing in instead.' };
     }
 
     // When dashboard "Confirm email" is ON, Supabase returns a user but no session —

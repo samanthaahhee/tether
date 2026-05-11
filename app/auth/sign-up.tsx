@@ -7,6 +7,7 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Colors, Fonts, Radius, Shadows } from '../../src/constants/theme';
 import { useAuth } from '../../src/hooks/useAuth';
+import { PasswordInput } from '../../src/components/PasswordInput';
 import { IconLeaf, IconHeart } from '../../src/components/Icons';
 import { checkPassword, passwordStrengthLabel, PASSWORD_MIN_LENGTH } from '../../src/utils/passwordPolicy';
 
@@ -141,15 +142,13 @@ export default function SignUp() {
             />
 
             <Text style={s.label}>Password</Text>
-            <TextInput
-              style={s.input}
+            <PasswordInput
               value={password}
               onChangeText={setPassword}
               placeholder={`At least ${PASSWORD_MIN_LENGTH} characters`}
               placeholderTextColor={Colors.lightBrown}
               selectionColor="#96d35f"
               cursorColor="#96d35f"
-              secureTextEntry
             />
             {password.length > 0 && (
               <Text style={s.hint}>
@@ -158,15 +157,13 @@ export default function SignUp() {
             )}
 
             <Text style={s.label}>Confirm password</Text>
-            <TextInput
-              style={s.input}
+            <PasswordInput
               value={confirm}
               onChangeText={setConfirm}
               placeholder="Repeat your password"
               placeholderTextColor={Colors.lightBrown}
               selectionColor="#96d35f"
               cursorColor="#96d35f"
-              secureTextEntry
               onSubmitEditing={handleSignUp}
             />
 
