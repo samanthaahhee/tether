@@ -135,6 +135,16 @@ export default function Onboarding() {
   const [step, setStep] = useState(1);
   const [name, setName] = useState('');
   const [age, setAge] = useState('');
+  const [together, setTogether] = useState('');
+
+  const TOGETHER_OPTIONS = [
+    'Less than 6 months',
+    '6 months – 1 year',
+    '1 – 3 years',
+    '3 – 5 years',
+    '5 – 10 years',
+    '10+ years',
+  ];
   const [picks, setPicks] = useState<Record<string, string>>({});
   const scrollRef = useRef<ScrollView>(null);
 
@@ -154,7 +164,7 @@ export default function Onboarding() {
   };
 
   const canProceed = () => {
-    if (step === 1) return name.trim().length > 0;
+    if (step === 1) return name.trim().length > 0 && age.trim().length > 0 && together.length > 0;
     if (step === 2) return !!picks.context;
     if (step === 3) return !!picks.attach;
     if (step === 4) return !!picks.conflict;
@@ -170,6 +180,7 @@ export default function Onboarding() {
       const profilePayload = {
         name: name.trim(),
         age: age.trim(),
+        together_for: together,
         attachment: picks.attach || 'secure',
         conflict: picks.conflict || 'defensive',
         love: picks.love || 'words',
@@ -323,6 +334,24 @@ export default function Onboarding() {
                   the user had a chance to read or change it. They must now
                   explicitly tap Continue. */}
               <TextInput value={age} onChangeText={setAge} placeholder="Your age" placeholderTextColor={Colors.lightBrown} selectionColor="#96d35f" cursorColor="#96d35f" style={styles.nameInput} keyboardType="number-pad" returnKeyType="done" />
+
+              <Text style={styles.fieldLabel}>How long have you been together?</Text>
+              <View style={styles.chipWrap}>
+                {TOGETHER_OPTIONS.map((opt) => {
+                  const selected = together === opt;
+                  return (
+                    <TouchableOpacity
+                      key={opt}
+                      onPress={() => setTogether(opt)}
+                      activeOpacity={0.85}
+                      style={[styles.chip, selected && styles.chipSelected]}
+                    >
+                      <Text style={[styles.chipText, selected && styles.chipTextSelected]}>{opt}</Text>
+                    </TouchableOpacity>
+                  );
+                })}
+              </View>
+
               <View style={styles.hintBox}>
                 <IconLock size={16} color={Colors.midBrown} />
                 <Text style={styles.hintText}>Everything you share here stays private. Hey Otis never shows your answers to your partner.</Text>
@@ -457,10 +486,17 @@ const styles = StyleSheet.create({
   stepTag: { fontFamily: Fonts.bodyMedium, fontSize: 11, letterSpacing: 0.8, textTransform: 'uppercase', color: Colors.sage },
   stepH: { fontFamily: Fonts.displaySemiBold, fontSize: 26, color: Colors.charcoal, lineHeight: 32, marginBottom: 2 },
   stepSub: { fontFamily: Fonts.body, fontSize: 14, color: Colors.midBrown, lineHeight: 21, marginBottom: 8 },
-  nameInput: { width: '100%', padding: 16, borderRadius: Radius.md, borderWidth: 1.5, borderColor: Colors.sand, backgroundColor: Colors.cream, fontFamily: Fonts.body, fontSize: 16, color: Colors.charcoal, marginBottom: 4 },
+  nameInput: { width: '100%', padding: 16, borderRadius: Radius.md, borderWidth: 1.5, borderColor: Colors.sand, backgroundColor: Colors.white, fontFamily: Fonts.body, fontSize: 16, color: Colors.charcoal, marginBottom: 4 },
   // Hint / info box: white bg + sage left-edge accent for accessibility.
   // Previous all-pale-green fill made body text hard to read.
-  hintBox: { backgroundColor: '#ffffff', borderWidth: 1, borderColor: Colors.sand, borderLeftWidth: 4, borderLeftColor: Colors.sage, borderRadius: Radius.sm, padding: 12, flexDirection: 'row', alignItems: 'flex-start', gap: 10, marginTop: 8 },
+  hintBox: { backgroundColor: '#ffffff', borderWidth: 1, borderColor: Colors.sand, borderRadius: Radius.sm, padding: 12, flexDirection: 'row', alignItems: 'flex-start', gap: 10, marginTop: 8 },
+
+  fieldLabel: { fontFamily: Fonts.bodyMedium, fontSize: 13, color: Colors.midBrown, marginTop: 12, marginBottom: 8 },
+  chipWrap: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 4 },
+  chip: { paddingHorizontal: 14, paddingVertical: 9, borderRadius: Radius.full, borderWidth: 1.5, borderColor: Colors.sand, backgroundColor: Colors.white },
+  chipSelected: { borderColor: Colors.sage, backgroundColor: Colors.sagePale },
+  chipText: { fontFamily: Fonts.body, fontSize: 13, color: Colors.charcoal },
+  chipTextSelected: { fontFamily: Fonts.bodyMedium, color: Colors.sageDeep },
   hintText: { flex: 1, fontFamily: Fonts.body, fontSize: 13, color: Colors.charcoal, lineHeight: 19 },
   optCard: { flexDirection: 'row', alignItems: 'flex-start', gap: 12, backgroundColor: Colors.cream, borderWidth: 2, borderColor: Colors.sand, borderRadius: Radius.lg, padding: 14 },
   // Selected state: white fill + green outline only. The previous sagePale

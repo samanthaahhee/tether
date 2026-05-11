@@ -513,7 +513,7 @@ const jc = StyleSheet.create({
     backgroundColor: '#ffffff',
   },
   stepLabel: {
-    fontFamily: 'Inter_500Medium',
+    fontFamily: 'InstrumentSans_500Medium',
     fontSize: 11,
     letterSpacing: 0.88,
     color: '#211e28',
@@ -532,7 +532,7 @@ const jc = StyleSheet.create({
     lineHeight: 24,
   },
   desc: {
-    fontFamily: 'Inter_400Regular',
+    fontFamily: 'InstrumentSans_400Regular',
     fontSize: 14,
     color: '#80798c',
     lineHeight: 21,
@@ -577,7 +577,7 @@ const st = StyleSheet.create({
     letterSpacing: -0.32,
   },
   label: {
-    fontFamily: 'Inter_400Regular',
+    fontFamily: 'InstrumentSans_400Regular',
     fontSize: 12,
     color: '#80798c',
     letterSpacing: 0.036,

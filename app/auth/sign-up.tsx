@@ -192,7 +192,7 @@ const s = StyleSheet.create({
   // Form
   form: { width: '100%', gap: 6, marginBottom: 24 },
   label: { fontFamily: Fonts.bodyMedium, fontSize: 12, color: Colors.midBrown, letterSpacing: 0.3, marginBottom: 2, marginTop: 4 },
-  input: { width: '100%', padding: 14, borderRadius: Radius.md, borderWidth: 1.5, borderColor: Colors.sand, backgroundColor: Colors.warmWhite, fontFamily: Fonts.body, fontSize: 15, color: Colors.charcoal },
+  input: { width: '100%', padding: 14, borderRadius: Radius.md, borderWidth: 1.5, borderColor: Colors.sand, backgroundColor: Colors.white, fontFamily: Fonts.body, fontSize: 15, color: Colors.charcoal },
   hint: { fontFamily: Fonts.body, fontSize: 12, color: Colors.midBrown, marginTop: 2 },
   hintBold: { fontFamily: Fonts.bodyMedium, color: Colors.charcoal },
   error: { fontFamily: Fonts.body, fontSize: 13, color: Colors.errorText, marginTop: 4 },
