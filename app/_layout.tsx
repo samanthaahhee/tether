@@ -7,6 +7,7 @@ import { Inter_400Regular, Inter_500Medium, Inter_600SemiBold } from '@expo-goog
 import { InstrumentSans_400Regular, InstrumentSans_500Medium, InstrumentSans_600SemiBold, InstrumentSans_700Bold } from '@expo-google-fonts/instrument-sans';
 import { AppStateProvider } from '../src/hooks/useAppState';
 import { AuthProvider, useAuth } from '../src/hooks/useAuth';
+import { track } from '../src/lib/posthog';
 
 function RouteGuard() {
   const { user, profile, loading } = useAuth();
@@ -95,6 +96,12 @@ export default function RootLayout() {
     InstrumentSans_600SemiBold,
     InstrumentSans_700Bold,
   });
+
+  // Fire once per cold start. No-op until the user has accepted the
+  // consent gate (PostHog starts opted-out).
+  useEffect(() => {
+    track('app_opened');
+  }, []);
 
   if (!fontsLoaded) return null;
 

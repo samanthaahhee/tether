@@ -21,6 +21,7 @@ import { ChevronLeft } from '../../src/components/Icon';
 import { IconLeaf, IconWind, IconSearch, IconHeart, IconX, IconBookmark, IconVoice, IconMoodLow, IconMoodOkay, IconMoodGood, IconMoodGreat, IconMoodAmazing } from '../../src/components/Icons';
 import BreathingOverlay from '../../src/components/BreathingOverlay';
 import { detectCrisisCategory } from '../../src/utils/safetyDetect';
+import { track } from '../../src/lib/posthog';
 
 const STEP_ICON_MAP: Record<string, React.ComponentType<{ size?: number; color?: string }>> = {
   wind: IconWind,
@@ -1249,6 +1250,7 @@ export default function SessionsTab() {
 
   const confirmNewSession = () => {
     dispatch({ type: 'CREATE_SESSION' });
+    track('session_started', { entry: 'sessions_tab' });
     setShowNamePrompt(false);
   };
 

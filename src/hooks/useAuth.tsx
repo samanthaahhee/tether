@@ -8,6 +8,7 @@ import * as AppleAuthentication from 'expo-apple-authentication';
 import { router } from 'expo-router';
 import { Session, User } from '@supabase/supabase-js';
 import { supabase } from '../lib/supabase';
+import { identify, resetUser, track } from '../lib/posthog';
 
 // Base-36 char pool; 12 chars = 36^12 ≈ 4.7e18 combinations. Upper-case only
 // so users can read/type the code from a message without case confusion.
@@ -35,6 +36,13 @@ export interface SupabaseProfile {
   context: string;
   onboarded: boolean;
   avatar_color: string;
+  // Optional demographic + acquisition fields. All nullable — users can
+  // skip individual questions and the column is left as null.
+  gender?: string;
+  country?: string;
+  relationship_status?: string;
+  has_kids?: string;
+  acquisition_source?: string;
 }
 
 export interface CoupleInfo {
@@ -78,6 +86,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setSession(session);
       setUser(session?.user ?? null);
       if (session?.user) {
+        // Link subsequent PostHog events to this user. No-ops until the
+        // user has passed the consent gate (PostHog is opted-out by default).
+        identify(session.user.id, { email: session.user.email });
         fetchUserData(session.user.id);
       } else {
         setLoading(false);
@@ -88,6 +99,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setSession(session);
       setUser(session?.user ?? null);
       if (session?.user) {
+        identify(session.user.id, { email: session.user.email });
         fetchUserData(session.user.id);
       } else {
         setProfile(null);
@@ -219,6 +231,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // When dashboard "Confirm email" is ON, Supabase returns a user but no session —
     // signalling verification is required before the user can sign in.
     const needsVerification = !data.session && !data.user?.email_confirmed_at;
+    track('sign_up_completed', { method: 'email', needs_verification: needsVerification });
     return { error: null, needsVerification };
   };
 
@@ -259,6 +272,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const signOut = async () => {
+    track('sign_out');
+    // Clear PostHog distinct ID so next user doesn't inherit events.
+    resetUser();
     // Clear state immediately so RouteGuard redirects
     setUser(null);
     setSession(null);
@@ -314,6 +330,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(code);
       if (exchangeError) return { error: exchangeError.message };
+      track('sign_up_completed', { method: 'google' });
       return { error: null };
     } catch (e: any) {
       return { error: e?.message || 'Google sign-in failed.' };
@@ -356,6 +373,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         token: credential.identityToken,
       });
       if (error) return { error: error.message };
+      track('sign_up_completed', { method: 'apple' });
       return { error: null };
     } catch (e: any) {
       // User-cancellation throws an ERR_REQUEST_CANCELED. Don't surface
@@ -389,6 +407,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
     });
     if (error) return '';
+    track('partner_invite_sent');
     return code;
   };
 
@@ -421,6 +440,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     switch (result.status) {
       case 'ok':
       case 'already_linked':
+        track('partner_invite_accepted', { status: result.status });
         await fetchUserData(user.id);
         return { error: null };
       case 'invalid':

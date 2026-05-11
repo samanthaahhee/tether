@@ -8,6 +8,7 @@ import { Colors, Fonts, Radius, Shadows } from '../../src/constants/theme';
 import { ModeKey } from '../../src/constants/data';
 import { useState, useRef, useEffect } from 'react';
 import { IconSettings, IconWind, IconSearch, IconLeaf, IconHeart, IconVoice, IconX } from '../../src/components/Icons';
+import { track } from '../../src/lib/posthog';
 import { ChevronLeft, ChevronRight } from '../../src/components/Icon';
 
 // ── Figma: "Your Guide" carousel cards ──────────────────────────────────────
@@ -327,6 +328,10 @@ export default function HomeTab() {
       (global as any).__tether_initial_feeling = initialMessage.trim();
     }
     dispatch({ type: 'CREATE_SESSION' });
+    track('session_started', {
+      entry: 'home',
+      has_initial_feeling: !!initialMessage?.trim(),
+    });
     router.replace('/(tabs)/sessions');
   };
 
