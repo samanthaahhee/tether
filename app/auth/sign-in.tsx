@@ -3,7 +3,7 @@ import {
   View, Text, TextInput, TouchableOpacity, Image,
   StyleSheet, KeyboardAvoidingView, Platform, ScrollView, ActivityIndicator,
 } from 'react-native';
-import { router } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Colors, Fonts, Radius, Shadows } from '../../src/constants/theme';
 import { useAuth } from '../../src/hooks/useAuth';
@@ -11,7 +11,8 @@ import { PasswordInput } from '../../src/components/PasswordInput';
 
 export default function SignIn() {
   const { signIn, signInWithGoogle, signInWithApple } = useAuth();
-  const [email, setEmail] = useState('');
+  const params = useLocalSearchParams<{ email?: string }>();
+  const [email, setEmail] = useState(params.email || '');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
@@ -22,9 +23,14 @@ export default function SignIn() {
     setError('');
     if (!email.trim() || !password.trim()) return setError('Please fill in all fields.');
     setLoading(true);
-    const { error: signInError } = await signIn(email.trim(), password);
+    const { error: signInError } = await signIn(email.trim().toLowerCase(), password);
     if (signInError) {
-      setError('Incorrect email or password.');
+      // Surface rate-limit responses so the user understands the wait.
+      if (/rate limit|too many/i.test(signInError)) {
+        setError('Too many attempts. Try again in a few minutes.');
+      } else {
+        setError('Incorrect email or password.');
+      }
       setLoading(false);
       return;
     }
@@ -106,6 +112,10 @@ export default function SignIn() {
               keyboardType="email-address"
               autoCapitalize="none"
               autoCorrect={false}
+              autoFocus={!params.email}
+              returnKeyType="next"
+              textContentType="emailAddress"
+              autoComplete="email"
             />
 
             <Text style={s.label}>Password</Text>
@@ -117,6 +127,9 @@ export default function SignIn() {
               selectionColor="#96d35f"
               cursorColor="#96d35f"
               onSubmitEditing={handleSignIn}
+              textContentType="password"
+              autoComplete="current-password"
+              autoFocus={!!params.email}
             />
 
             {error ? <Text style={s.error}>{error}</Text> : null}

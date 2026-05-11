@@ -8,8 +8,9 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Colors, Fonts, Radius, Shadows } from '../../src/constants/theme';
 import { useAuth } from '../../src/hooks/useAuth';
 import { PasswordInput } from '../../src/components/PasswordInput';
+import { PasswordRules } from '../../src/components/PasswordRules';
 import { IconLeaf, IconHeart } from '../../src/components/Icons';
-import { checkPassword, passwordStrengthLabel, PASSWORD_MIN_LENGTH } from '../../src/utils/passwordPolicy';
+import { checkPassword, PASSWORD_MIN_LENGTH } from '../../src/utils/passwordPolicy';
 
 export default function SignUp() {
   const { invite } = useLocalSearchParams<{ invite?: string }>();
@@ -31,27 +32,29 @@ export default function SignUp() {
     const check = checkPassword(password);
     if (!check.ok) return setError(check.error || 'Password is not strong enough.');
 
+    const cleanEmail = email.trim().toLowerCase();
     setLoading(true);
-    const { error: signUpError, needsVerification } = await signUp(email.trim(), password);
+    const { error: signUpError, needsVerification } = await signUp(cleanEmail, password);
     if (signUpError) {
       setError(signUpError);
       setLoading(false);
       return;
     }
 
-    // If invite code present, stash it for after verification — accepting it
-    // now without a session will fail RLS. (The RouteGuard picks up invite
-    // params once the user is fully signed in.)
     if (invite && !needsVerification) await acceptInvite(invite);
 
     setLoading(false);
 
     if (needsVerification) {
-      router.replace({ pathname: '/auth/verify-email', params: { email: email.trim() } });
+      router.replace({ pathname: '/auth/verify-email', params: { email: cleanEmail } });
     } else {
       router.replace('/intro');
     }
   };
+
+  // Detect the friendly "already have an account" error so we can surface a
+  // direct path to sign in (with the email pre-filled).
+  const alreadyExists = error.toLowerCase().includes('already have an account');
 
   const handleGoogle = async () => {
     setError('');
@@ -139,6 +142,8 @@ export default function SignUp() {
               keyboardType="email-address"
               autoCapitalize="none"
               autoCorrect={false}
+              textContentType="emailAddress"
+              autoComplete="email"
             />
 
             <Text style={s.label}>Password</Text>
@@ -149,12 +154,11 @@ export default function SignUp() {
               placeholderTextColor={Colors.lightBrown}
               selectionColor="#96d35f"
               cursorColor="#96d35f"
+              textContentType="newPassword"
+              autoComplete="new-password"
+              passwordRules={`minlength: ${PASSWORD_MIN_LENGTH}; required: lower; required: upper; required: digit; required: special;`}
             />
-            {password.length > 0 && (
-              <Text style={s.hint}>
-                Strength: <Text style={s.hintBold}>{passwordStrengthLabel(password)}</Text> — needs letter, number, symbol, min {PASSWORD_MIN_LENGTH}.
-              </Text>
-            )}
+            <PasswordRules password={password} />
 
             <Text style={s.label}>Confirm password</Text>
             <PasswordInput
@@ -164,10 +168,24 @@ export default function SignUp() {
               placeholderTextColor={Colors.lightBrown}
               selectionColor="#96d35f"
               cursorColor="#96d35f"
+              textContentType="newPassword"
+              autoComplete="new-password"
               onSubmitEditing={handleSignUp}
             />
+            {confirm.length > 0 && confirm !== password && (
+              <Text style={s.mismatch}>Passwords don&apos;t match yet.</Text>
+            )}
 
             {error ? <Text style={s.error}>{error}</Text> : null}
+            {alreadyExists && (
+              <TouchableOpacity
+                style={s.altBtn}
+                onPress={() => router.replace({ pathname: '/auth/sign-in', params: { email: email.trim().toLowerCase() } })}
+                activeOpacity={0.85}
+              >
+                <Text style={s.altBtnText}>Go to sign in</Text>
+              </TouchableOpacity>
+            )}
 
             <TouchableOpacity
               style={[s.btn, loading && s.btnDisabled]}
@@ -222,6 +240,9 @@ const s = StyleSheet.create({
   hint: { fontFamily: Fonts.body, fontSize: 12, color: Colors.midBrown, marginTop: 2 },
   hintBold: { fontFamily: Fonts.bodyMedium, color: Colors.charcoal },
   error: { fontFamily: Fonts.body, fontSize: 13, color: Colors.errorText, marginTop: 4 },
+  mismatch: { fontFamily: Fonts.body, fontSize: 12, color: Colors.errorText, marginTop: 4 },
+  altBtn: { marginTop: 10, backgroundColor: Colors.warmWhite, borderWidth: 1.5, borderColor: Colors.sand, borderRadius: Radius.full, paddingVertical: 12, alignItems: 'center' },
+  altBtnText: { fontFamily: Fonts.bodyMedium, fontSize: 14, color: Colors.charcoal },
   btn: { backgroundColor: Colors.sageDark, borderRadius: Radius.full, paddingVertical: 15, alignItems: 'center', marginTop: 12, ...Shadows.sm },
   btnDisabled: { opacity: 0.6 },
   btnText: { fontFamily: Fonts.bodyMedium, fontSize: 15, color: Colors.white },

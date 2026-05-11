@@ -20,11 +20,16 @@ export default function ForgotPassword() {
     setError('');
     if (!email.trim()) return setError('Please enter your email.');
     setLoading(true);
-    const { error: resetError } = await resetPassword(email.trim());
+    const { error: resetError } = await resetPassword(email.trim().toLowerCase());
     setLoading(false);
     if (resetError) {
-      // Only surface infrastructure errors — never leak whether the email exists.
-      setError('Something went wrong. Please try again in a moment.');
+      // Surface rate-limit so the user understands the wait; otherwise stay
+      // generic to avoid leaking whether the email exists.
+      if (/rate limit|too many/i.test(resetError)) {
+        setError('Too many requests. Try again in a few minutes.');
+      } else {
+        setError('Something went wrong. Please try again in a moment.');
+      }
       return;
     }
     setSubmitted(true);
@@ -79,6 +84,8 @@ export default function ForgotPassword() {
                   autoCorrect={false}
                   autoFocus
                   onSubmitEditing={handleSubmit}
+                  textContentType="emailAddress"
+                  autoComplete="email"
                 />
 
                 {error ? <Text style={s.error}>{error}</Text> : null}

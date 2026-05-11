@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View, Text, TouchableOpacity, StyleSheet, ScrollView, ActivityIndicator,
 } from 'react-native';
@@ -23,12 +23,26 @@ export default function VerifyEmail() {
   const [status, setStatus] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle');
   const [errorText, setErrorText] = useState('');
 
+  // 60-second cooldown after each successful resend. Supabase enforces a
+  // similar window server-side; surfacing it client-side prevents users
+  // from spamming the button and getting confusing rate-limit errors.
+  const [cooldownUntil, setCooldownUntil] = useState<number>(0);
+  const [now, setNow] = useState<number>(Date.now());
+  useEffect(() => {
+    if (cooldownUntil <= now) return;
+    const t = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(t);
+  }, [cooldownUntil, now]);
+  const cooldownRemaining = Math.max(0, Math.ceil((cooldownUntil - now) / 1000));
+  const onCooldown = cooldownRemaining > 0;
+
   const handleResend = async () => {
     if (!email) {
       setStatus('error');
       setErrorText('We could not find your email. Please sign in again.');
       return;
     }
+    if (onCooldown) return;
     setStatus('sending');
     const { error } = await resendVerification(email);
     if (error) {
@@ -37,6 +51,7 @@ export default function VerifyEmail() {
       return;
     }
     setStatus('sent');
+    setCooldownUntil(Date.now() + 60_000);
   };
 
   const handleChangeAccount = async () => {
@@ -64,15 +79,17 @@ export default function VerifyEmail() {
           </Text>
 
           <TouchableOpacity
-            style={[s.btn, status === 'sending' && s.btnDisabled]}
+            style={[s.btn, (status === 'sending' || onCooldown) && s.btnDisabled]}
             onPress={handleResend}
-            disabled={status === 'sending' || status === 'sent'}
+            disabled={status === 'sending' || onCooldown}
             activeOpacity={0.85}
           >
             {status === 'sending'
               ? <ActivityIndicator color={Colors.white} />
               : <Text style={s.btnText}>
-                  {status === 'sent' ? 'Link sent — check your inbox' : 'Send a new link'}
+                  {onCooldown
+                    ? `Try again in ${cooldownRemaining}s`
+                    : status === 'sent' ? 'Link sent. Check your inbox.' : 'Send a new link'}
                 </Text>}
           </TouchableOpacity>
 

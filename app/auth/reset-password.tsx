@@ -97,6 +97,9 @@ export default function ResetPassword() {
               selectionColor="#96d35f"
               cursorColor="#96d35f"
               autoFocus
+              textContentType="newPassword"
+              autoComplete="new-password"
+              passwordRules={`minlength: ${PASSWORD_MIN_LENGTH}; required: lower; required: upper; required: digit; required: special;`}
             />
             {pw1.length > 0 && (
               <Text style={[s.hint, strength === 'strong' && s.hintStrong]}>
@@ -113,7 +116,12 @@ export default function ResetPassword() {
               selectionColor="#96d35f"
               cursorColor="#96d35f"
               onSubmitEditing={handleSubmit}
+              textContentType="newPassword"
+              autoComplete="new-password"
             />
+            {pw2.length > 0 && pw2 !== pw1 && (
+              <Text style={s.mismatch}>Passwords don&apos;t match yet.</Text>
+            )}
 
             {error ? <Text style={s.error}>{error}</Text> : null}
 
@@ -152,6 +160,7 @@ const s = StyleSheet.create({
   hint: { fontFamily: Fonts.body, fontSize: 12, color: Colors.midBrown, marginTop: 2 },
   hintStrong: { color: Colors.sageDark, fontFamily: Fonts.bodyMedium },
   error: { fontFamily: Fonts.body, fontSize: 13, color: Colors.errorText, marginTop: 4 },
+  mismatch: { fontFamily: Fonts.body, fontSize: 12, color: Colors.errorText, marginTop: 4 },
   note: { fontFamily: Fonts.body, fontSize: 12, color: Colors.lightBrown, textAlign: 'center', marginTop: 14, lineHeight: 18 },
   btn: { backgroundColor: Colors.sageDark, borderRadius: Radius.full, paddingVertical: 15, alignItems: 'center', marginTop: 12, minWidth: 200, ...Shadows.sm },
   btnDisabled: { opacity: 0.6 },
