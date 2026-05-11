@@ -300,7 +300,7 @@ function ExpandableCard({ icon, title, children }: { icon: React.ReactNode; titl
 }
 
 const ex = StyleSheet.create({
-  card: { backgroundColor: '#fbf9ff', borderWidth: 1, borderColor: '#dedde8', borderRadius: 16, marginBottom: 12, overflow: 'hidden' },
+  card: { backgroundColor: '#ffffff', borderWidth: 1, borderColor: '#dedde8', borderRadius: 16, marginBottom: 12, overflow: 'hidden' },
   header: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 24, paddingVertical: 16 },
   title: { fontFamily: 'InstrumentSans_600SemiBold', fontSize: 16, color: '#211e28', flex: 1 },
   arrow: { fontFamily: 'Inter_400Regular', fontSize: 20, color: '#80798c' },
