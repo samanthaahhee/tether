@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import {
-  View, Text, TextInput, TouchableOpacity,
+  View, Text, TextInput, TouchableOpacity, Image,
   StyleSheet, KeyboardAvoidingView, Platform, ScrollView, ActivityIndicator,
 } from 'react-native';
 import { router } from 'expo-router';
@@ -58,7 +58,7 @@ export default function ResetPassword() {
     return (
       <SafeAreaView style={s.safe} edges={['top', 'bottom']}>
         <View style={s.centered}>
-          <View style={s.logoOrb}><IconLeaf size={28} color={Colors.white} /></View>
+          <Image source={require('../../assets/icon.png')} style={s.appLogo} resizeMode="contain" />
           <Text style={s.title}>Link expired</Text>
           <Text style={s.subtitle}>
             This password-reset link has expired or is invalid. Please request a new one.
@@ -79,9 +79,7 @@ export default function ResetPassword() {
     <SafeAreaView style={s.safe} edges={['top', 'bottom']}>
       <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
         <ScrollView contentContainerStyle={s.scroll} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
-          <View style={s.logoOrb}>
-            <IconLeaf size={28} color={Colors.white} />
-          </View>
+          <Image source={require('../../assets/icon.png')} style={s.appLogo} resizeMode="contain" />
           <Text style={s.title}>Set a new password</Text>
           <Text style={s.subtitle}>
             Choose something at least {PASSWORD_MIN_LENGTH} characters, with a letter, a number and a symbol.
@@ -154,6 +152,7 @@ const s = StyleSheet.create({
   centered: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 28 },
   scroll: { flexGrow: 1, paddingHorizontal: 28, paddingTop: 48, paddingBottom: 32, alignItems: 'center' },
   logoOrb: { width: 56, height: 56, borderRadius: 28, backgroundColor: Colors.sage, alignItems: 'center', justifyContent: 'center', marginBottom: 20, ...Shadows.sm },
+  appLogo: { width: 80, height: 80, marginBottom: 20, borderRadius: 18 },
   title: { fontFamily: Fonts.displaySemiBold, fontSize: 28, color: Colors.charcoal, textAlign: 'center', marginBottom: 12 },
   subtitle: { fontFamily: Fonts.body, fontSize: 14, color: Colors.midBrown, textAlign: 'center', lineHeight: 21, marginBottom: 24 },
 

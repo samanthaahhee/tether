@@ -1,6 +1,6 @@
 import React, { useRef, useState } from 'react';
 import {
-  View, Text, TextInput, TouchableOpacity,
+  View, Text, TextInput, TouchableOpacity, Image,
   StyleSheet, KeyboardAvoidingView, Platform, ScrollView, ActivityIndicator,
 } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
@@ -91,9 +91,11 @@ export default function SignUp() {
       <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
         <ScrollView contentContainerStyle={s.scroll} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
 
-          <View style={s.logoOrb}>
-            <IconLeaf size={28} color={Colors.white} />
-          </View>
+          <Image
+            source={require('../../assets/icon.png')}
+            style={s.appLogo}
+            resizeMode="contain"
+          />
           <Text style={s.title}>Create your account</Text>
           <Text style={s.subtitle}>
             {invite
@@ -238,6 +240,7 @@ const s = StyleSheet.create({
   safe: { flex: 1, backgroundColor: Colors.cream },
   scroll: { flexGrow: 1, paddingHorizontal: 28, paddingTop: 40, paddingBottom: 32, alignItems: 'center' },
   logoOrb: { width: 56, height: 56, borderRadius: 28, backgroundColor: Colors.sage, alignItems: 'center', justifyContent: 'center', marginBottom: 20, ...Shadows.sm },
+  appLogo: { width: 80, height: 80, marginBottom: 20, borderRadius: 18 },
   title: { fontFamily: Fonts.displaySemiBold, fontSize: 28, color: Colors.charcoal, textAlign: 'center', marginBottom: 8 },
   subtitle: { fontFamily: Fonts.body, fontSize: 14, color: Colors.midBrown, textAlign: 'center', lineHeight: 21, marginBottom: 24 },
   inviteBadge: { flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: Colors.mauvePale, borderWidth: 1, borderColor: Colors.mauveLight, borderRadius: Radius.full, paddingHorizontal: 16, paddingVertical: 8, marginBottom: 20 },

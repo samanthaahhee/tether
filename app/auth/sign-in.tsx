@@ -63,8 +63,8 @@ export default function SignIn() {
         <ScrollView contentContainerStyle={s.scroll} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
 
           <Image
-            source={require('../../assets/mascot-nurture.png')}
-            style={s.mascot}
+            source={require('../../assets/icon.png')}
+            style={s.appLogo}
             resizeMode="contain"
           />
           <Text style={s.title}>Welcome back</Text>
@@ -179,6 +179,7 @@ const s = StyleSheet.create({
   scroll: { flexGrow: 1, paddingHorizontal: 28, paddingTop: 48, paddingBottom: 32, alignItems: 'center' },
   logoOrb: { width: 56, height: 56, borderRadius: 28, backgroundColor: Colors.sage, alignItems: 'center', justifyContent: 'center', marginBottom: 20, ...Shadows.sm },
   mascot: { width: 120, height: 120, marginBottom: 16 },
+  appLogo: { width: 96, height: 96, marginBottom: 20, borderRadius: 22 },
   title: { fontFamily: Fonts.displaySemiBold, fontSize: 28, color: Colors.charcoal, textAlign: 'center', marginBottom: 8 },
   subtitle: { fontFamily: Fonts.body, fontSize: 14, color: Colors.midBrown, textAlign: 'center', lineHeight: 21, marginBottom: 28 },
 
