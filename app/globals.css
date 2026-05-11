@@ -1,0 +1,7 @@
+
+/* ── /verified — live rules checklist ──────────────────────────────────── */
+.vfd-rules { list-style: none; padding: 0; margin: 4px 0 0 0; display: flex; flex-direction: column; gap: 4px; }
+.vfd-rule { display: flex; align-items: center; gap: 8px; font-size: 12px; color: #80798c; font-family: inherit; }
+.vfd-rule-mark { display: inline-block; width: 14px; text-align: center; font-weight: 500; color: #a09bac; transition: color 0.2s, transform 0.2s; }
+.vfd-rule--met { color: #211e28; }
+.vfd-rule--met .vfd-rule-mark { color: #81b756; transform: scale(1.1); }

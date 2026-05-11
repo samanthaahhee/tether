@@ -47,9 +47,20 @@ function VerifiedInner() {
 
 // ── Recovery: inline password reset form ──────────────────────────────────
 
+// Mirrors the native app's password policy (see src/utils/passwordPolicy.ts).
+// Keep the two in sync — divergence means a password that passes here would
+// be rejected by the server on the next sign-in.
+const RULES = [
+  { key: 'length',    label: 'At least 12 characters', test: (p: string) => p.length >= 12 },
+  { key: 'letter',    label: 'A letter',                test: (p: string) => /[a-zA-Z]/.test(p) },
+  { key: 'number',    label: 'A number',                test: (p: string) => /\d/.test(p) },
+  { key: 'symbol',    label: 'A symbol (! ? # %)',       test: (p: string) => /[^a-zA-Z0-9]/.test(p) },
+] as const;
+
 function RecoveryForm({ code, tokenHash }: { code: string | null; tokenHash: string | null }) {
   const [pw1, setPw1] = useState('');
   const [pw2, setPw2] = useState('');
+  const [pwFocused, setPwFocused] = useState(false);
   const [stage, setStage] = useState<'exchanging' | 'ready' | 'submitting' | 'done' | 'expired'>('exchanging');
   const [errMsg, setErrMsg] = useState('');
 
@@ -136,13 +147,27 @@ function RecoveryForm({ code, tokenHash }: { code: string | null; tokenHash: str
                 type="password"
                 value={pw1}
                 onChange={(e) => setPw1(e.target.value)}
+                onFocus={() => setPwFocused(true)}
+                onBlur={() => setPwFocused(false)}
                 placeholder="At least 12 characters"
                 autoComplete="new-password"
                 className="vfd-input"
                 required
               />
             </label>
-            <p className="vfd-hint">Needs a letter, a number, and a symbol.</p>
+            {(pwFocused || pw1.length > 0) && (
+              <ul className="vfd-rules">
+                {RULES.map((r) => {
+                  const met = r.test(pw1);
+                  return (
+                    <li key={r.key} className={met ? 'vfd-rule vfd-rule--met' : 'vfd-rule'}>
+                      <span className="vfd-rule-mark">{met ? '✓' : '○'}</span>
+                      {r.label}
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
 
             <label className="vfd-label">
               Confirm new password
@@ -156,6 +181,9 @@ function RecoveryForm({ code, tokenHash }: { code: string | null; tokenHash: str
                 required
               />
             </label>
+            {pw2.length > 0 && pw2 !== pw1 && (
+              <p className="vfd-error">Passwords don&apos;t match yet.</p>
+            )}
 
             {errMsg && <p className="vfd-error">{errMsg}</p>}
 
