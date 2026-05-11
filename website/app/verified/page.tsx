@@ -35,30 +35,55 @@ function VerifiedInner() {
   const supabaseType = params.get('type') || fragmentType;
   const type = (intent || supabaseType || 'signup') as 'signup' | 'recovery' | 'magiclink' | 'invite';
 
+  // token_hash is the non-PKCE recovery token (set by our custom Supabase
+  // email template). Lets the web validate the token server-side without
+  // needing the code_verifier that lives on the user's phone.
+  const tokenHash = params.get('token_hash');
+
   if (error) return <ErrorCard description={errorDescription} />;
-  if (type === 'recovery') return <RecoveryForm code={code} />;
+  if (type === 'recovery') return <RecoveryForm code={code} tokenHash={tokenHash} />;
   return <DeepLinkCard type={type} code={code} />;
 }
 
 // ── Recovery: inline password reset form ──────────────────────────────────
 
-function RecoveryForm({ code }: { code: string | null }) {
+function RecoveryForm({ code, tokenHash }: { code: string | null; tokenHash: string | null }) {
   const [pw1, setPw1] = useState('');
   const [pw2, setPw2] = useState('');
   const [stage, setStage] = useState<'exchanging' | 'ready' | 'submitting' | 'done' | 'expired'>('exchanging');
   const [errMsg, setErrMsg] = useState('');
 
-  // Exchange the one-time recovery code for a short-lived session so we
-  // can call updateUser. This runs once on mount.
+  // Two paths for getting a recovery session:
+  //   1. token_hash (preferred) — works cross-device. The email template
+  //      passes Supabase's TokenHash directly in the URL; we call
+  //      verifyOtp which validates server-side, no PKCE verifier needed.
+  //   2. code (PKCE fallback) — only works if the same device that called
+  //      resetPasswordForEmail is the device tapping the email link, because
+  //      the code_verifier lives in AsyncStorage on that device. This is
+  //      Supabase's default flow and breaks for the common case of "request
+  //      reset on phone, tap link in mailbox on laptop".
   useEffect(() => {
-    if (!code) { setStage('expired'); setErrMsg('No reset code in this link.'); return; }
-    supabase.auth.exchangeCodeForSession(code)
-      .then(({ error }) => {
-        if (error) { setStage('expired'); setErrMsg('This reset link has expired or already been used. Request a fresh one from the app.'); return; }
-        setStage('ready');
-      })
-      .catch(() => { setStage('expired'); setErrMsg('Something went wrong. Try requesting a new reset link.'); });
-  }, [code]);
+    if (tokenHash) {
+      supabase.auth.verifyOtp({ type: 'recovery', token_hash: tokenHash })
+        .then(({ error }) => {
+          if (error) { setStage('expired'); setErrMsg('This reset link has expired or already been used. Request a fresh one from the app.'); return; }
+          setStage('ready');
+        })
+        .catch(() => { setStage('expired'); setErrMsg('Something went wrong. Try requesting a new reset link.'); });
+      return;
+    }
+    if (code) {
+      supabase.auth.exchangeCodeForSession(code)
+        .then(({ error }) => {
+          if (error) { setStage('expired'); setErrMsg('This reset link has expired or already been used. Request a fresh one from the app.'); return; }
+          setStage('ready');
+        })
+        .catch(() => { setStage('expired'); setErrMsg('Something went wrong. Try requesting a new reset link.'); });
+      return;
+    }
+    setStage('expired');
+    setErrMsg('No reset code in this link.');
+  }, [code, tokenHash]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
