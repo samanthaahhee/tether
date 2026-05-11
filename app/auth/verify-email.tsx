@@ -84,6 +84,12 @@ export default function VerifyEmail() {
             Wrong email? <Text style={s.switchAction}>Sign up again</Text>
           </Text>
         </TouchableOpacity>
+
+        <TouchableOpacity onPress={() => router.push('/auth/forgot-password')} style={s.switchLink}>
+          <Text style={s.switchText}>
+            Already verified? <Text style={s.switchAction}>Reset your password</Text>
+          </Text>
+        </TouchableOpacity>
       </ScrollView>
     </SafeAreaView>
   );

@@ -53,15 +53,29 @@ export default function AuthCallback() {
           <View style={s.logoOrb}><IconHeart size={28} color={Colors.white} /></View>
           <Text style={s.title}>Link didn&apos;t work</Text>
           <Text style={s.subtitle}>
-            This verification link may have expired or already been used.
-            You can request a fresh one from the verify-email screen.
+            This verification link may have expired or already been used. You can
+            request a fresh one, or recover your account if you forgot your password.
           </Text>
           <TouchableOpacity
             style={s.btn}
-            onPress={() => router.replace('/auth/sign-in')}
+            onPress={() => router.replace('/auth/verify-email')}
             activeOpacity={0.85}
           >
-            <Text style={s.btnText}>Back to sign in</Text>
+            <Text style={s.btnText}>Resend verification email</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={s.btnSecondary}
+            onPress={() => router.replace('/auth/forgot-password')}
+            activeOpacity={0.85}
+          >
+            <Text style={s.btnSecondaryText}>Forgot your password?</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={s.linkOnly}
+            onPress={() => router.replace('/auth/sign-in')}
+            activeOpacity={0.7}
+          >
+            <Text style={s.linkOnlyText}>Back to sign in</Text>
           </TouchableOpacity>
         </View>
       </SafeAreaView>
@@ -88,4 +102,8 @@ const s = StyleSheet.create({
   subtitle: { fontFamily: Fonts.body, fontSize: 14, color: Colors.midBrown, textAlign: 'center', lineHeight: 22, maxWidth: 360 },
   btn: { marginTop: 24, backgroundColor: Colors.sageDark, borderRadius: Radius.full, paddingVertical: 13, paddingHorizontal: 28, ...Shadows.sm },
   btnText: { fontFamily: Fonts.bodyMedium, fontSize: 14, color: Colors.white },
+  btnSecondary: { marginTop: 12, backgroundColor: Colors.warmWhite, borderWidth: 1.5, borderColor: Colors.sand, borderRadius: Radius.full, paddingVertical: 13, paddingHorizontal: 28 },
+  btnSecondaryText: { fontFamily: Fonts.bodyMedium, fontSize: 14, color: Colors.charcoal },
+  linkOnly: { marginTop: 16, paddingVertical: 8 },
+  linkOnlyText: { fontFamily: Fonts.bodyMedium, fontSize: 13, color: Colors.midBrown },
 });
