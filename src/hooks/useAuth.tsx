@@ -212,7 +212,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       password,
       options: {
         // Supabase dashboard must list this redirect URL in the allow-list.
-        emailRedirectTo: 'tether://auth/callback',
+        emailRedirectTo: 'https://heyotis.app/verified',
       },
     });
     if (error) return { error: error.message };
