@@ -19,9 +19,11 @@ const SECTIONS: { title: string; body: React.ReactNode }[] = [
           <li>Emotional check-in scores you record</li>
           <li>Partner observations and relationship patterns you add to your learnings</li>
           <li>Your email address (if you create an account)</li>
+          <li>Optional demographic information you choose to share during onboarding: age, gender, country, relationship status, whether you have children, and how you heard about Hey Otis. Every one of these is skippable.</li>
+          <li>Anonymous product usage events (which screens you visit, when a session starts, onboarding step completion). Used only to improve the product. Sent to PostHog (see &ldquo;Data sharing&rdquo;).</li>
         </ul>
         <p>
-          We do <strong>not</strong> collect location data, contact lists, browsing history, or any data from other apps on your device.
+          We do <strong>not</strong> collect precise device location, contact lists, browsing history, or any data from other apps on your device. The country field is self-reported text, not derived from GPS or IP.
         </p>
       </>
     ),
@@ -64,11 +66,12 @@ const SECTIONS: { title: string; body: React.ReactNode }[] = [
     title: 'Data sharing',
     body: (
       <>
-        <p>We do not sell, rent, or share your personal data with third parties.</p>
+        <p>We do not sell or rent your personal data. We share data only with the limited processors below:</p>
         <ul>
           <li>Your data is never sold to advertisers or data brokers.</li>
-          <li>We do not share your data with third-party analytics or marketing platforms.</li>
-          <li>The only external service that processes your data is Anthropic&apos;s Claude API, solely for generating AI responses during your sessions, under a Data Processing Agreement.</li>
+          <li><strong>Anthropic (Claude API)</strong> — processes your session messages to generate AI responses, under a Data Processing Agreement. Anthropic does not use your data to train models.</li>
+          <li><strong>Supabase</strong> — hosts your account and profile data in the EU region with row-level security so only you can read your own rows.</li>
+          <li><strong>PostHog (EU region)</strong> — receives anonymous product usage events (taps, screen views, session starts, onboarding step completion) so we can see which features are used and improve the product. We do not send your session content, messages, or reflections to PostHog. Tracking begins only after you accept the consent gate; you can opt out at any time by deleting your account.</li>
           <li>If you connect with a partner, only your name and profile-type results are shared with them. Your session content remains private.</li>
         </ul>
       </>
@@ -186,7 +189,7 @@ export default function PrivacyPage() {
             and your data should be too. This page explains exactly what we collect, how it&apos;s
             used, and the control you have over it.
           </p>
-          <p className="doc-effective">Effective date: 8 April 2026</p>
+          <p className="doc-effective">Effective date: 11 May 2026</p>
         </header>
 
         <div className="doc-toc">
