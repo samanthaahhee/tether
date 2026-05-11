@@ -8,7 +8,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Colors, Fonts, Radius, Shadows } from '../../src/constants/theme';
 import { useAuth } from '../../src/hooks/useAuth';
 import { ChevronLeft } from '../../src/components/Icon';
-import { PasswordInput } from '../../src/components/PasswordInput';
+import { PasswordInput, PasswordInputHandle } from '../../src/components/PasswordInput';
 import { PasswordRules } from '../../src/components/PasswordRules';
 import { checkPassword, PASSWORD_MIN_LENGTH } from '../../src/utils/passwordPolicy';
 
@@ -25,7 +25,7 @@ export default function ChangePassword() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [pwFocused, setPwFocused] = useState(false);
-  const confirmRef = useRef<TextInput>(null);
+  const confirmRef = useRef<PasswordInputHandle>(null);
 
   const handleSubmit = async () => {
     setError('');

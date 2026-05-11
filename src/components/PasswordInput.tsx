@@ -1,6 +1,14 @@
-import React, { forwardRef, useState } from 'react';
+import React, { forwardRef, useImperativeHandle, useRef, useState } from 'react';
 import { View, TextInput, TextInputProps, TouchableOpacity, Text, StyleSheet } from 'react-native';
 import { Colors, Fonts, Radius } from '../constants/theme';
+
+/** Imperative handle the parent can grab via useRef. */
+export type PasswordInputHandle = {
+  focus: () => void;
+  blur: () => void;
+  /** Force the field back to the obscured state — useful after a failed submit. */
+  hide: () => void;
+};
 
 /**
  * Password input with a Show/Hide toggle. Defaults to obscured. Renders the
@@ -15,12 +23,20 @@ type Props = Omit<TextInputProps, 'secureTextEntry'> & {
   containerStyle?: TextInputProps['style'];
 };
 
-export const PasswordInput = forwardRef<TextInput, Props>(({ containerStyle, style, ...rest }, ref) => {
+export const PasswordInput = forwardRef<PasswordInputHandle, Props>(({ containerStyle, style, ...rest }, ref) => {
   const [revealed, setRevealed] = useState(false);
+  const inputRef = useRef<TextInput>(null);
+
+  useImperativeHandle(ref, () => ({
+    focus: () => inputRef.current?.focus(),
+    blur: () => inputRef.current?.blur(),
+    hide: () => setRevealed(false),
+  }));
+
   return (
     <View style={[s.wrap, containerStyle]}>
       <TextInput
-        ref={ref}
+        ref={inputRef}
         {...rest}
         style={[s.input, style]}
         secureTextEntry={!revealed}

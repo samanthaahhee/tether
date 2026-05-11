@@ -7,7 +7,7 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Colors, Fonts, Radius, Shadows } from '../../src/constants/theme';
 import { useAuth } from '../../src/hooks/useAuth';
-import { PasswordInput } from '../../src/components/PasswordInput';
+import { PasswordInput, PasswordInputHandle } from '../../src/components/PasswordInput';
 import { PasswordRules } from '../../src/components/PasswordRules';
 import { IconLeaf, IconHeart } from '../../src/components/Icons';
 import { checkPassword, PASSWORD_MIN_LENGTH } from '../../src/utils/passwordPolicy';
@@ -24,8 +24,8 @@ export default function SignUp() {
   const [appleLoading, setAppleLoading] = useState(false);
   const [error, setError] = useState('');
   const [pwFocused, setPwFocused] = useState(false);
-  const passwordRef = useRef<TextInput>(null);
-  const confirmRef = useRef<TextInput>(null);
+  const passwordRef = useRef<PasswordInputHandle>(null);
+  const confirmRef = useRef<PasswordInputHandle>(null);
 
   const handleSignUp = async () => {
     setError('');
@@ -47,6 +47,8 @@ export default function SignUp() {
       } else {
         setError(signUpError);
       }
+      passwordRef.current?.hide();
+      confirmRef.current?.hide();
       setLoading(false);
       return;
     }

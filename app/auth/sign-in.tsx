@@ -7,7 +7,7 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Colors, Fonts, Radius, Shadows } from '../../src/constants/theme';
 import { useAuth } from '../../src/hooks/useAuth';
-import { PasswordInput } from '../../src/components/PasswordInput';
+import { PasswordInput, PasswordInputHandle } from '../../src/components/PasswordInput';
 
 export default function SignIn() {
   const { signIn, signInWithGoogle, signInWithApple } = useAuth();
@@ -18,7 +18,7 @@ export default function SignIn() {
   const [googleLoading, setGoogleLoading] = useState(false);
   const [appleLoading, setAppleLoading] = useState(false);
   const [error, setError] = useState('');
-  const passwordRef = useRef<TextInput>(null);
+  const passwordRef = useRef<PasswordInputHandle>(null);
 
   const handleSignIn = async () => {
     setError('');
@@ -34,6 +34,7 @@ export default function SignIn() {
         setError('Incorrect email or password.');
       }
       setPassword('');
+      passwordRef.current?.hide();
       setLoading(false);
       return;
     }
