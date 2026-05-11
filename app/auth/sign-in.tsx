@@ -25,12 +25,14 @@ export default function SignIn() {
     setLoading(true);
     const { error: signInError } = await signIn(email.trim().toLowerCase(), password);
     if (signInError) {
-      // Surface rate-limit responses so the user understands the wait.
       if (/rate limit|too many/i.test(signInError)) {
         setError('Too many attempts. Try again in a few minutes.');
+      } else if (/network|fetch|offline/i.test(signInError)) {
+        setError('Check your connection and try again.');
       } else {
         setError('Incorrect email or password.');
       }
+      setPassword('');
       setLoading(false);
       return;
     }
@@ -104,7 +106,7 @@ export default function SignIn() {
             <TextInput
               style={s.input}
               value={email}
-              onChangeText={setEmail}
+              onChangeText={(v) => { setEmail(v); if (error) setError(''); }}
               placeholder="you@example.com"
               placeholderTextColor={Colors.lightBrown}
               selectionColor="#96d35f"
@@ -112,6 +114,7 @@ export default function SignIn() {
               keyboardType="email-address"
               autoCapitalize="none"
               autoCorrect={false}
+              spellCheck={false}
               autoFocus={!params.email}
               returnKeyType="next"
               textContentType="emailAddress"

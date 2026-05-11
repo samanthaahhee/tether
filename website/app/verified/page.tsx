@@ -21,13 +21,27 @@ function VerifiedInner() {
   const code = params.get('code');
   const error = params.get('error');
   const errorDescription = params.get('error_description');
+  // Supabase appends `type=signup`, `type=recovery`, `type=magiclink`,
+  // or `type=invite` to tell us which flow this is. We use it both to
+  // tailor the on-page copy and to pick the right deep-link target —
+  // recovery needs to land on /auth/reset-password inside the app, not
+  // the generic /auth/callback.
+  const type = (params.get('type') || 'signup') as 'signup' | 'recovery' | 'magiclink' | 'invite';
   const [autoTried, setAutoTried] = useState(false);
 
-  // Build the deep link with the original query params so the app can
-  // exchange the code for a session.
+  const deepLinkPath = type === 'recovery' ? 'auth/reset-password' : 'auth/callback';
   const deepLink = code
-    ? `tether://auth/callback?code=${encodeURIComponent(code)}`
-    : 'tether://auth/callback';
+    ? `tether://${deepLinkPath}?code=${encodeURIComponent(code)}`
+    : `tether://${deepLinkPath}`;
+
+  const copy = (() => {
+    switch (type) {
+      case 'recovery':  return { heading: 'Reset your password', body: 'Tap below to open Hey Otis and choose a new password.', cta: 'Open Hey Otis' };
+      case 'magiclink': return { heading: "You're signed in", body: 'Tap below to open Hey Otis and continue.', cta: 'Open Hey Otis' };
+      case 'invite':    return { heading: "You've been invited", body: 'Tap below to open Hey Otis and accept the invite.', cta: 'Accept invite' };
+      default:          return { heading: "You're verified", body: 'Your email is confirmed. Tap below to open Hey Otis and finish setting up your account.', cta: 'Open Hey Otis' };
+    }
+  })();
 
   // Auto-attempt the deep link once on mount. If the OS opens the app, the
   // user never even sees this page. If nothing happens (desktop / no app),
@@ -60,13 +74,11 @@ function VerifiedInner() {
       ) : (
         <div className="vfd-card">
           <div className="vfd-icon" aria-hidden="true">✓</div>
-          <h1 className="vfd-h1">You&apos;re verified</h1>
-          <p className="vfd-body">
-            Your email is confirmed. Tap below to open Hey Otis and finish setting up your account.
-          </p>
-          <a href={deepLink} className="vfd-btn">Open Hey Otis</a>
+          <h1 className="vfd-h1">{copy.heading}</h1>
+          <p className="vfd-body">{copy.body}</p>
+          <a href={deepLink} className="vfd-btn">{copy.cta}</a>
           <p className="vfd-fine">
-            Don&apos;t have the app open? You can also sign in directly inside Hey Otis on your phone.
+            Don&apos;t have the app open? You can also continue directly inside Hey Otis on your phone.
           </p>
         </div>
       )}

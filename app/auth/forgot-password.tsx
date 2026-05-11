@@ -74,7 +74,7 @@ export default function ForgotPassword() {
                 <TextInput
                   style={s.input}
                   value={email}
-                  onChangeText={setEmail}
+                  onChangeText={(v) => { setEmail(v); if (error) setError(''); }}
                   placeholder="you@example.com"
                   placeholderTextColor={Colors.lightBrown}
                   selectionColor="#96d35f"
@@ -82,6 +82,7 @@ export default function ForgotPassword() {
                   keyboardType="email-address"
                   autoCapitalize="none"
                   autoCorrect={false}
+                  spellCheck={false}
                   autoFocus
                   onSubmitEditing={handleSubmit}
                   textContentType="emailAddress"

@@ -37,7 +37,14 @@ export default function SignUp() {
     setLoading(true);
     const { error: signUpError, needsVerification } = await signUp(cleanEmail, password);
     if (signUpError) {
-      setError(signUpError);
+      // Friendlier copy for the two errors a user can actually act on.
+      if (/rate limit|too many|email rate/i.test(signUpError)) {
+        setError('We\'ve sent too many emails recently. Wait a few minutes, then try again. If you already have an account, sign in below.');
+      } else if (/network|fetch|offline/i.test(signUpError)) {
+        setError('Check your connection and try again.');
+      } else {
+        setError(signUpError);
+      }
       setLoading(false);
       return;
     }
@@ -135,7 +142,7 @@ export default function SignUp() {
             <TextInput
               style={s.input}
               value={email}
-              onChangeText={setEmail}
+              onChangeText={(v) => { setEmail(v); if (error) setError(''); }}
               placeholder="you@example.com"
               placeholderTextColor={Colors.lightBrown}
               selectionColor="#96d35f"
@@ -143,6 +150,7 @@ export default function SignUp() {
               keyboardType="email-address"
               autoCapitalize="none"
               autoCorrect={false}
+              spellCheck={false}
               textContentType="emailAddress"
               autoComplete="email"
             />
