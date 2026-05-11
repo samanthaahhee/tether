@@ -79,6 +79,14 @@ export default function VerifyEmail() {
           {status === 'error' && errorText ? <Text style={s.error}>{errorText}</Text> : null}
         </View>
 
+        <TouchableOpacity
+          style={s.continueBtn}
+          onPress={() => router.replace('/auth/sign-in')}
+          activeOpacity={0.85}
+        >
+          <Text style={s.continueBtnText}>I&apos;ve verified — continue to sign in</Text>
+        </TouchableOpacity>
+
         <TouchableOpacity onPress={handleChangeAccount} style={s.switchLink}>
           <Text style={s.switchText}>
             Wrong email? <Text style={s.switchAction}>Sign up again</Text>
@@ -112,6 +120,8 @@ const s = StyleSheet.create({
   btnText: { fontFamily: Fonts.bodyMedium, fontSize: 14, color: Colors.white },
   error: { fontFamily: Fonts.body, fontSize: 13, color: Colors.errorText, marginTop: 10, textAlign: 'center' },
 
+  continueBtn: { width: '100%', maxWidth: 420, backgroundColor: Colors.warmWhite, borderWidth: 1.5, borderColor: Colors.sand, borderRadius: Radius.full, paddingVertical: 13, alignItems: 'center', marginTop: 4, marginBottom: 12 },
+  continueBtnText: { fontFamily: Fonts.bodyMedium, fontSize: 14, color: Colors.charcoal },
   switchLink: { marginTop: 8 },
   switchText: { fontFamily: Fonts.body, fontSize: 14, color: Colors.midBrown, textAlign: 'center' },
   switchAction: { fontFamily: Fonts.bodyMedium, color: Colors.sageDark },
