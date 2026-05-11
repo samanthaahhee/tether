@@ -312,38 +312,56 @@ export default function SettingsTab() {
           />
           <SettingsRow
             icon={<IconX size={18} color="#A32D2D" />}
-            label="Delete all my data"
+            label="Delete account"
             sub="Permanently remove your account and all data"
             onPress={() => {
               Alert.alert(
-                'Delete all data',
-                'This will permanently delete your account, all sessions, messages, learnings, and profile data. This action cannot be undone.\n\nAre you absolutely sure?',
+                'Delete your account?',
+                'This will permanently delete:\n\n  • Your profile and onboarding answers\n  • All session messages and learnings\n  • Your partner connection (if any)\n  • Your sign-in credentials\n\nYou will not be able to recover any of this. The app will close and you will be signed out.',
                 [
                   { text: 'Cancel', style: 'cancel' },
                   {
-                    text: 'Delete everything',
+                    text: 'Continue',
                     style: 'destructive',
-                    onPress: async () => {
-                      try {
-                        // Server-side first: hits the SECURITY DEFINER RPC
-                        // which deletes auth.users and cascades through
-                        // profiles, couples, invites. If this fails we abort
-                        // before clearing local state — otherwise the user
-                        // ends up signed out with a ghost account in the DB.
-                        const { error: rpcError } = await supabase.rpc('delete_account');
-                        if (rpcError) {
-                          Alert.alert('Delete failed', 'We couldn\'t delete your account right now. Please try again, or email privacy@heyotis.app if the problem persists.');
-                          return;
-                        }
-                        // Now safe to wipe local state + sign out.
-                        await AsyncStorage.multiRemove(['tether_state', 'tether_app_state']);
-                        dispatch({ type: 'SET_PROFILE', payload: { onboarded: false, name: '', attachment: '', conflict: '', love: '', window: '', need: '', context: '' } });
-                        await signOut();
-                        router.replace('/');
-                        Alert.alert('Account deleted', 'Your account and all your data have been permanently removed.');
-                      } catch {
-                        Alert.alert('Error', 'Something went wrong. Please try again.');
-                      }
+                    onPress: () => {
+                      // Second confirmation — last chance. iOS pattern for
+                      // genuinely irreversible destructive actions.
+                      Alert.alert(
+                        'Last chance',
+                        'Tap Delete to permanently remove your account and all data. This cannot be undone.',
+                        [
+                          { text: 'Cancel', style: 'cancel' },
+                          {
+                            text: 'Delete',
+                            style: 'destructive',
+                            onPress: async () => {
+                              try {
+                                // Server-side first: hits the SECURITY DEFINER RPC
+                                // which deletes auth.users and cascades through
+                                // profiles, couples, invites.
+                                const { error: rpcError } = await supabase.rpc('delete_account');
+                                if (rpcError) {
+                                  Alert.alert('Delete failed', 'We couldn\'t delete your account right now. Please try again, or email privacy@heyotis.app if the problem persists.');
+                                  return;
+                                }
+                                // Wipe local state immediately so RouteGuard
+                                // sees an empty app on next render. Order
+                                // matters: clear cache, reset state, navigate
+                                // to root, then sign out (which finalises
+                                // the session wipe). The router.replace
+                                // happens before signOut so the user sees
+                                // the welcome screen before any flicker.
+                                await AsyncStorage.multiRemove(['tether_state', 'tether_app_state']);
+                                dispatch({ type: 'SET_PROFILE', payload: { onboarded: false, name: '', attachment: '', conflict: '', love: '', window: '', need: '', context: '' } });
+                                router.replace('/');
+                                await signOut();
+                              } catch {
+                                Alert.alert('Error', 'Something went wrong. Please try again.');
+                              }
+                            },
+                          },
+                        ],
+                      );
                     },
                   },
                 ],
