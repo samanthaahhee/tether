@@ -73,30 +73,26 @@ export function InsightReveal({
   label, title, body, bg, borderColor, labelColor,
 }: {
   label: string; title: string; body: string;
-  /** @deprecated kept for caller back-compat — visual treatment is now white. */
   bg: string;
   borderColor: string;
   labelColor: string;
 }) {
-  // White card + coloured left-edge accent. The colour signal (sage,
-  // blue, amber, mauve depending on which step) is preserved via the
-  // accent stripe + label colour; the body text now sits on white for
-  // far better contrast and readability.
+  // Pale tinted card with uniform coloured border. The colour signal
+  // (sage, blue, amber, mauve) lives in the background + border +
+  // label colour, matching the Figma onboarding refresh.
   return (
     <View style={{
-      backgroundColor: '#ffffff',
-      borderWidth: 1,
-      borderColor: Colors.sand,
-      borderLeftWidth: 4,
-      borderLeftColor: borderColor,
-      borderRadius: Radius.md,
-      padding: 14,
+      backgroundColor: bg,
+      borderWidth: 1.5,
+      borderColor: borderColor,
+      borderRadius: Radius.lg,
+      padding: 16,
       marginTop: 14,
     }}>
-      <Text style={{ fontFamily: Fonts.bodyMedium, fontSize: 10, letterSpacing: 0.7, textTransform: 'uppercase', color: labelColor, marginBottom: 5 }}>
+      <Text style={{ fontFamily: Fonts.bodyMedium, fontSize: 10, letterSpacing: 0.7, textTransform: 'uppercase', color: labelColor, marginBottom: 6 }}>
         {label}
       </Text>
-      <Text style={{ fontFamily: Fonts.display, fontSize: 15, color: Colors.charcoal, marginBottom: 5 }}>
+      <Text style={{ fontFamily: Fonts.displaySemiBold, fontSize: 15, color: Colors.charcoal, marginBottom: 6, lineHeight: 21 }}>
         {title}
       </Text>
       <Text style={{ fontFamily: Fonts.body, fontSize: 13, color: Colors.charcoal, lineHeight: 20 }}>

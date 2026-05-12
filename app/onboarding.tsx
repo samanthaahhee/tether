@@ -411,8 +411,9 @@ export default function Onboarding() {
 
           {step === 1 && (
             <View style={styles.stepWrap}>
-              <Text style={styles.stepTag}>Step 1 of 9</Text>
-              {/* stepTag color is charcoal under the new visual style; see styles below */}
+              {/* Step 1 has no step-number tag, matching Step 2; the
+                  numbered "Step X/5" tags begin at the pattern-question
+                  section (steps 4-8). */}
               <Text style={styles.stepH}>Let us start with you</Text>
               <Text style={styles.stepSub}>This takes about 4 minutes. Your answers help Hey Otis understand how you experience relationships so every session feels made for you.</Text>
               <TextInput value={name} onChangeText={setName} placeholder="Your first name" placeholderTextColor={Colors.lightBrown} selectionColor="#96d35f" cursorColor="#96d35f" style={styles.nameInput} autoFocus returnKeyType="next" />
