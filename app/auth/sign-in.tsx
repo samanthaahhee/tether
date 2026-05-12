@@ -117,6 +117,15 @@ export default function SignIn() {
               selectionColor="#96d35f"
               cursorColor="#96d35f"
               secureTextEntry
+              // textContentType + autoComplete tell iOS this is a real
+              // password field so the Strong Password autofill stops
+              // wiping the field when the user taps in the middle to
+              // edit. Without these hints iOS treats every keystroke
+              // like a fresh autofill suggestion.
+              textContentType="password"
+              autoComplete="current-password"
+              autoCapitalize="none"
+              autoCorrect={false}
               onSubmitEditing={handleSignIn}
             />
 

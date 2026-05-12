@@ -283,11 +283,11 @@ export default function PartnerOnboarding() {
               </Text>
               <View style={styles.summaryGrid}>
                 {[
-                  { label: 'Attachment', value: ATTACHMENT_LABELS[picks.attach] || '—' },
-                  { label: 'Under conflict', value: CONFLICT_LABELS[picks.conflict] || '—' },
-                  { label: 'Love language', value: LOVE_LABELS[picks.love] || '—' },
-                  { label: 'Body in conflict', value: WINDOW_LABELS[picks.window] || '—' },
-                  { label: 'Core need', value: NEED_LABELS[picks.need] || '—' },
+                  { label: 'Attachment', value: ATTACHMENT_LABELS[picks.attach] || '' },
+                  { label: 'Under conflict', value: CONFLICT_LABELS[picks.conflict] || '' },
+                  { label: 'Love language', value: LOVE_LABELS[picks.love] || '' },
+                  { label: 'Body in conflict', value: WINDOW_LABELS[picks.window] || '' },
+                  { label: 'Core need', value: NEED_LABELS[picks.need] || '' },
                 ].map((item) => (
                   <View key={item.label} style={styles.summaryPill}>
                     <Text style={styles.pillLabel}>{item.label}</Text>

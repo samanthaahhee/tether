@@ -1,7 +1,8 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useMemo, useState, useRef } from 'react';
 import {
   View, Text, TextInput, TouchableOpacity, ScrollView,
   StyleSheet, KeyboardAvoidingView, Platform, Linking,
+  Modal, FlatList,
 } from 'react-native';
 import { router } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -15,6 +16,7 @@ import {
 } from '../src/constants/data';
 import { Button, InsightReveal } from '../src/components/UI';
 import { enableTracking, track } from '../src/lib/posthog';
+import { COUNTRIES } from '../src/constants/countries';
 import {
   IconWind, IconMoon, IconSearch, IconLeaf, IconCheck, IconActivity,
   IconShield, IconHeart, IconFlame, IconUser, IconClock, IconSparkles,
@@ -147,18 +149,30 @@ export default function Onboarding() {
   const [hasKids, setHasKids] = useState('');
   const [acquisitionSource, setAcquisitionSource] = useState('');
 
+  // Country picker modal state. The free-text input was replaced with
+  // a tappable field that opens a searchable list — users can't
+  // reliably remember a canonical spelling ("USA" vs "United States"
+  // vs "U.S.A.") so we normalise via a fixed list.
+  const [countryPickerOpen, setCountryPickerOpen] = useState(false);
+  const [countryQuery, setCountryQuery] = useState('');
+  const filteredCountries = useMemo(() => {
+    const q = countryQuery.trim().toLowerCase();
+    if (!q) return COUNTRIES;
+    return COUNTRIES.filter((c) => c.toLowerCase().includes(q));
+  }, [countryQuery]);
+
   const TOGETHER_OPTIONS = [
     'Less than 6 months',
-    '6 months – 1 year',
-    '1 – 3 years',
-    '3 – 5 years',
-    '5 – 10 years',
+    '6 months to 1 year',
+    '1 to 3 years',
+    '3 to 5 years',
+    '5 to 10 years',
     '10+ years',
   ];
 
   const GENDER_OPTIONS = ['Woman', 'Man', 'Non-binary', 'Other', 'Prefer not to say'];
   const RELATIONSHIP_STATUS_OPTIONS = ['Dating', 'Engaged', 'Married', 'Cohabiting', 'Long-distance'];
-  const HAS_KIDS_OPTIONS = ['None', 'Yes — with us', 'Yes — not with us'];
+  const HAS_KIDS_OPTIONS = ['No', 'Yes, they live with us', 'Yes, they don’t live with us'];
   const ACQUISITION_OPTIONS = ['App Store', 'Friend', 'Instagram', 'TikTok', 'Reddit', 'Podcast', 'Other'];
   const [picks, setPicks] = useState<Record<string, string>>({});
   const scrollRef = useRef<ScrollView>(null);
@@ -355,6 +369,26 @@ export default function Onboarding() {
     <SafeAreaView style={styles.safe} edges={['top', 'bottom']}>
       <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
         <View style={styles.header}>
+          {/* Back arrow — only shown from step 2 onward; tapping rewinds
+              one step. Step 1 has no back since the prior screen is the
+              intro/consent gate (and reversing past consent shouldn't
+              happen). */}
+          {step > 1 ? (
+            <TouchableOpacity
+              onPress={() => {
+                setStep((s) => Math.max(1, s - 1));
+                setTimeout(() => scrollRef.current?.scrollTo({ y: 0, animated: true }), 50);
+              }}
+              hitSlop={8}
+              style={styles.backBtn}
+              accessibilityRole="button"
+              accessibilityLabel="Go back"
+            >
+              <Text style={styles.backArrow}>←</Text>
+            </TouchableOpacity>
+          ) : (
+            <View style={styles.backBtnPlaceholder} />
+          )}
           <View style={styles.progressTrack}>
             <View style={[styles.progressFill, { width: ((step / TOTAL_STEPS) * 100) + '%' as any }]} />
           </View>
@@ -403,7 +437,7 @@ export default function Onboarding() {
                   explicitly tap Continue. */}
               <TextInput value={age} onChangeText={setAge} placeholder="Your age" placeholderTextColor={Colors.lightBrown} selectionColor="#96d35f" cursorColor="#96d35f" style={styles.nameInput} keyboardType="number-pad" returnKeyType="done" />
 
-              <Text style={styles.fieldLabel}>How long have you been together?</Text>
+              <Text style={styles.fieldLabel}>How long have you been in a relationship?</Text>
               <View style={styles.chipWrap}>
                 {TOGETHER_OPTIONS.map((opt) => {
                   const selected = together === opt;
@@ -451,18 +485,20 @@ export default function Onboarding() {
               </View>
 
               <Text style={styles.fieldLabel}>Where are you based?</Text>
-              <TextInput
-                value={country}
-                onChangeText={setCountry}
-                placeholder="Country (e.g. United Kingdom)"
-                placeholderTextColor={Colors.lightBrown}
-                selectionColor="#96d35f"
-                cursorColor="#96d35f"
+              <TouchableOpacity
+                onPress={() => {
+                  setCountryQuery('');
+                  setCountryPickerOpen(true);
+                }}
+                activeOpacity={0.85}
                 style={styles.nameInput}
-                autoCapitalize="words"
-                autoCorrect={false}
-                returnKeyType="done"
-              />
+                accessibilityRole="button"
+                accessibilityLabel="Select country"
+              >
+                <Text style={country ? styles.countryValue : styles.countryPlaceholder}>
+                  {country || 'Choose your country'}
+                </Text>
+              </TouchableOpacity>
 
               <Text style={styles.fieldLabel}>How would you describe your relationship?</Text>
               <View style={styles.chipWrap}>
@@ -600,12 +636,12 @@ export default function Onboarding() {
               <Text style={[styles.stepSub, { textAlign: 'center' }]}>Here is what Hey Otis has learned about you.</Text>
               <View style={styles.summaryGrid}>
                 {[
-                  { label: 'Attachment', value: ATTACHMENT_LABELS[picks.attach] || '—' },
-                  { label: 'Under conflict', value: CONFLICT_LABELS[picks.conflict] || '—' },
-                  { label: 'Love language', value: LOVE_LABELS[picks.love] || '—' },
-                  { label: 'Body in conflict', value: WINDOW_LABELS[picks.window] || '—' },
-                  { label: 'Core need', value: NEED_LABELS[picks.need] || '—' },
-                  { label: 'Here because', value: { conflict: 'Rough patch', disconnect: 'Reconnecting', specific: 'Specific issue', proactive: 'Growing' }[picks.context] || '—' },
+                  { label: 'Attachment', value: ATTACHMENT_LABELS[picks.attach] || '' },
+                  { label: 'Under conflict', value: CONFLICT_LABELS[picks.conflict] || '' },
+                  { label: 'Love language', value: LOVE_LABELS[picks.love] || '' },
+                  { label: 'Body in conflict', value: WINDOW_LABELS[picks.window] || '' },
+                  { label: 'Core need', value: NEED_LABELS[picks.need] || '' },
+                  { label: 'Here because', value: { conflict: 'Rough patch', disconnect: 'Reconnecting', specific: 'Specific issue', proactive: 'Growing' }[picks.context] || '' },
                 ].map((item) => (
                   <View key={item.label} style={styles.summaryPill}>
                     <Text style={styles.pillLabel}>{item.label}</Text>
@@ -634,6 +670,60 @@ export default function Onboarding() {
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
+
+      {/* Country picker modal. Full-screen searchable list — lighter
+          than pulling in a picker library and keeps the look consistent
+          with the rest of onboarding. */}
+      <Modal
+        visible={countryPickerOpen}
+        animationType="slide"
+        presentationStyle="pageSheet"
+        onRequestClose={() => setCountryPickerOpen(false)}
+      >
+        <SafeAreaView style={styles.safe} edges={['top', 'bottom']}>
+          <View style={styles.countryModalHeader}>
+            <Text style={styles.countryModalTitle}>Choose your country</Text>
+            <TouchableOpacity onPress={() => setCountryPickerOpen(false)} hitSlop={8}>
+              <Text style={styles.countryModalClose}>Close</Text>
+            </TouchableOpacity>
+          </View>
+          <TextInput
+            value={countryQuery}
+            onChangeText={setCountryQuery}
+            placeholder="Search countries"
+            placeholderTextColor={Colors.lightBrown}
+            selectionColor="#96d35f"
+            cursorColor="#96d35f"
+            style={styles.countrySearch}
+            autoCapitalize="none"
+            autoCorrect={false}
+            autoFocus
+          />
+          <FlatList
+            data={filteredCountries}
+            keyExtractor={(item) => item}
+            keyboardShouldPersistTaps="handled"
+            renderItem={({ item }) => (
+              <TouchableOpacity
+                onPress={() => {
+                  setCountry(item);
+                  setCountryPickerOpen(false);
+                }}
+                style={styles.countryRow}
+                activeOpacity={0.7}
+              >
+                <Text style={styles.countryRowText}>{item}</Text>
+                {country === item && <Text style={styles.countryRowCheck}>✓</Text>}
+              </TouchableOpacity>
+            )}
+            ListEmptyComponent={
+              <View style={styles.countryEmpty}>
+                <Text style={styles.countryEmptyText}>No countries match “{countryQuery}”.</Text>
+              </View>
+            }
+          />
+        </SafeAreaView>
+      </Modal>
     </SafeAreaView>
   );
 }
@@ -641,6 +731,23 @@ export default function Onboarding() {
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: Colors.cream },
   header: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 20, paddingVertical: 16 },
+  backBtn: { paddingVertical: 4, paddingHorizontal: 4, marginLeft: -4 },
+  backBtnPlaceholder: { width: 20, height: 20 },
+  backArrow: { fontFamily: Fonts.body, fontSize: 22, color: Colors.midBrown, lineHeight: 22 },
+  // Country field — empty state shows the placeholder colour, filled
+  // shows the chosen country in the regular charcoal.
+  countryPlaceholder: { fontFamily: Fonts.body, fontSize: 16, color: Colors.lightBrown },
+  countryValue: { fontFamily: Fonts.body, fontSize: 16, color: Colors.charcoal },
+  // Country picker modal
+  countryModalHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, paddingTop: 16, paddingBottom: 8 },
+  countryModalTitle: { fontFamily: Fonts.displaySemiBold, fontSize: 20, color: Colors.charcoal },
+  countryModalClose: { fontFamily: Fonts.bodyMedium, fontSize: 14, color: Colors.sageDark },
+  countrySearch: { marginHorizontal: 20, marginTop: 8, marginBottom: 12, padding: 14, borderRadius: Radius.md, borderWidth: 1.5, borderColor: Colors.sand, backgroundColor: Colors.white, fontFamily: Fonts.body, fontSize: 15, color: Colors.charcoal },
+  countryRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, paddingVertical: 14, borderBottomWidth: 1, borderBottomColor: Colors.sand },
+  countryRowText: { fontFamily: Fonts.body, fontSize: 15, color: Colors.charcoal },
+  countryRowCheck: { fontFamily: Fonts.bodyMedium, fontSize: 16, color: Colors.sageDark },
+  countryEmpty: { paddingHorizontal: 20, paddingVertical: 32 },
+  countryEmptyText: { fontFamily: Fonts.body, fontSize: 14, color: Colors.midBrown, textAlign: 'center' },
   progressTrack: { flex: 1, height: 4, backgroundColor: Colors.sand, borderRadius: 2, overflow: 'hidden' },
   progressFill: { height: '100%', backgroundColor: Colors.sage, borderRadius: 2 },
   skipText: { fontFamily: Fonts.body, fontSize: 13, color: Colors.midBrown },

@@ -39,7 +39,7 @@ export default function AuthCallback() {
         <View style={s.centered}>
           <View style={s.logoOrb}><IconHeart size={28} color={Colors.white} /></View>
           <Text style={s.title}>You&apos;re in.</Text>
-          <Text style={s.subtitle}>Email verified — taking you to your account.</Text>
+          <Text style={s.subtitle}>Email verified. Taking you to your account.</Text>
           <ActivityIndicator color={Colors.sageDark} style={{ marginTop: 16 }} />
         </View>
       </SafeAreaView>

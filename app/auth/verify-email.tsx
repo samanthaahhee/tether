@@ -72,7 +72,7 @@ export default function VerifyEmail() {
             {status === 'sending'
               ? <ActivityIndicator color={Colors.white} />
               : <Text style={s.btnText}>
-                  {status === 'sent' ? 'Link sent — check your inbox' : 'Send a new link'}
+                  {status === 'sent' ? 'Link sent. Check your inbox' : 'Send a new link'}
                 </Text>}
           </TouchableOpacity>
 

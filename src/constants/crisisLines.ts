@@ -17,8 +17,8 @@ export const CRISIS_COUNTRIES: CrisisCountry[] = [
     code: 'international',
     flag: '',
     lines: [
-      { name: 'Befrienders Worldwide', number: '', note: 'befrienders.org — find a helpline in your country' },
-      { name: 'IASP Crisis Centres', number: '', note: 'iasp.info/resources — directory of crisis centres worldwide' },
+      { name: 'Befrienders Worldwide', number: '', note: 'befrienders.org. Find a helpline in your country.' },
+      { name: 'IASP Crisis Centres', number: '', note: 'iasp.info/resources. Directory of crisis centres worldwide.' },
       { name: 'Crisis Text Line', number: '', note: 'Text HOME to 741741 (US, UK, CA, IE)' },
     ],
   },

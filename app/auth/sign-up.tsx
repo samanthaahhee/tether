@@ -150,10 +150,14 @@ export default function SignUp() {
               selectionColor="#96d35f"
               cursorColor="#96d35f"
               secureTextEntry
+              textContentType="newPassword"
+              autoComplete="new-password"
+              autoCapitalize="none"
+              autoCorrect={false}
             />
             {password.length > 0 && (
               <Text style={s.hint}>
-                Strength: <Text style={s.hintBold}>{passwordStrengthLabel(password)}</Text> — needs letter, number, symbol, min {PASSWORD_MIN_LENGTH}.
+                Strength: <Text style={s.hintBold}>{passwordStrengthLabel(password)}</Text>. Needs letter, number, symbol, min {PASSWORD_MIN_LENGTH}.
               </Text>
             )}
 
@@ -167,6 +171,10 @@ export default function SignUp() {
               selectionColor="#96d35f"
               cursorColor="#96d35f"
               secureTextEntry
+              textContentType="newPassword"
+              autoComplete="new-password"
+              autoCapitalize="none"
+              autoCorrect={false}
               onSubmitEditing={handleSignUp}
             />
 

@@ -97,6 +97,10 @@ export default function ResetPassword() {
               selectionColor="#96d35f"
               cursorColor="#96d35f"
               secureTextEntry
+              textContentType="newPassword"
+              autoComplete="new-password"
+              autoCapitalize="none"
+              autoCorrect={false}
               autoFocus
             />
             {pw1.length > 0 && (
@@ -115,6 +119,10 @@ export default function ResetPassword() {
               selectionColor="#96d35f"
               cursorColor="#96d35f"
               secureTextEntry
+              textContentType="newPassword"
+              autoComplete="new-password"
+              autoCapitalize="none"
+              autoCorrect={false}
               onSubmitEditing={handleSubmit}
             />
 
