@@ -89,13 +89,13 @@ export function InsightReveal({
       padding: 16,
       marginTop: 14,
     }}>
-      <Text style={{ fontFamily: Fonts.bodyMedium, fontSize: 10, letterSpacing: 0.7, textTransform: 'uppercase', color: labelColor, marginBottom: 6 }}>
+      <Text style={{ fontFamily: Fonts.bodyMedium, fontSize: 12, letterSpacing: 0.8, textTransform: 'uppercase', color: labelColor, marginBottom: 8 }}>
         {label}
       </Text>
-      <Text style={{ fontFamily: Fonts.displaySemiBold, fontSize: 15, color: Colors.charcoal, marginBottom: 6, lineHeight: 21 }}>
+      <Text style={{ fontFamily: Fonts.displaySemiBold, fontSize: 16, color: Colors.charcoal, marginBottom: 6, lineHeight: 22 }}>
         {title}
       </Text>
-      <Text style={{ fontFamily: Fonts.body, fontSize: 13, color: Colors.charcoal, lineHeight: 20 }}>
+      <Text style={{ fontFamily: Fonts.body, fontSize: 14, color: Colors.charcoal, lineHeight: 22 }}>
         {body}
       </Text>
     </View>

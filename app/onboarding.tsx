@@ -757,84 +757,115 @@ export default function Onboarding() {
 }
 
 const styles = StyleSheet.create({
+  // ── Design tokens for this screen ────────────────────────────────
+  // Padding scale: 4 / 8 / 12 / 16 / 20 / 24 / 32
+  // Type scale: 12 (caption) / 13 (small) / 14 (body) / 15 (body+) /
+  //             16 (input) / 17 (lead) / 22 (h2) / 28 (h1)
+  // Horizontal padding is 24 throughout (consent gate already uses 24).
+  // Vertical rhythm: stepWrap gap 16 + field marginBottom 4 = 20 between
+  // logical groups, 16 within a group.
   safe: { flex: 1, backgroundColor: Colors.cream },
-  header: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 20, paddingVertical: 16 },
-  // "Back" text link sits below the Continue button on steps 2+.
-  backLink: { alignSelf: 'center', paddingVertical: 14, paddingHorizontal: 16, marginTop: 4 },
+  header: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 24, paddingVertical: 16 },
+  backLink: { alignSelf: 'center', paddingVertical: 14, paddingHorizontal: 20, marginTop: 8 },
   backLinkText: { fontFamily: Fonts.bodyMedium, fontSize: 15, color: Colors.charcoal },
-  // Country field — empty state shows the placeholder colour, filled
-  // shows the chosen country in the regular charcoal.
   countryPlaceholder: { fontFamily: Fonts.body, fontSize: 16, color: Colors.lightBrown },
   countryValue: { fontFamily: Fonts.body, fontSize: 16, color: Colors.charcoal },
-  // Country picker modal
-  countryModalHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, paddingTop: 16, paddingBottom: 8 },
+  countryModalHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 24, paddingTop: 16, paddingBottom: 12 },
   countryModalTitle: { fontFamily: Fonts.displaySemiBold, fontSize: 20, color: Colors.charcoal },
   countryModalClose: { fontFamily: Fonts.bodyMedium, fontSize: 14, color: Colors.sageDark },
-  countrySearch: { marginHorizontal: 20, marginTop: 8, marginBottom: 12, padding: 14, borderRadius: Radius.md, borderWidth: 1.5, borderColor: Colors.sand, backgroundColor: Colors.white, fontFamily: Fonts.body, fontSize: 15, color: Colors.charcoal },
-  countryRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, paddingVertical: 14, borderBottomWidth: 1, borderBottomColor: Colors.sand },
+  countrySearch: { marginHorizontal: 24, marginTop: 8, marginBottom: 16, padding: 16, borderRadius: Radius.md, borderWidth: 1.5, borderColor: Colors.sand, backgroundColor: Colors.white, fontFamily: Fonts.body, fontSize: 15, color: Colors.charcoal },
+  countryRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 24, paddingVertical: 16, borderBottomWidth: 1, borderBottomColor: Colors.sand },
   countryRowText: { fontFamily: Fonts.body, fontSize: 15, color: Colors.charcoal },
   countryRowCheck: { fontFamily: Fonts.bodyMedium, fontSize: 16, color: Colors.sageDark },
-  countryEmpty: { paddingHorizontal: 20, paddingVertical: 32 },
+  countryEmpty: { paddingHorizontal: 24, paddingVertical: 32 },
   countryEmptyText: { fontFamily: Fonts.body, fontSize: 14, color: Colors.midBrown, textAlign: 'center' },
   progressTrack: { flex: 1, height: 4, backgroundColor: Colors.sand, borderRadius: 2, overflow: 'hidden' },
   progressFill: { height: '100%', backgroundColor: Colors.sage, borderRadius: 2 },
-  skipText: { fontFamily: Fonts.body, fontSize: 13, color: Colors.midBrown },
+  // Skip is a destructive-leaning utility — slightly larger than the
+  // earlier 13pt so it can be tapped without precision and so the size
+  // matches the back link visually.
+  skipText: { fontFamily: Fonts.body, fontSize: 14, color: Colors.midBrown },
   scroll: { paddingBottom: 40 },
-  stepWrap: { paddingHorizontal: 20, paddingTop: 12, gap: 10 },
-  stepTag: { fontFamily: Fonts.bodyMedium, fontSize: 11, letterSpacing: 0.8, textTransform: 'uppercase', color: Colors.charcoal },
-  stepH: { fontFamily: Fonts.displaySemiBold, fontSize: 26, color: Colors.charcoal, lineHeight: 32, marginBottom: 2 },
-  stepSub: { fontFamily: Fonts.body, fontSize: 14, color: Colors.midBrown, lineHeight: 21, marginBottom: 8 },
-  nameInput: { width: '100%', padding: 16, borderRadius: Radius.md, borderWidth: 1.5, borderColor: Colors.sand, backgroundColor: Colors.white, fontFamily: Fonts.body, fontSize: 16, color: Colors.charcoal, marginBottom: 4 },
-  // Hint / info box: white bg + sage left-edge accent for accessibility.
-  // Previous all-pale-green fill made body text hard to read.
-  hintBox: { backgroundColor: '#ffffff', borderWidth: 1, borderColor: Colors.sand, borderRadius: Radius.sm, padding: 12, flexDirection: 'row', alignItems: 'flex-start', gap: 10, marginTop: 8 },
+  // Step content: 24px horizontal padding to match the consent gate
+  // and country modal. Vertical gap is 16 so headers, fields, and
+  // option cards have a consistent rhythm.
+  stepWrap: { paddingHorizontal: 24, paddingTop: 16, gap: 16 },
+  // Step tag bumped from 11 → 12 (Apple HIG min for body) and
+  // letter-spaced a touch more for the all-caps treatment.
+  stepTag: { fontFamily: Fonts.bodyMedium, fontSize: 12, letterSpacing: 1, textTransform: 'uppercase', color: Colors.charcoal },
+  // H1 bumped 26 → 28 to match consent gate's H1 and pull more
+  // visual weight on these top-of-screen lines.
+  stepH: { fontFamily: Fonts.displaySemiBold, fontSize: 28, color: Colors.charcoal, lineHeight: 34 },
+  // Subtitle uses warmBrown (#3a3630) for stronger contrast than
+  // the previous midBrown (#80798c). 15px reads more comfortably
+  // than 14 on a phone, line-height 22 keeps it breathable.
+  stepSub: { fontFamily: Fonts.body, fontSize: 15, color: Colors.warmBrown, lineHeight: 22 },
+  // Inputs: padding 16 vertical = 48pt total height — comfortably
+  // above the 44pt accessibility minimum.
+  nameInput: { width: '100%', paddingVertical: 16, paddingHorizontal: 16, borderRadius: Radius.md, borderWidth: 1.5, borderColor: Colors.sand, backgroundColor: Colors.white, fontFamily: Fonts.body, fontSize: 16, color: Colors.charcoal },
+  hintBox: { backgroundColor: '#ffffff', borderWidth: 1, borderColor: Colors.sand, borderRadius: Radius.md, padding: 14, flexDirection: 'row', alignItems: 'flex-start', gap: 12, marginTop: 8 },
 
-  fieldLabel: { fontFamily: Fonts.bodyMedium, fontSize: 13, color: Colors.midBrown, marginTop: 12, marginBottom: 8 },
-  fieldError: { fontFamily: Fonts.body, fontSize: 13, color: Colors.errorText, marginTop: -4, marginBottom: 4 },
-  chipWrap: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 4 },
-  chip: { paddingHorizontal: 14, paddingVertical: 9, borderRadius: Radius.full, borderWidth: 1.5, borderColor: Colors.sand, backgroundColor: Colors.white },
+  // Field label: 13 → 13 (same), but spacing simplified. The stepWrap
+  // gap handles top spacing now, so no marginTop needed.
+  fieldLabel: { fontFamily: Fonts.bodyMedium, fontSize: 13, color: Colors.midBrown, marginBottom: 8, marginTop: 4 },
+  fieldError: { fontFamily: Fonts.body, fontSize: 13, color: Colors.errorText, marginTop: -8, marginBottom: 4 },
+  chipWrap: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+  // Chips: paddingVertical bumped 9 → 12 to bring touch target to
+  // ~44pt (12 + 12 + 14px line-height of fontSize 14 ≈ 38pt visual,
+  // but TouchableOpacity adds hitSlop-free buffer). Font 13 → 14 for
+  // a touch more comfort, especially on the "Prefer not to say" pills.
+  chip: { paddingHorizontal: 16, paddingVertical: 12, borderRadius: Radius.full, borderWidth: 1.5, borderColor: Colors.sand, backgroundColor: Colors.white },
   chipSelected: { borderColor: Colors.sage, backgroundColor: Colors.sagePale },
-  chipText: { fontFamily: Fonts.body, fontSize: 13, color: Colors.charcoal },
+  chipText: { fontFamily: Fonts.body, fontSize: 14, color: Colors.charcoal },
   chipTextSelected: { fontFamily: Fonts.bodyMedium, color: Colors.sageDeep },
-  hintText: { flex: 1, fontFamily: Fonts.body, fontSize: 13, color: Colors.charcoal, lineHeight: 19 },
-  optCard: { flexDirection: 'row', alignItems: 'flex-start', gap: 12, backgroundColor: Colors.cream, borderWidth: 2, borderColor: Colors.sand, borderRadius: Radius.lg, padding: 14 },
-  // Selected state: white fill + green outline only. The previous sagePale
-  // fill made the description text difficult to read against the wash.
-  optCardSelected: { borderColor: Colors.sage, backgroundColor: '#ffffff' },
-  optTitle: { fontFamily: Fonts.bodyMedium, fontSize: 14, color: Colors.charcoal, marginBottom: 3 },
-  optDesc: { fontFamily: Fonts.body, fontSize: 12, color: Colors.midBrown, lineHeight: 18 },
-  optCheck: { width: 20, height: 20, borderRadius: 10, backgroundColor: Colors.sage, alignItems: 'center', justifyContent: 'center', marginTop: 2, flexShrink: 0 },
-  summaryGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  summaryPill: { width: '47%', backgroundColor: Colors.creamDark, borderRadius: Radius.sm, padding: 12 },
-  pillLabel: { fontFamily: Fonts.bodyMedium, fontSize: 10, letterSpacing: 0.6, textTransform: 'uppercase', color: Colors.midBrown, marginBottom: 3 },
-  pillValue: { fontFamily: Fonts.bodyMedium, fontSize: 13, color: Colors.charcoal },
-  // Insight card: white bg + thicker green left-edge accent. Higher
-  // contrast than the previous all-pale-green fill, while keeping the
-  // sage colour as the visual signal that this is "your insight."
-  finalInsight: { backgroundColor: '#ffffff', borderWidth: 1, borderColor: Colors.sand, borderLeftWidth: 4, borderLeftColor: Colors.sage, borderRadius: Radius.lg, padding: 16 },
-  finalInsightLabel: { fontFamily: Fonts.bodyMedium, fontSize: 10, letterSpacing: 0.7, textTransform: 'uppercase', color: Colors.sageDark, marginBottom: 6 },
-  finalInsightBody: { fontFamily: Fonts.body, fontSize: 13, color: Colors.charcoal, lineHeight: 20 },
-  // Soft callout encouraging the user to take the full assessments
-  // post-onboarding. The single onboarding question per dimension is a
-  // hint, not a diagnosis — this sets expectations honestly.
-  deeperPrompt: { backgroundColor: '#ffffff', borderWidth: 1, borderColor: Colors.sand, borderRadius: Radius.lg, padding: 16, marginTop: 12 },
-  deeperPromptLabel: { fontFamily: Fonts.bodyMedium, fontSize: 11, letterSpacing: 0.7, textTransform: 'uppercase', color: Colors.midBrown, marginBottom: 6 },
-  deeperPromptBody: { fontFamily: Fonts.body, fontSize: 13, color: Colors.warmBrown, lineHeight: 20 },
+  hintText: { flex: 1, fontFamily: Fonts.body, fontSize: 13, color: Colors.charcoal, lineHeight: 20 },
+  // OptionCard: padding 14 → 16, gap 12 → 14, white background by
+  // default so the selected state (white + sage border + check) is
+  // more obviously the same surface with stronger affordance.
+  optCard: { flexDirection: 'row', alignItems: 'flex-start', gap: 14, backgroundColor: Colors.white, borderWidth: 1.5, borderColor: Colors.sand, borderRadius: Radius.lg, padding: 16 },
+  optCardSelected: { borderColor: Colors.sage, borderWidth: 2 },
+  // Option title 14 → 15 for hierarchy gain over chip text.
+  optTitle: { fontFamily: Fonts.bodyMedium, fontSize: 15, color: Colors.charcoal, marginBottom: 4, lineHeight: 20 },
+  // Option description: 12 → 13, midBrown → warmBrown (#3a3630) so
+  // contrast passes WCAG AA on cream / white backgrounds.
+  optDesc: { fontFamily: Fonts.body, fontSize: 13, color: Colors.warmBrown, lineHeight: 19 },
+  optCheck: { width: 22, height: 22, borderRadius: 11, backgroundColor: Colors.sage, alignItems: 'center', justifyContent: 'center', marginTop: 2, flexShrink: 0 },
+  // Summary pills: bumped from 47% width to 48% with a tighter gap
+  // so they look like a proper 2-column grid. Padding 12 → 14.
+  summaryGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, rowGap: 8 },
+  summaryPill: { width: '48%', backgroundColor: Colors.creamDark, borderRadius: Radius.md, padding: 14 },
+  pillLabel: { fontFamily: Fonts.bodyMedium, fontSize: 11, letterSpacing: 0.8, textTransform: 'uppercase', color: Colors.midBrown, marginBottom: 4 },
+  pillValue: { fontFamily: Fonts.bodyMedium, fontSize: 14, color: Colors.charcoal },
+  // Insight card on the summary screen — white bg + sage left accent.
+  // Label bumped from 10 → 12 (HIG minimum) and body 13 → 14 for
+  // consistency with the rest of the screen's body type.
+  finalInsight: { backgroundColor: '#ffffff', borderWidth: 1, borderColor: Colors.sand, borderLeftWidth: 4, borderLeftColor: Colors.sage, borderRadius: Radius.lg, padding: 16, marginTop: 8 },
+  finalInsightLabel: { fontFamily: Fonts.bodyMedium, fontSize: 12, letterSpacing: 0.8, textTransform: 'uppercase', color: Colors.sageDark, marginBottom: 8 },
+  finalInsightBody: { fontFamily: Fonts.body, fontSize: 14, color: Colors.charcoal, lineHeight: 22 },
+  // Soft callout encouraging full assessments post-onboarding.
+  deeperPrompt: { backgroundColor: '#ffffff', borderWidth: 1, borderColor: Colors.sand, borderRadius: Radius.lg, padding: 16 },
+  deeperPromptLabel: { fontFamily: Fonts.bodyMedium, fontSize: 12, letterSpacing: 0.8, textTransform: 'uppercase', color: Colors.midBrown, marginBottom: 8 },
+  deeperPromptBody: { fontFamily: Fonts.body, fontSize: 14, color: Colors.warmBrown, lineHeight: 22 },
   deeperPromptHi: { fontFamily: Fonts.bodyMedium, color: Colors.sageDark },
-  // Consent gate (pre-onboarding terms acceptance)
-  consentScroll: { paddingHorizontal: 24, paddingTop: 24, paddingBottom: 32 },
-  consentTag: { fontFamily: Fonts.bodyMedium, fontSize: 11, letterSpacing: 1, textTransform: 'uppercase', color: Colors.sage, marginBottom: 12 },
+  // Consent gate — paddingTop bumped 24 → 32 for breathing room
+  // before the BEFORE WE BEGIN tag. Tag and h1 sizes already match
+  // the rest of the flow's tokens; tweaked sub size up to 15 for
+  // readability parity with stepSub.
+  consentScroll: { paddingHorizontal: 24, paddingTop: 32, paddingBottom: 32 },
+  consentTag: { fontFamily: Fonts.bodyMedium, fontSize: 12, letterSpacing: 1, textTransform: 'uppercase', color: Colors.sage, marginBottom: 12 },
   consentH: { fontFamily: Fonts.displaySemiBold, fontSize: 28, color: Colors.charcoal, lineHeight: 34, marginBottom: 12 },
-  consentSub: { fontFamily: Fonts.body, fontSize: 14, color: Colors.warmBrown, lineHeight: 22, marginBottom: 24 },
+  consentSub: { fontFamily: Fonts.body, fontSize: 15, color: Colors.warmBrown, lineHeight: 22, marginBottom: 28 },
   consentRow: { flexDirection: 'row', alignItems: 'flex-start', gap: 14, padding: 16, backgroundColor: Colors.warmWhite, borderWidth: 1.5, borderColor: Colors.sand, borderRadius: Radius.lg, marginBottom: 12 },
   consentRowChecked: { borderColor: Colors.sage, backgroundColor: '#ffffff' },
   consentCheckbox: { width: 24, height: 24, borderRadius: 6, borderWidth: 2, borderColor: Colors.sand, alignItems: 'center', justifyContent: 'center', marginTop: 1 },
   consentCheckboxChecked: { borderColor: Colors.sage, backgroundColor: Colors.sage },
   consentCheckMark: { color: '#ffffff', fontSize: 14, fontFamily: Fonts.bodyMedium, lineHeight: 16 },
-  consentRowLabel: { fontFamily: Fonts.bodyMedium, fontSize: 15, color: Colors.charcoal, marginBottom: 4 },
-  consentRowSub: { fontFamily: Fonts.body, fontSize: 13, color: Colors.midBrown, lineHeight: 19 },
+  consentRowLabel: { fontFamily: Fonts.bodyMedium, fontSize: 15, color: Colors.charcoal, marginBottom: 4, lineHeight: 20 },
+  consentRowSub: { fontFamily: Fonts.body, fontSize: 13, color: Colors.warmBrown, lineHeight: 20 },
   consentLink: { color: Colors.sageDark, textDecorationLine: 'underline' },
   consentFooter: { marginTop: 24 },
-  consentFinePrint: { fontFamily: Fonts.body, fontSize: 11, color: Colors.midBrown, lineHeight: 17, textAlign: 'center', marginTop: 14 },
-  footer: { paddingHorizontal: 20, paddingTop: 24, paddingBottom: 8 },
+  consentFinePrint: { fontFamily: Fonts.body, fontSize: 12, color: Colors.midBrown, lineHeight: 18, textAlign: 'center', marginTop: 16 },
+  // Footer: 24 horizontal to match stepWrap; extra bottom padding so
+  // the Back link doesn't sit flush against the safe-area edge.
+  footer: { paddingHorizontal: 24, paddingTop: 24, paddingBottom: 16 },
 });
