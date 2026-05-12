@@ -177,7 +177,7 @@ const loveQuestions: ChoiceQuestion[] = [
     id: 'love_3',
     text: 'Which gesture would make me feel most loved on an ordinary Tuesday?',
     options: [
-      { text: 'A small surprise — my favourite snack left on my desk', dimension: 'gifts' },
+      { text: 'A small surprise, my favourite snack left on my desk', dimension: 'gifts' },
       { text: 'A genuine "I love the way you think" out of nowhere', dimension: 'words' },
     ],
   },
@@ -187,7 +187,7 @@ const loveQuestions: ChoiceQuestion[] = [
     text: 'If my partner wanted to show appreciation, which would land deeper?',
     options: [
       { text: 'They handle all the errands for the weekend without being asked', dimension: 'acts' },
-      { text: 'They plan a slow afternoon walk — just the two of us, no agenda', dimension: 'time' },
+      { text: 'They plan a slow afternoon walk, just the two of us, no agenda', dimension: 'time' },
     ],
   },
   {
@@ -250,12 +250,12 @@ const conflictQuestions: ChoiceQuestion[] = [
   {
     kind: 'choice',
     id: 'conf_1',
-    text: 'Your partner forgot something important you asked them to do — again. What is your gut response?',
+    text: 'Your partner forgot something important you asked them to do, again. What is your gut response?',
     options: [
       { text: 'Tell them this keeps happening and you are tired of always reminding them', dimension: 'criticise' },
       { text: 'Explain that you mentioned it clearly and the drop was on their side', dimension: 'defensive' },
       { text: 'Go quiet and handle it yourself without saying anything', dimension: 'stonewall' },
-      { text: 'Let it go for now — you do not want to turn it into a fight', dimension: 'peacekeep' },
+      { text: 'Let it go for now, you do not want to turn it into a fight', dimension: 'peacekeep' },
     ],
   },
   {
@@ -296,7 +296,7 @@ const conflictQuestions: ChoiceQuestion[] = [
     id: 'conf_5',
     text: 'An argument has been going in circles for twenty minutes. You:',
     options: [
-      { text: 'Get sharper and more pointed — you want them to hear you', dimension: 'criticise' },
+      { text: 'Get sharper and more pointed, you want them to hear you', dimension: 'criticise' },
       { text: 'Restate your original position in more detail', dimension: 'defensive' },
       { text: 'Go silent and leave the room', dimension: 'stonewall' },
       { text: 'Offer a compromise you do not fully believe in, just to end it', dimension: 'peacekeep' },
@@ -347,7 +347,7 @@ const windowQuestions: LikertQuestion[] = [
   {
     kind: 'likert',
     id: 'win_2',
-    text: 'When conflict starts, I go blank or feel numb — like I have left my own body.',
+    text: 'When conflict starts, I go blank or feel numb, like I have left my own body.',
     dimensions: { hypo: 1.0, regulated: -0.5 },
   },
   {
@@ -365,7 +365,7 @@ const windowQuestions: LikertQuestion[] = [
   {
     kind: 'likert',
     id: 'win_5',
-    text: 'I feel a strong urge to escape or end the conversation when tension rises — my body just wants out.',
+    text: 'I feel a strong urge to escape or end the conversation when tension rises, my body just wants out.',
     dimensions: { hypo: 0.9, hyper: 0.4, regulated: -0.5 },
   },
   {
@@ -385,7 +385,7 @@ const needQuestions: ChoiceQuestion[] = [
       { text: 'The feeling that what I said did not really land or matter to them', dimension: 'seen' },
       { text: 'I start wondering if they are pulling away or if something is wrong', dimension: 'safe' },
       { text: 'It feels like they are not taking what I shared seriously', dimension: 'respected' },
-      { text: 'I wish I had just kept it to myself — I need to not rely on them for this', dimension: 'space' },
+      { text: 'I wish I had just kept it to myself, I need to not rely on them for this', dimension: 'space' },
     ],
   },
   {
@@ -416,9 +416,9 @@ const needQuestions: ChoiceQuestion[] = [
     text: 'You are going through something difficult. Your partner offers advice right away. You feel:',
     options: [
       { text: 'Like they skipped past the part where I needed to feel heard', dimension: 'seen' },
-      { text: 'A little unsettled — I needed them to just be with me first', dimension: 'safe' },
+      { text: 'A little unsettled, I needed them to just be with me first', dimension: 'safe' },
       { text: 'Like they assumed I could not figure it out on my own', dimension: 'respected' },
-      { text: 'Relieved they offered something — I mostly just needed to vent alone first', dimension: 'space' },
+      { text: 'Relieved they offered something, I mostly just needed to vent alone first', dimension: 'space' },
     ],
   },
   {
@@ -427,9 +427,9 @@ const needQuestions: ChoiceQuestion[] = [
     text: 'Your partner brings up an old issue again. What is your core reaction?',
     options: [
       { text: 'I wonder if they have ever actually seen my side of it', dimension: 'seen' },
-      { text: 'It makes me uneasy — like the ground under us is still shaky', dimension: 'safe' },
+      { text: 'It makes me uneasy, like the ground under us is still shaky', dimension: 'safe' },
       { text: 'It feels like they do not trust that I have grown or changed', dimension: 'respected' },
-      { text: 'I need to step back — rehashing the past is too much for me right now', dimension: 'space' },
+      { text: 'I need to step back, rehashing the past is too much for me right now', dimension: 'space' },
     ],
   },
   {
@@ -439,7 +439,7 @@ const needQuestions: ChoiceQuestion[] = [
     options: [
       { text: 'I hope nothing I said earlier gave them the wrong impression', dimension: 'seen' },
       { text: 'I start to feel a low hum of anxiety about where we stand', dimension: 'safe' },
-      { text: 'I trust they are busy — I do not need to be checked in on', dimension: 'respected' },
+      { text: 'I trust they are busy, I do not need to be checked in on', dimension: 'respected' },
       { text: 'Honestly, a little space like this feels fine to me', dimension: 'space' },
     ],
   },

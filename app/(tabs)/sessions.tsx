@@ -1026,7 +1026,7 @@ function ActiveSessionView({ session, state, dispatch: d, onBack }: { session: S
         {/* Gentle nudge after 30 minutes of session use */}
         {showDurationNudge && (
           <View style={styles.nudgeBanner}>
-            <Text style={styles.nudgeText}>You've been here a while — it's okay to take a break and come back later. Your session will be saved. 🌿</Text>
+            <Text style={styles.nudgeText}>You've been here a while. It's okay to take a break and come back later. Your session will be saved. 🌿</Text>
             <TouchableOpacity onPress={() => setShowDurationNudge(false)} activeOpacity={0.7}>
               <Text style={styles.nudgeDismiss}>Continue</Text>
             </TouchableOpacity>

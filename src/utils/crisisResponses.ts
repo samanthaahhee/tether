@@ -87,7 +87,7 @@ function helplineBlock(countryCode: string, category: CrisisCategory): string {
 }
 
 const TEMPLATES: Record<CrisisCategory, (countryCode: string) => string> = {
-  suicide: (countryCode) => `What you're carrying right now sounds really heavy, and I want to make sure you're safe. I'm not the right kind of support for moments like this — please talk to someone who can be with you right now.
+  suicide: (countryCode) => `What you're carrying right now sounds really heavy, and I want to make sure you're safe. I'm not the right kind of support for moments like this. Please talk to someone who can be with you right now.
 
 ${helplineBlock(countryCode, 'suicide')}
 
@@ -125,7 +125,7 @@ ${helplineBlock(countryCode, 'psychosis')}
 
 If you are in immediate danger or unable to keep yourself safe, please call ${emergencyLineFor(countryCode)}.`,
 
-  substance_crisis: (countryCode) => `Substance use needs proper support — more than I can offer. Please reach out:
+  substance_crisis: (countryCode) => `Substance use needs proper support. More than I can offer. Please reach out:
 
 ${helplineBlock(countryCode, 'substance_crisis')}
 

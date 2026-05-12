@@ -14,7 +14,7 @@ const SLIDES = [
   {
     key: 'heard',
     title: 'Feel\nHeard.',
-    body: 'Say what\'s on your heart.\nNo judgment, no fixing, just space to let it out.',
+    body: 'Say what\'s on your heart. No judgment, no fixing, just space to let it out.',
     gradient: ['#9ADA5E', '#C8ECB0', '#FFFFFF'] as const,
     gradientLocations: [0, 0.38, 0.55] as const,
     image: require('../assets/onboarding-screens/onboarding1.png'),

@@ -109,7 +109,7 @@ export default function GrowthTab() {
     const userWindow = win; const partWindow = pp.window;
 
     const attDynamic = (userAtt === 'anxious' && partAtt === 'avoidant') || (userAtt === 'avoidant' && partAtt === 'anxious')
-      ? { title: 'Anxious-Avoidant trap', body: `${userName} reaches out for reassurance while ${partnerName} pulls back for space. The more one pursues, the more the other withdraws. This is the most common couple dynamic — and it\u2019s not anyone\u2019s fault.` }
+      ? { title: 'Anxious and Avoidant trap', body: `${userName} reaches out for reassurance while ${partnerName} pulls back for space. The more one pursues, the more the other withdraws. This is the most common couple dynamic, and it\u2019s not anyone\u2019s fault.` }
       : { title: `${ATTACHMENT_LABELS[userAtt] || 'Your style'} meets ${ATTACHMENT_LABELS[partAtt] || 'their style'}`, body: `Understanding how your attachment styles interact helps you predict conflict patterns and respond with more awareness.` };
 
     const loveDynamic = userLove !== partLove
