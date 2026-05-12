@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState, useRef } from 'react';
 import {
   View, Text, TextInput, TouchableOpacity, ScrollView,
   StyleSheet, KeyboardAvoidingView, Platform, Linking,
-  Modal, FlatList,
+  Modal, FlatList, Alert,
 } from 'react-native';
 import { router } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -24,6 +24,24 @@ import {
 } from '../src/components/Icons';
 
 const TOTAL_STEPS = 9;
+
+// Phase-based progress weighting. The flow has three phases:
+//   1. Intro (steps 1-3): name + demographics + situation — 30% of bar
+//   2. Pattern questions (steps 4-8): the five core dimensions — 60% of bar
+//   3. Summary (step 9): 100%
+// Linear step/9 was punishing on step 1 (11%) and didn't match the
+// "Step X/5" tags users see on the pattern-question section.
+const PROGRESS_BY_STEP: Record<number, number> = {
+  1: 10,
+  2: 20,
+  3: 30,
+  4: 42,
+  5: 54,
+  6: 66,
+  7: 78,
+  8: 90,
+  9: 100,
+};
 
 interface OptionData {
   value: string;
@@ -212,8 +230,17 @@ export default function Onboarding() {
     setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), 200);
   };
 
+  // Age must be a real integer between 18 (consent gate's hard requirement)
+  // and 120 (sanity bound; nobody onboarding to a relationship app is older
+  // and any value above this is almost certainly a typo).
+  const ageNum = parseInt(age.trim(), 10);
+  const isValidAge = !Number.isNaN(ageNum) && ageNum >= 18 && ageNum <= 120;
+  const ageError = age.trim().length > 0 && !isValidAge
+    ? 'Please enter an age between 18 and 120.'
+    : '';
+
   const canProceed = () => {
-    if (step === 1) return name.trim().length > 0 && age.trim().length > 0 && together.length > 0;
+    if (step === 1) return name.trim().length > 0 && isValidAge && together.length > 0;
     if (step === 2) return true; // Demographics step — all fields optional
     if (step === 3) return !!picks.context;
     if (step === 4) return !!picks.attach;
@@ -374,36 +401,48 @@ export default function Onboarding() {
               Back navigation lives below the Continue button as a
               text link for steps 2+. */}
           <View style={styles.progressTrack}>
-            <View style={[styles.progressFill, { width: ((step / TOTAL_STEPS) * 100) + '%' as any }]} />
+            <View style={[styles.progressFill, { width: (PROGRESS_BY_STEP[step] ?? (step / TOTAL_STEPS) * 100) + '%' as any }]} />
           </View>
-          <TouchableOpacity onPress={async () => {
-            // Skip used to just navigate to /(tabs) without marking the
-            // user onboarded — so RouteGuard would immediately bounce
-            // them back to /intro because profile.onboarded was still
-            // false. Mark onboarded=true on skip with empty/default
-            // dimensions; users can come back via Settings → Retake
-            // onboarding or via the per-dimension assessments to fill
-            // these in properly.
-            const skipPayload = {
-              name: name.trim() || '',
-              gender,
-              country: country.trim(),
-              relationship_status: relationshipStatus,
-              has_kids: hasKids,
-              acquisition_source: acquisitionSource,
-              attachment: picks.attach || '',
-              conflict: picks.conflict || '',
-              love: picks.love || '',
-              window: picks.window || '',
-              need: picks.need || '',
-              context: picks.context || '',
-              onboarded: true,
-            };
-            dispatch({ type: 'SET_PROFILE', payload: skipPayload });
-            await syncProfile(skipPayload);
-            track('onboarding_skipped', { last_step: step });
-            router.replace('/(tabs)');
-          }}>
+          <TouchableOpacity
+            onPress={() => {
+              // Confirm before skipping. Skipping marks the user as
+              // onboarded with whatever they've filled so far (often
+              // mostly blanks) so the AI personalisation won't have
+              // real signal until they retake onboarding from Settings.
+              Alert.alert(
+                'Skip onboarding?',
+                "We'll set up Hey Otis with what you've shared so far. You can finish the rest any time from Settings → Retake onboarding.",
+                [
+                  { text: 'Keep going', style: 'cancel' },
+                  {
+                    text: 'Skip for now',
+                    style: 'destructive',
+                    onPress: async () => {
+                      const skipPayload = {
+                        name: name.trim() || '',
+                        gender,
+                        country: country.trim(),
+                        relationship_status: relationshipStatus,
+                        has_kids: hasKids,
+                        acquisition_source: acquisitionSource,
+                        attachment: picks.attach || '',
+                        conflict: picks.conflict || '',
+                        love: picks.love || '',
+                        window: picks.window || '',
+                        need: picks.need || '',
+                        context: picks.context || '',
+                        onboarded: true,
+                      };
+                      dispatch({ type: 'SET_PROFILE', payload: skipPayload });
+                      await syncProfile(skipPayload);
+                      track('onboarding_skipped', { last_step: step });
+                      router.replace('/(tabs)');
+                    },
+                  },
+                ],
+              );
+            }}
+          >
             <Text style={styles.skipText}>Skip</Text>
           </TouchableOpacity>
         </View>
@@ -421,7 +460,8 @@ export default function Onboarding() {
                   Done on the keyboard was auto-advancing to step 2 before
                   the user had a chance to read or change it. They must now
                   explicitly tap Continue. */}
-              <TextInput value={age} onChangeText={setAge} placeholder="Your age" placeholderTextColor={Colors.lightBrown} selectionColor="#96d35f" cursorColor="#96d35f" style={styles.nameInput} keyboardType="number-pad" returnKeyType="done" />
+              <TextInput value={age} onChangeText={setAge} placeholder="Your age" placeholderTextColor={Colors.lightBrown} selectionColor="#96d35f" cursorColor="#96d35f" style={styles.nameInput} keyboardType="number-pad" returnKeyType="done" maxLength={3} />
+              {ageError ? <Text style={styles.fieldError}>{ageError}</Text> : null}
 
               <Text style={styles.fieldLabel}>How long have you been in a relationship?</Text>
               <View style={styles.chipWrap}>
@@ -750,6 +790,7 @@ const styles = StyleSheet.create({
   hintBox: { backgroundColor: '#ffffff', borderWidth: 1, borderColor: Colors.sand, borderRadius: Radius.sm, padding: 12, flexDirection: 'row', alignItems: 'flex-start', gap: 10, marginTop: 8 },
 
   fieldLabel: { fontFamily: Fonts.bodyMedium, fontSize: 13, color: Colors.midBrown, marginTop: 12, marginBottom: 8 },
+  fieldError: { fontFamily: Fonts.body, fontSize: 13, color: Colors.errorText, marginTop: -4, marginBottom: 4 },
   chipWrap: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 4 },
   chip: { paddingHorizontal: 14, paddingVertical: 9, borderRadius: Radius.full, borderWidth: 1.5, borderColor: Colors.sand, backgroundColor: Colors.white },
   chipSelected: { borderColor: Colors.sage, backgroundColor: Colors.sagePale },
