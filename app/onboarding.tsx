@@ -76,9 +76,10 @@ const NEED_OPTIONS: OptionData[] = [
 ];
 
 function OptionCard({ option, selected, onPress }: { option: OptionData; selected: boolean; onPress: () => void }) {
+  // Icons were removed from the design — keeping option.icon in the type
+  // for backward-compat but no longer rendering it.
   return (
     <TouchableOpacity onPress={onPress} activeOpacity={0.8} style={[styles.optCard, selected && styles.optCardSelected]}>
-      <option.icon size={20} color={selected ? Colors.sageDark : Colors.midBrown} />
       <View style={{ flex: 1 }}>
         <Text style={[styles.optTitle, selected && { color: Colors.sageDark }]}>{option.title}</Text>
         <Text style={styles.optDesc}>{option.desc}</Text>
@@ -369,26 +370,9 @@ export default function Onboarding() {
     <SafeAreaView style={styles.safe} edges={['top', 'bottom']}>
       <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
         <View style={styles.header}>
-          {/* Back arrow — only shown from step 2 onward; tapping rewinds
-              one step. Step 1 has no back since the prior screen is the
-              intro/consent gate (and reversing past consent shouldn't
-              happen). */}
-          {step > 1 ? (
-            <TouchableOpacity
-              onPress={() => {
-                setStep((s) => Math.max(1, s - 1));
-                setTimeout(() => scrollRef.current?.scrollTo({ y: 0, animated: true }), 50);
-              }}
-              hitSlop={8}
-              style={styles.backBtn}
-              accessibilityRole="button"
-              accessibilityLabel="Go back"
-            >
-              <Text style={styles.backArrow}>←</Text>
-            </TouchableOpacity>
-          ) : (
-            <View style={styles.backBtnPlaceholder} />
-          )}
+          {/* Header now has only the progress bar and Skip link.
+              Back navigation lives below the Continue button as a
+              text link for steps 2+. */}
           <View style={styles.progressTrack}>
             <View style={[styles.progressFill, { width: ((step / TOTAL_STEPS) * 100) + '%' as any }]} />
           </View>
@@ -428,6 +412,7 @@ export default function Onboarding() {
           {step === 1 && (
             <View style={styles.stepWrap}>
               <Text style={styles.stepTag}>Step 1 of 9</Text>
+              {/* stepTag color is charcoal under the new visual style; see styles below */}
               <Text style={styles.stepH}>Let us start with you</Text>
               <Text style={styles.stepSub}>This takes about 4 minutes. Your answers help Hey Otis understand how you experience relationships so every session feels made for you.</Text>
               <TextInput value={name} onChangeText={setName} placeholder="Your first name" placeholderTextColor={Colors.lightBrown} selectionColor="#96d35f" cursorColor="#96d35f" style={styles.nameInput} autoFocus returnKeyType="next" />
@@ -463,9 +448,7 @@ export default function Onboarding() {
 
           {step === 2 && (
             <View style={styles.stepWrap}>
-              <Text style={styles.stepTag}>Step 2 of 9: A little about you</Text>
               <Text style={styles.stepH}>Help us understand who Hey Otis is for</Text>
-              <Text style={styles.stepSub}>All optional. Skip anything you&apos;d rather not share. This helps us shape the product for the people actually using it.</Text>
 
               <Text style={styles.fieldLabel}>How do you describe your gender?</Text>
               <View style={styles.chipWrap}>
@@ -560,7 +543,7 @@ export default function Onboarding() {
 
           {step === 3 && (
             <View style={styles.stepWrap}>
-              <Text style={styles.stepTag}>Step 3 of 9: Your situation</Text>
+              <Text style={styles.stepTag}>Your situation</Text>
               <Text style={styles.stepH}>What is bringing you here?</Text>
               <Text style={styles.stepSub}>No right answer. This just helps Hey Otis understand where you are starting from.</Text>
               {CONTEXT_OPTIONS.map((o) => <OptionCard key={o.value} option={o} selected={picks.context === o.value} onPress={() => pick('context', o.value)} />)}
@@ -569,9 +552,8 @@ export default function Onboarding() {
 
           {step === 4 && (
             <View style={styles.stepWrap}>
-              <Text style={styles.stepTag}>Step 4 of 9: How you connect</Text>
+              <Text style={styles.stepTag}>Step 1/5  |  How you connect</Text>
               <Text style={styles.stepH}>Your partner has not replied to your messages for a few hours. What goes through your mind?</Text>
-              <Text style={styles.stepSub}>Pick the response that feels most honestly true, even if you wish it were not.</Text>
               {ATTACH_OPTIONS.map((o) => <OptionCard key={o.value} option={o} selected={picks.attach === o.value} onPress={() => pick('attach', o.value)} />)}
               {picks.attach && ATTACH_REVEALS[picks.attach] && (
                 <InsightReveal label="What this means for you" title={ATTACH_REVEALS[picks.attach].title} body={ATTACH_REVEALS[picks.attach].body} bg={rc.attach.bg} borderColor={rc.attach.border} labelColor={rc.attach.label} />
@@ -581,9 +563,8 @@ export default function Onboarding() {
 
           {step === 5 && (
             <View style={styles.stepWrap}>
-              <Text style={styles.stepTag}>Step 5 of 9: During conflict</Text>
+              <Text style={styles.stepTag}>Step 2/5  |  During conflict</Text>
               <Text style={styles.stepH}>You and your partner are in the middle of a tense argument. What do you feel the strongest urge to do?</Text>
-              <Text style={styles.stepSub}>Your gut instinct, not what you think you should do.</Text>
               {CONFLICT_OPTIONS.map((o) => <OptionCard key={o.value} option={o} selected={picks.conflict === o.value} onPress={() => pick('conflict', o.value)} />)}
               {picks.conflict && CONFLICT_REVEALS[picks.conflict] && (
                 <InsightReveal label="What this means for you" title={CONFLICT_REVEALS[picks.conflict].title} body={CONFLICT_REVEALS[picks.conflict].body} bg={rc.conflict.bg} borderColor={rc.conflict.border} labelColor={rc.conflict.label} />
@@ -593,9 +574,8 @@ export default function Onboarding() {
 
           {step === 6 && (
             <View style={styles.stepWrap}>
-              <Text style={styles.stepTag}>Step 6 of 9: Your body in conflict</Text>
+              <Text style={styles.stepTag}>Step 3/5  |  Your body in conflict</Text>
               <Text style={styles.stepH}>When an argument escalates, what happens in your body first?</Text>
-              <Text style={styles.stepSub}>This helps Hey Otis know when to suggest a pause and what kind of support you need.</Text>
               {WINDOW_OPTIONS.map((o) => <OptionCard key={o.value} option={o} selected={picks.window === o.value} onPress={() => pick('window', o.value)} />)}
               {picks.window && WINDOW_REVEALS[picks.window] && (
                 <InsightReveal label="What this means for you" title={WINDOW_REVEALS[picks.window].title} body={WINDOW_REVEALS[picks.window].body} bg={rc.window.bg} borderColor={rc.window.border} labelColor={rc.window.label} />
@@ -605,9 +585,8 @@ export default function Onboarding() {
 
           {step === 7 && (
             <View style={styles.stepWrap}>
-              <Text style={styles.stepTag}>Step 7 of 9: How you feel loved</Text>
+              <Text style={styles.stepTag}>Step 4/5  |  How you feel loved</Text>
               <Text style={styles.stepH}>After a difficult few days, what would make you feel most reconnected to your partner?</Text>
-              <Text style={styles.stepSub}>Imagine the thing that would genuinely shift how you feel.</Text>
               {LOVE_OPTIONS.map((o) => <OptionCard key={o.value} option={o} selected={picks.love === o.value} onPress={() => pick('love', o.value)} />)}
               {picks.love && LOVE_REVEALS[picks.love] && (
                 <InsightReveal label="What this means for you" title={LOVE_REVEALS[picks.love].title} body={LOVE_REVEALS[picks.love].body} bg={rc.love.bg} borderColor={rc.love.border} labelColor={rc.love.label} />
@@ -617,21 +596,15 @@ export default function Onboarding() {
 
           {step === 8 && (
             <View style={styles.stepWrap}>
-              <Text style={styles.stepTag}>Step 8 of 9: What you most need</Text>
+              <Text style={styles.stepTag}>Step 5/5  |  What you most need</Text>
               <Text style={styles.stepH}>When you are hurting in a relationship, which feels most true?</Text>
-              <Text style={styles.stepSub}>This helps Hey Otis understand what is beneath your conflicts. The need that is usually unspoken.</Text>
               {NEED_OPTIONS.map((o) => <OptionCard key={o.value} option={o} selected={picks.need === o.value} onPress={() => pick('need', o.value)} />)}
             </View>
           )}
 
           {step === 9 && (
             <View style={styles.stepWrap}>
-              <View style={{ alignItems: 'center', marginBottom: 12 }}>
-                <View style={{ width: 56, height: 56, borderRadius: 28, backgroundColor: Colors.sagePale, alignItems: 'center', justifyContent: 'center' }}>
-                  <IconLeaf size={26} color={Colors.sage} />
-                </View>
-              </View>
-              <Text style={styles.stepTag}>Your profile is ready</Text>
+              <Text style={[styles.stepTag, { textAlign: 'center' }]}>Your profile is ready</Text>
               <Text style={[styles.stepH, { textAlign: 'center' }]}>Welcome, {name}</Text>
               <Text style={[styles.stepSub, { textAlign: 'center' }]}>Here is what Hey Otis has learned about you.</Text>
               <View style={styles.summaryGrid}>
@@ -667,6 +640,20 @@ export default function Onboarding() {
 
           <View style={styles.footer}>
             <Button label={step === 9 ? 'Enter Hey Otis' : 'Continue'} onPress={next} disabled={!canProceed()} />
+            {step > 1 && (
+              <TouchableOpacity
+                onPress={() => {
+                  setStep((s) => Math.max(1, s - 1));
+                  setTimeout(() => scrollRef.current?.scrollTo({ y: 0, animated: true }), 50);
+                }}
+                style={styles.backLink}
+                hitSlop={8}
+                accessibilityRole="button"
+                accessibilityLabel="Go back"
+              >
+                <Text style={styles.backLinkText}>Back</Text>
+              </TouchableOpacity>
+            )}
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
@@ -731,9 +718,9 @@ export default function Onboarding() {
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: Colors.cream },
   header: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 20, paddingVertical: 16 },
-  backBtn: { paddingVertical: 4, paddingHorizontal: 4, marginLeft: -4 },
-  backBtnPlaceholder: { width: 20, height: 20 },
-  backArrow: { fontFamily: Fonts.body, fontSize: 22, color: Colors.midBrown, lineHeight: 22 },
+  // "Back" text link sits below the Continue button on steps 2+.
+  backLink: { alignSelf: 'center', paddingVertical: 14, paddingHorizontal: 16, marginTop: 4 },
+  backLinkText: { fontFamily: Fonts.bodyMedium, fontSize: 15, color: Colors.charcoal },
   // Country field — empty state shows the placeholder colour, filled
   // shows the chosen country in the regular charcoal.
   countryPlaceholder: { fontFamily: Fonts.body, fontSize: 16, color: Colors.lightBrown },
@@ -753,7 +740,7 @@ const styles = StyleSheet.create({
   skipText: { fontFamily: Fonts.body, fontSize: 13, color: Colors.midBrown },
   scroll: { paddingBottom: 40 },
   stepWrap: { paddingHorizontal: 20, paddingTop: 12, gap: 10 },
-  stepTag: { fontFamily: Fonts.bodyMedium, fontSize: 11, letterSpacing: 0.8, textTransform: 'uppercase', color: Colors.sage },
+  stepTag: { fontFamily: Fonts.bodyMedium, fontSize: 11, letterSpacing: 0.8, textTransform: 'uppercase', color: Colors.charcoal },
   stepH: { fontFamily: Fonts.displaySemiBold, fontSize: 26, color: Colors.charcoal, lineHeight: 32, marginBottom: 2 },
   stepSub: { fontFamily: Fonts.body, fontSize: 14, color: Colors.midBrown, lineHeight: 21, marginBottom: 8 },
   nameInput: { width: '100%', padding: 16, borderRadius: Radius.md, borderWidth: 1.5, borderColor: Colors.sand, backgroundColor: Colors.white, fontFamily: Fonts.body, fontSize: 16, color: Colors.charcoal, marginBottom: 4 },

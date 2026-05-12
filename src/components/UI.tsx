@@ -40,7 +40,7 @@ export function Button({
       ]}
     >
       {loading ? (
-        <ActivityIndicator color={variant === 'secondary' || variant === 'ghost' ? Colors.sageDark : Colors.white} />
+        <ActivityIndicator color={Colors.charcoal} />
       ) : (
         <Text style={[
           btn.label,
@@ -62,11 +62,11 @@ const btn = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  primary: { backgroundColor: Colors.sageDark, ...Shadows.sm },
+  primary: { backgroundColor: Colors.sage, ...Shadows.sm },
   secondary: { backgroundColor: Colors.warmWhite, borderWidth: 1.5, borderColor: Colors.sand },
   ghost: { backgroundColor: 'transparent' },
   sage: { backgroundColor: Colors.sage, ...Shadows.sm },
-  label: { fontFamily: Fonts.bodyMedium, fontSize: 15, color: Colors.white, letterSpacing: 0.2 },
+  label: { fontFamily: Fonts.bodyMedium, fontSize: 15, color: Colors.charcoal, letterSpacing: 0.2 },
 });
 
 export function InsightReveal({
