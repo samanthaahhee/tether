@@ -72,8 +72,8 @@ export default function IntroScreen() {
         }}
         renderItem={({ item }) => (
           <LinearGradient
-            colors={[...item.gradient]}
-            locations={[...item.gradientLocations]}
+            colors={item.gradient as readonly [string, string, ...string[]]}
+            locations={item.gradientLocations as readonly [number, number, ...number[]]}
             start={{ x: 0.5, y: 0 }}
             end={{ x: 0.5, y: 1 }}
             style={[styles.slide, { width, height }]}
