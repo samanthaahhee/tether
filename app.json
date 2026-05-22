@@ -39,7 +39,8 @@
       "expo-font",
       "expo-speech-recognition",
       "expo-web-browser",
-      "expo-apple-authentication"
+      "expo-apple-authentication",
+      "@react-native-community/datetimepicker"
     ],
     "scheme": "tether",
     "extra": {
