@@ -274,9 +274,21 @@ export default function Onboarding() {
         onboarded: true,
         avatar_color: '#B8D8CA',
       };
+      // Sync to Supabase FIRST so a failure aborts before we mutate local
+      // state. Previously syncProfile silently swallowed errors and the
+      // app would happily navigate to /(tabs) with onboarded=true in
+      // local state but onboarded=false in the DB — next app launch
+      // would re-route the user into onboarding forever.
+      try {
+        await syncProfile(profilePayload);
+      } catch (e: any) {
+        Alert.alert(
+          'Could not save your answers',
+          `Something went wrong saving your onboarding to the server. Please try again.\n\n${e?.message || ''}`,
+        );
+        return;
+      }
       dispatch({ type: 'SET_PROFILE', payload: profilePayload });
-      // Sync to Supabase
-      await syncProfile(profilePayload);
       track('onboarding_completed', {
         attachment: profilePayload.attachment,
         conflict: profilePayload.conflict,
@@ -320,12 +332,17 @@ export default function Onboarding() {
   if (!consented) {
     const handleAccept = async () => {
       if (!canConsent) return;
-      await syncProfile({
-        // The Supabase profile column is snake_case; the local TS
-        // interface accepts the same string keys via Partial<>.
-        terms_accepted_at: new Date().toISOString(),
-        terms_version: TERMS_VERSION,
-      } as any);
+      try {
+        await syncProfile({
+          // The Supabase profile column is snake_case; the local TS
+          // interface accepts the same string keys via Partial<>.
+          terms_accepted_at: new Date().toISOString(),
+          terms_version: TERMS_VERSION,
+        } as any);
+      } catch (e: any) {
+        Alert.alert('Could not save consent', `Something went wrong. Please try again.\n\n${e?.message || ''}`);
+        return;
+      }
       // User has accepted terms — opt into analytics. Until this point
       // PostHog has been opted-out and any track() calls are no-ops.
       enableTracking();
@@ -438,8 +455,13 @@ export default function Onboarding() {
                         context: picks.context || '',
                         onboarded: true,
                       };
+                      try {
+                        await syncProfile(skipPayload);
+                      } catch (e: any) {
+                        Alert.alert('Could not skip', `Something went wrong saving. Please try again.\n\n${e?.message || ''}`);
+                        return;
+                      }
                       dispatch({ type: 'SET_PROFILE', payload: skipPayload });
-                      await syncProfile(skipPayload);
                       track('onboarding_skipped', { last_step: step });
                       router.replace('/(tabs)');
                     },

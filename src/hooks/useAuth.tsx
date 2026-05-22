@@ -412,7 +412,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const syncProfile = async (data: Partial<SupabaseProfile>) => {
     if (!user) return;
-    await supabase.from('profiles').upsert({ id: user.id, ...data, updated_at: new Date().toISOString() });
+    const { error } = await supabase
+      .from('profiles')
+      .upsert({ id: user.id, ...data, updated_at: new Date().toISOString() });
+    if (error) {
+      // Don't update local state if the DB write failed — otherwise the UI
+      // shows success but the next app launch reverts to the old state
+      // (e.g. onboarded: true locally but false in the DB → user re-onboards
+      // forever). Surface the error so callers can react.
+      console.error('[syncProfile] upsert failed:', error.message, error.details, error.hint);
+      throw new Error(error.message);
+    }
     setProfile(prev => prev ? { ...prev, ...data } : null);
   };
 
