@@ -11,7 +11,7 @@ import { useAppState } from '../src/hooks/useAppState';
 import { useAuth } from '../src/hooks/useAuth';
 import { Colors, Fonts, Radius } from '../src/constants/theme';
 import {
-  ATTACH_REVEALS, CONFLICT_REVEALS, WINDOW_REVEALS, LOVE_REVEALS, NEED_REVEALS,
+  ATTACH_REVEALS, CONFLICT_REVEALS, WINDOW_REVEALS, LOVE_REVEALS, NEED_REVEALS, CONTEXT_REVEALS,
   ATTACH_INSIGHTS, ATTACHMENT_LABELS, CONFLICT_LABELS, LOVE_LABELS,
   WINDOW_LABELS, NEED_LABELS,
 } from '../src/constants/data';
@@ -339,6 +339,10 @@ export default function Onboarding() {
     // Need uses a coral / warm-orange palette to stay distinct from the
     // other four dimensions.
     need: { bg: Colors.pastelPeach, border: '#ffa6a8', label: '#a90005' },
+    // Context uses a calming mint-on-deep-green like the attach card —
+    // this is the 'we hear you' moment, not a pattern result, so the
+    // tone matches the inviting palette of the first dimension.
+    context: { bg: '#E4F1E6', border: '#408770', label: '#408770' },
   };
 
   // ── Consent gate ──────────────────────────────────────────────────
@@ -658,6 +662,9 @@ export default function Onboarding() {
               <Text style={styles.stepH}>What is bringing you here?</Text>
               <Text style={styles.stepSub}>No right answer. This just helps Hey Otis understand where you are starting from.</Text>
               {CONTEXT_OPTIONS.map((o) => <OptionCard key={o.value} option={o} selected={picks.context === o.value} onPress={() => pick('context', o.value)} />)}
+              {picks.context && CONTEXT_REVEALS[picks.context] && (
+                <InsightReveal label="We hear you" title={CONTEXT_REVEALS[picks.context].title} body={CONTEXT_REVEALS[picks.context].body} bg={rc.context.bg} borderColor={rc.context.border} labelColor={rc.context.label} />
+              )}
             </View>
           )}
 

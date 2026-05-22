@@ -114,6 +114,28 @@ export const LOVE_REVEALS: Record<string, { title: string; body: string }> = {
   },
 };
 
+// Warm acknowledgements for the 'what brings you here' question. Not
+// analytical (unlike the other REVEALS) — just a brief 'we hear you'
+// reflection so the moment doesn't feel like a quiz with no response.
+export const CONTEXT_REVEALS: Record<string, { title: string; body: string }> = {
+  conflict: {
+    title: 'Conflict cycles are exhausting',
+    body: 'Being stuck in the same argument over and over takes a real toll. The fact that you are looking for a different way through says a lot. Hey Otis is built for exactly this moment.',
+  },
+  disconnect: {
+    title: 'Drift is the quietest kind of struggle',
+    body: 'No big fight, just less of each other. Naming it takes courage. We will help you find small ways back into real contact, starting from what is actually happening between you.',
+  },
+  specific: {
+    title: 'Sometimes one thing is the whole thing',
+    body: 'There is often a knot underneath a recurring issue. Hey Otis helps you untangle it without flattening what really matters to you.',
+  },
+  proactive: {
+    title: 'Doing the work before you need it',
+    body: 'Showing up here when things are mostly okay is genuinely the best time. Stronger communication built now becomes the safety net later. Glad you are starting from solid ground.',
+  },
+};
+
 export const NEED_REVEALS: Record<string, { title: string; body: string }> = {
   seen: {
     title: 'Your deepest need is to feel seen and understood',
