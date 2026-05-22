@@ -112,6 +112,7 @@ All headlines + copy are already drafted in `store-assets/SCREENSHOT-COPY.md`. W
 
 ## 🔵 v1.1 (post-launch, OTA or next build)
 
+- [ ] **In-app partner nudge feed** — when partner views your profile / sees your onboarding-only data, surface a soft prompt on YOUR home tab: "Sam viewed your conflict style. Take the full assessment for a fuller picture?" Needs: nudges table in DB, write on partner view events, render as a dismissible card on home. v1 shipped with the user-initiated 'Suggest to Sam' Share button on partner cards as a stopgap.
 - [ ] **Replace age text input with native DOB calendar picker** — explored 2026-05-22, requires `@react-native-community/datetimepicker` which is a native module so it needs a dev-client rebuild. Deferred to keep v1.0 ship velocity. Migration `20260522010000_add_dob_to_profiles` already added the `dob` date column (unused for now but harmless). When picking this up: re-install the package, add to `app.json` plugins, replace the TextInput in `app/onboarding.tsx` with the inline DateTimePicker, write both `dob` (yyyy-mm-dd) and computed `age` (string) to the profile payload.
 
 ---

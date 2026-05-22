@@ -34,6 +34,17 @@ function firstSentences(text: string, n: number): string {
   return sentences.slice(0, n).join('').trim();
 }
 
+/** Make a name possessive — 'Sam' → "Sam's", 'Jess' → "Jess's",
+ *  names already ending in apostrophe-s left alone, missing name
+ *  falls back to 'their'. */
+function possessive(name?: string): string {
+  if (!name) return 'their';
+  const trimmed = name.trim();
+  if (!trimmed) return 'their';
+  if (/['’]s$/i.test(trimmed)) return trimmed;
+  return `${trimmed}'s`;
+}
+
 function PatternCard({ label, value, note, accentColor, assessmentType, assessmentValue, isIncomplete, isFullAssessment, isPartner, partnerName }: {
   label: string; value: string; note: string; accentColor: string;
   assessmentType?: string; assessmentValue?: string; isIncomplete?: boolean;
@@ -78,17 +89,33 @@ function PatternCard({ label, value, note, accentColor, assessmentType, assessme
         {isPartner ? (
           <>
             {/* Partner cards always show the full deep-dive note (or a
-                gentle empty state if they haven't picked yet). No CTA —
-                the user can't take their partner's assessment. */}
+                gentle empty state if they haven't picked yet). No CTA
+                that targets the user's own quiz — they can't take their
+                partner's assessment. Optional 'Suggest to <name>' chip
+                opens Share so the user can nudge their partner directly. */}
             {note ? (
               <Text style={pc.note}>{note}</Text>
             ) : (
-              <Text style={pc.teaser}>{partnerName || 'They'} hasn&apos;t shared this yet. Once they answer, you&apos;ll see their profile here.</Text>
+              <Text style={pc.teaser}>{possessive(partnerName)} answer is missing. Once they share, you&apos;ll see it here.</Text>
             )}
             {note && !isFullAssessment && (
-              <Text style={pc.partnerHint}>
-                This is a quick read from {partnerName || 'their'} onboarding. Suggest they take the full assessment in their app for a deeper picture.
-              </Text>
+              <>
+                <Text style={pc.partnerHint}>
+                  From {possessive(partnerName)} onboarding. They can unlock more in the full assessment.
+                </Text>
+                <TouchableOpacity
+                  onPress={() => {
+                    const name = partnerName || 'partner';
+                    Share.share({
+                      message: `Hey ${name}, I was looking at Hey Otis and would love to see your full ${label.toLowerCase()} read. It only takes a few minutes inside the app.`,
+                    });
+                  }}
+                  style={[pc.cta, { borderColor: accentColor, marginTop: 12 }]}
+                  activeOpacity={0.7}
+                >
+                  <Text style={[pc.ctaText, { color: accentColor }]}>Suggest to {partnerName || 'partner'}  →</Text>
+                </TouchableOpacity>
+              </>
             )}
           </>
         ) : onboardingOnly ? (
