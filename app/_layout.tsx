@@ -7,6 +7,8 @@ import { Inter_400Regular, Inter_500Medium, Inter_600SemiBold } from '@expo-goog
 import { InstrumentSans_400Regular, InstrumentSans_500Medium, InstrumentSans_600SemiBold, InstrumentSans_700Bold } from '@expo-google-fonts/instrument-sans';
 import { AppStateProvider } from '../src/hooks/useAppState';
 import { AuthProvider, useAuth } from '../src/hooks/useAuth';
+import { AppLockProvider } from '../src/hooks/useAppLock';
+import { AppLockGate } from '../src/components/AppLockGate';
 import { track } from '../src/lib/posthog';
 
 function RouteGuard() {
@@ -109,7 +111,11 @@ export default function RootLayout() {
     <View style={{ flex: 1, backgroundColor: '#f7f5fd' }}>
     <AppStateProvider>
       <AuthProvider>
-        <RouteGuard />
+        <AppLockProvider>
+          <AppLockGate>
+            <RouteGuard />
+          </AppLockGate>
+        </AppLockProvider>
       </AuthProvider>
     </AppStateProvider>
     </View>

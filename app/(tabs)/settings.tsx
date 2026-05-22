@@ -12,6 +12,7 @@ import { supabase } from '../../src/lib/supabase';
 import { ATTACHMENT_LABELS, LOVE_LABELS, CONFLICT_LABELS, WINDOW_LABELS, NEED_LABELS } from '../../src/constants/data';
 import { PartnerProfile } from '../../src/hooks/useAppState';
 import { useAuth } from '../../src/hooks/useAuth';
+import { useAppLock } from '../../src/hooks/useAppLock';
 
 function Toggle({ value, onValueChange }: { value: boolean; onValueChange: (v: boolean) => void }) {
   const anim = useRef(new Animated.Value(value ? 1 : 0)).current;
@@ -65,7 +66,7 @@ export default function SettingsTab() {
   const partnerSet = !!pp.attachment;
   const [inviteLoading, setInviteLoading] = useState(false);
   const [inviteCode, setInviteCode] = useState<string | null>(null);
-  const [appLock, setAppLock] = useState(false);
+  const { enabled: appLock, setEnabled: setAppLockPref } = useAppLock();
   const [showCountryPicker, setShowCountryPicker] = useState(false);
   const [countrySearch, setCountrySearch] = useState('');
   const [exporting, setExporting] = useState(false);
@@ -303,7 +304,22 @@ export default function SettingsTab() {
 
 
         <Section title="Privacy and safety">
-          <SettingsRow icon={<IconLock size={18} color={Colors.midBrown} />} label="App lock" sub="Require Face ID or passcode" right={<Toggle value={appLock} onValueChange={setAppLock} />} />
+          <SettingsRow
+            icon={<IconLock size={18} color={Colors.midBrown} />}
+            label="App lock"
+            sub={appLock ? 'Face ID or passcode required to open' : 'Require Face ID or passcode'}
+            right={
+              <Toggle
+                value={appLock}
+                onValueChange={async (next) => {
+                  const { ok, error } = await setAppLockPref(next);
+                  if (!ok && error) {
+                    Alert.alert('App lock', error);
+                  }
+                }}
+              />
+            }
+          />
           <SettingsRow icon={<IconShield size={18} color={Colors.midBrown} />} label="Data and encryption" sub="How your data is protected" onPress={() => Alert.alert(
             'Data and encryption',
             'Your data is protected in the following ways:\n\n' +
