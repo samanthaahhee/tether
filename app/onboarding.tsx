@@ -301,7 +301,12 @@ export default function Onboarding() {
   };
 
   const rc = {
-    attach: { bg: Colors.sagePale, border: Colors.sageLight, label: Colors.sage },
+    // Mint-on-deep-green for the attachment InsightReveal. Earlier we used
+    // lime-on-lime (sagePale + sage label) which failed contrast on the
+    // small-caps label and looked washed out on the body copy. #408770
+    // (deep teal-green) on #E4F1E6 (pale mint) is WCAG AA compliant and
+    // reads cleanly at small sizes.
+    attach: { bg: '#E4F1E6', border: '#408770', label: '#408770' },
     conflict: { bg: Colors.bluePale, border: Colors.blueLight, label: Colors.blue },
     window: { bg: Colors.amberPale, border: Colors.amberLight, label: Colors.amber },
     love: { bg: Colors.mauvePale, border: Colors.mauveLight, label: Colors.mauve },
@@ -679,24 +684,29 @@ export default function Onboarding() {
             </View>
           )}
 
-          <View style={styles.footer}>
-            <Button label={step === 9 ? 'Enter Hey Otis' : 'Continue'} onPress={next} disabled={!canProceed()} />
-            {step > 1 && (
-              <TouchableOpacity
-                onPress={() => {
-                  setStep((s) => Math.max(1, s - 1));
-                  setTimeout(() => scrollRef.current?.scrollTo({ y: 0, animated: true }), 50);
-                }}
-                style={styles.backLink}
-                hitSlop={8}
-                accessibilityRole="button"
-                accessibilityLabel="Go back"
-              >
-                <Text style={styles.backLinkText}>Back</Text>
-              </TouchableOpacity>
-            )}
-          </View>
         </ScrollView>
+
+        {/* Footer is anchored to the bottom of the screen, outside the
+            ScrollView, so Continue + Back stay visible regardless of how
+            long the question content is. Background matches the page so
+            there's no visible seam. */}
+        <View style={styles.footer}>
+          <Button label={step === 9 ? 'Enter Hey Otis' : 'Continue'} onPress={next} disabled={!canProceed()} />
+          {step > 1 && (
+            <TouchableOpacity
+              onPress={() => {
+                setStep((s) => Math.max(1, s - 1));
+                setTimeout(() => scrollRef.current?.scrollTo({ y: 0, animated: true }), 50);
+              }}
+              style={styles.backLink}
+              hitSlop={8}
+              accessibilityRole="button"
+              accessibilityLabel="Go back"
+            >
+              <Text style={styles.backLinkText}>Back</Text>
+            </TouchableOpacity>
+          )}
+        </View>
       </KeyboardAvoidingView>
 
       {/* Country picker modal. Full-screen searchable list — lighter
@@ -867,5 +877,5 @@ const styles = StyleSheet.create({
   consentFinePrint: { fontFamily: Fonts.body, fontSize: 12, color: Colors.midBrown, lineHeight: 18, textAlign: 'center', marginTop: 16 },
   // Footer: 24 horizontal to match stepWrap; extra bottom padding so
   // the Back link doesn't sit flush against the safe-area edge.
-  footer: { paddingHorizontal: 24, paddingTop: 24, paddingBottom: 16 },
+  footer: { paddingHorizontal: 24, paddingTop: 16, paddingBottom: 8, backgroundColor: Colors.cream, borderTopWidth: 1, borderTopColor: Colors.sand },
 });

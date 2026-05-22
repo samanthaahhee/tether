@@ -535,7 +535,7 @@ const styles = StyleSheet.create({
   connectedDot: { fontSize: 10, color: Colors.sage },
   connectedText: { fontFamily: Fonts.bodyMedium, fontSize: 13, color: Colors.sage },
   singlePartnerHint: { paddingHorizontal: 14, paddingVertical: 12, fontFamily: Fonts.body, fontSize: 12, color: Colors.midBrown, lineHeight: 18 },
-  settingsBackBtn: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 4, paddingVertical: 8, alignSelf: 'flex-start', marginBottom: 4 },
+  settingsBackBtn: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingLeft: 16, paddingRight: 12, paddingVertical: 8, alignSelf: 'flex-start', marginBottom: 4 },
   settingsBackText: { fontFamily: Fonts.bodyMedium, fontSize: 13, color: Colors.midBrown },
   notConnectedRow: { padding: 14, borderBottomWidth: 1, borderBottomColor: Colors.creamDark },
   notConnectedText: { fontFamily: Fonts.body, fontSize: 13, color: Colors.midBrown },
