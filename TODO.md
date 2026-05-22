@@ -110,6 +110,12 @@ All headlines + copy are already drafted in `store-assets/SCREENSHOT-COPY.md`. W
 
 ---
 
+## 🔵 v1.1 (post-launch, OTA or next build)
+
+- [ ] **Replace age text input with native DOB calendar picker** — explored 2026-05-22, requires `@react-native-community/datetimepicker` which is a native module so it needs a dev-client rebuild. Deferred to keep v1.0 ship velocity. Migration `20260522010000_add_dob_to_profiles` already added the `dob` date column (unused for now but harmless). When picking this up: re-install the package, add to `app.json` plugins, replace the TextInput in `app/onboarding.tsx` with the inline DateTimePicker, write both `dob` (yyyy-mm-dd) and computed `age` (string) to the profile payload.
+
+---
+
 ## 🟤 Ongoing post-launch — weekly hygiene
 
 Not urgent pre-launch but should become weekly habits once real users exist.

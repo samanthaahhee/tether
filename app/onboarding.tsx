@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState, useRef } from 'react';
-import DateTimePicker from '@react-native-community/datetimepicker';
+import { LinearGradient } from 'expo-linear-gradient';
 import {
   View, Text, TextInput, TouchableOpacity, ScrollView,
   StyleSheet, KeyboardAvoidingView, Platform, Linking,
@@ -157,19 +157,7 @@ export default function Onboarding() {
   const { syncProfile } = useAuth();
   const [step, setStep] = useState(1);
   const [name, setName] = useState('');
-  // DOB is the source of truth — age is computed from it for display
-  // + persisted as a string for legacy compatibility with the older
-  // `age` column. null = not yet selected.
-  const [dob, setDob] = useState<Date | null>(null);
-  const [showDobPicker, setShowDobPicker] = useState(false);
-  const age = useMemo(() => {
-    if (!dob) return '';
-    const today = new Date();
-    let years = today.getFullYear() - dob.getFullYear();
-    const monthDiff = today.getMonth() - dob.getMonth();
-    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < dob.getDate())) years -= 1;
-    return String(years);
-  }, [dob]);
+  const [age, setAge] = useState('');
   const [together, setTogether] = useState('');
 
   // Step 2 — optional demographics. Each field can be left empty; the
@@ -282,9 +270,6 @@ export default function Onboarding() {
     if (step === 9) {
       const profilePayload = {
         name: name.trim(),
-        // DOB is the source of truth; age is the computed string kept
-        // for backwards-compat with the existing age column + analytics.
-        dob: dob ? dob.toISOString().slice(0, 10) : null,
         age: age.trim(),
         together_for: together,
         // Optional demographics — empty strings persist as nulls in the
@@ -545,35 +530,7 @@ export default function Onboarding() {
               <Text style={styles.stepH}>Let us start with you</Text>
               <Text style={styles.stepSub}>This takes about 4 minutes. Your answers help Hey Otis understand how you experience relationships so every session feels made for you.</Text>
               <TextInput value={name} onChangeText={setName} placeholder="Your first name" placeholderTextColor={Colors.lightBrown} selectionColor="#96d35f" cursorColor="#96d35f" style={styles.nameInput} autoFocus returnKeyType="next" />
-
-              {/* Date of birth via native iOS calendar picker. The age
-                  value is computed from the picked date — see useMemo
-                  above. We never collect age as free text any more. */}
-              <TouchableOpacity
-                onPress={() => setShowDobPicker((v) => !v)}
-                style={styles.nameInput}
-                activeOpacity={0.7}
-                accessibilityRole="button"
-                accessibilityLabel={dob ? `Date of birth: ${dob.toDateString()}` : 'Pick your date of birth'}
-              >
-                <Text style={{ fontFamily: Fonts.body, fontSize: 16, color: dob ? Colors.charcoal : Colors.lightBrown }}>
-                  {dob ? dob.toLocaleDateString(undefined, { day: 'numeric', month: 'long', year: 'numeric' }) : 'Your date of birth'}
-                </Text>
-              </TouchableOpacity>
-              {showDobPicker && (
-                <View style={{ alignItems: 'center', marginTop: 8 }}>
-                  <DateTimePicker
-                    value={dob || new Date(new Date().getFullYear() - 30, 0, 1)}
-                    mode="date"
-                    display="inline"
-                    maximumDate={new Date()}
-                    minimumDate={new Date(1900, 0, 1)}
-                    onChange={(_event, selectedDate) => {
-                      if (selectedDate) setDob(selectedDate);
-                    }}
-                  />
-                </View>
-              )}
+              <TextInput value={age} onChangeText={setAge} placeholder="Your age" placeholderTextColor={Colors.lightBrown} selectionColor="#96d35f" cursorColor="#96d35f" style={styles.nameInput} keyboardType="number-pad" returnKeyType="done" maxLength={3} />
               {ageError ? <Text style={styles.fieldError}>{ageError}</Text> : null}
 
               <Text style={styles.fieldLabel}>How long have you been in a relationship?</Text>
@@ -796,6 +753,19 @@ export default function Onboarding() {
           )}
 
         </ScrollView>
+
+        {/* Fade affordance at the bottom of the scrollview — visible
+            ONLY when the user hasn't reached the bottom yet. Signals
+            "there's more content below" without needing an explicit
+            "scroll for more" label. Disappears the moment the footer
+            appears, so the two never overlap visually. */}
+        {!scrolledToBottom && (
+          <LinearGradient
+            colors={['rgba(247,245,253,0)', Colors.cream]}
+            pointerEvents="none"
+            style={{ position: 'absolute', left: 0, right: 0, bottom: 0, height: 60 }}
+          />
+        )}
 
         {/* Footer is anchored to the bottom of the screen but only
             rendered once the user has scrolled to the end of the
