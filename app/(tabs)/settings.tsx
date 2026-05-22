@@ -480,14 +480,17 @@ export default function SettingsTab() {
                 text: 'Sign out', style: 'destructive', onPress: async () => {
                   try {
                     await signOut();
-                    // RouteGuard fires the moment `user` becomes null and
-                    // navigates to '/'. No manual router calls here —
-                    // adding them on top of RouteGuard's navigation
-                    // produces a 'POP_TO_TOP was not handled' error
-                    // because two navigators try to act at the same time.
                   } catch (e) {
                     console.warn('signOut threw:', e);
                   }
+                  // Explicit navigation to root. RouteGuard would also
+                  // catch the null-user state and route here, but in
+                  // practice that effect doesn't always fire fast enough
+                  // and the user can get stuck on the tabs UI. Manual
+                  // replace is the primary path; RouteGuard is the
+                  // safety net. router.dismissAll() was the prior cause
+                  // of 'POP_TO_TOP not handled' — keep it out.
+                  router.replace('/');
                 },
               },
             ]);
