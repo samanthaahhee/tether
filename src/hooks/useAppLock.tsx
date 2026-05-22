@@ -1,7 +1,24 @@
 import React, { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { AppState, AppStateStatus } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import * as LocalAuthentication from 'expo-local-authentication';
+
+// Dynamic require so this module loads in dev clients that don't yet
+// have the native side of expo-local-authentication linked in (i.e.
+// the dev build from before App Lock shipped). Without this, the
+// static import throws 'Cannot find native module ExpoLocalAuthentication'
+// the moment useAppLock.tsx is evaluated, which crashes the entire
+// app before any providers can render.
+//
+// Once the next `eas build --profile development` lands, the native
+// module is present and everything works. Until then, the App Lock
+// toggle just shows 'not available on this build'.
+let LocalAuthentication: typeof import('expo-local-authentication') | null = null;
+try {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  LocalAuthentication = require('expo-local-authentication');
+} catch {
+  LocalAuthentication = null;
+}
 
 /**
  * App-level biometric lock. When enabled, the app shows a lock screen
@@ -54,19 +71,22 @@ export function AppLockProvider({ children }: { children: React.ReactNode }) {
   // Load saved preference + check device capability on mount.
   useEffect(() => {
     (async () => {
-      const [storedRaw, hardware, enrolled] = await Promise.all([
-        AsyncStorage.getItem(PREF_KEY).catch(() => null),
-        LocalAuthentication.hasHardwareAsync().catch(() => false),
-        LocalAuthentication.isEnrolledAsync().catch(() => false),
-      ]);
+      const storedRaw = await AsyncStorage.getItem(PREF_KEY).catch(() => null);
+      let hardware = false;
+      let enrolled = false;
+      if (LocalAuthentication) {
+        hardware = await LocalAuthentication.hasHardwareAsync().catch(() => false);
+        enrolled = await LocalAuthentication.isEnrolledAsync().catch(() => false);
+      }
       setAvailable(Boolean(hardware && enrolled));
       const stored = storedRaw === 'true';
-      setEnabledState(stored);
-      enabledRef.current = stored;
-      // If app launches cold WITH lock enabled, lock immediately —
-      // they're entering from a fully-closed state, treat that as
-      // foreground-from-background.
-      if (stored) {
+      // If the native module disappeared (e.g. user downgraded the dev
+      // build), don't force-lock them out — fail open. Re-enabling
+      // requires another auth pass anyway.
+      const canLock = stored && LocalAuthentication !== null;
+      setEnabledState(canLock);
+      enabledRef.current = canLock;
+      if (canLock) {
         setLocked(true);
         armed.current = true;
       }
@@ -96,6 +116,7 @@ export function AppLockProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const attemptUnlock = useCallback(async (): Promise<boolean> => {
+    if (!LocalAuthentication) return false;
     try {
       const res = await LocalAuthentication.authenticateAsync({
         promptMessage: 'Unlock Hey Otis',
@@ -113,6 +134,9 @@ export function AppLockProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const setEnabled = useCallback(async (next: boolean) => {
+    if (!LocalAuthentication) {
+      return { ok: false, error: 'App Lock needs the latest version of Hey Otis. Update the app and try again.' };
+    }
     if (!next) {
       // Disabling — require auth first so a third party who picks up
       // an unlocked phone can't silently turn off the lock.
