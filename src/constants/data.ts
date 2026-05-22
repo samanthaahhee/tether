@@ -94,23 +94,23 @@ export const WINDOW_REVEALS: Record<string, { title: string; body: string }> = {
 export const LOVE_REVEALS: Record<string, { title: string; body: string }> = {
   words: {
     title: 'Your primary love language is words of affirmation',
-    body: 'Explicit verbal appreciation and reassurance are what make you feel genuinely loved. When these go unspoken, you may feel invisible, even if your partner shows love in other ways.',
+    body: "Explicit verbal appreciation and reassurance are what make you feel genuinely loved. When these go unspoken, you may feel invisible even if your partner shows love in other ways. The fix is rarely grand. A simple 'thank you' or 'I see how hard you tried' can shift everything between you.",
   },
   acts: {
     title: 'Your primary love language is acts of service',
-    body: 'Action speaks louder than words for you. When someone does something helpful without being asked, you feel deeply cared for.',
+    body: 'Action speaks louder than words for you. When someone does something helpful without being asked, you feel deeply cared for. The opposite is also true. An empty promise or repeated forgetfulness can read as a withdrawal of love, even when no one meant it that way.',
   },
   touch: {
     title: 'Your primary love language is physical touch',
-    body: 'Physical closeness is the clearest signal that you are loved and safe. Physical disconnection during conflict can feel like emotional rejection.',
+    body: 'Physical closeness is the clearest signal that you are loved and safe. Physical disconnection during conflict can feel like emotional rejection. A long hug, holding hands, or sitting close on the couch often does more for you than the most articulate apology.',
   },
   time: {
     title: 'Your primary love language is quality time',
-    body: 'Undivided, genuine presence fills your cup. A partner on their phone in the same room can feel lonelier than being apart.',
+    body: 'Undivided, genuine presence fills your cup. A partner on their phone in the same room can feel lonelier than being apart. What you need is not more time, it is more attention. Twenty minutes of full presence often outweighs a whole evening of half there company.',
   },
   gifts: {
     title: 'Your primary love language is thoughtful gifts',
-    body: "This is not about materialism. It is about being held in someone's mind. A small thoughtful gesture says 'I was thinking of you.'",
+    body: "This is not about materialism. It is about being held in someone's mind. A small thoughtful gesture says 'I was thinking of you.' When gifts feel obligatory or generic, the language stops landing. Specificity is what makes it feel like love.",
   },
 };
 
