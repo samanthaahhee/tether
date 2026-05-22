@@ -23,12 +23,16 @@ const ACCENT_PALE: Record<string, string> = {
   '#92a6f4': '#dce3fd', // blue/periwinkle
 };
 
-function PatternCard({ label, value, note, accentColor, assessmentType, assessmentValue, isIncomplete }: {
+function PatternCard({ label, value, note, accentColor, assessmentType, assessmentValue, isIncomplete, isFullAssessment }: {
   label: string; value: string; note: string; accentColor: string;
   assessmentType?: string; assessmentValue?: string; isIncomplete?: boolean;
+  /** True when the user has taken the full assessment quiz for this
+   *  dimension (vs. just the one-question onboarding pick). Drives
+   *  whether we show the deep-dive note or a teaser + nudge. */
+  isFullAssessment?: boolean;
 }) {
   const handlePress = () => {
-    if (isIncomplete && assessmentType) {
+    if ((isIncomplete || !isFullAssessment) && assessmentType) {
       router.push({ pathname: '/assessment/quiz/[type]', params: { type: assessmentType } });
       return;
     }
@@ -37,6 +41,10 @@ function PatternCard({ label, value, note, accentColor, assessmentType, assessme
     }
   };
   const pale = ACCENT_PALE[accentColor] || '#f0f0f0';
+  // Onboarding-only state — value is set but the full assessment hasn't
+  // been taken. Show a short teaser and a clear nudge to complete the
+  // assessment for the deep-dive insights.
+  const onboardingOnly = !isIncomplete && !isFullAssessment;
   return (
     <TouchableOpacity onPress={handlePress} activeOpacity={(assessmentType || isIncomplete) ? 0.75 : 1}>
       <LinearGradient
@@ -48,8 +56,17 @@ function PatternCard({ label, value, note, accentColor, assessmentType, assessme
       >
         <Text style={[pc.label, { color: accentColor }]}>{label}</Text>
         <Text style={pc.value}>{value}</Text>
-        <Text style={pc.note}>{note}</Text>
-        {(isIncomplete || assessmentType) && (
+        {onboardingOnly ? (
+          <>
+            <Text style={pc.teaser}>Quick read from your onboarding.</Text>
+            <View style={[pc.cta, { borderColor: accentColor }]}>
+              <Text style={[pc.ctaText, { color: accentColor }]}>Take the full assessment for a deeper read  →</Text>
+            </View>
+          </>
+        ) : (
+          <Text style={pc.note}>{note}</Text>
+        )}
+        {(isIncomplete || (isFullAssessment && assessmentType)) && !onboardingOnly && (
           <View style={pc.arrowBtn}>
             <Text style={{ fontSize: 18, color: '#211e28', marginLeft: 1 }}>→</Text>
           </View>
@@ -64,6 +81,9 @@ const pc = StyleSheet.create({
   label: { fontFamily: Fonts.bodyMedium, fontSize: 11, letterSpacing: 0.88, textTransform: 'uppercase', marginBottom: 8 },
   value: { fontFamily: Fonts.displayMedium, fontSize: 18, color: Colors.charcoal, marginBottom: 6 },
   note: { fontFamily: Fonts.body, fontSize: 14, color: '#80798c', lineHeight: 21 },
+  teaser: { fontFamily: Fonts.body, fontSize: 13, color: '#80798c', lineHeight: 19, marginBottom: 14 },
+  cta: { borderWidth: 1.5, borderRadius: 999, paddingVertical: 10, paddingHorizontal: 16, alignSelf: 'flex-start', backgroundColor: '#ffffff' },
+  ctaText: { fontFamily: Fonts.bodyMedium, fontSize: 13, letterSpacing: 0.1 },
   arrowBtn: { width: 44, height: 44, borderRadius: 22, borderWidth: 1.5, borderColor: '#dedde8', backgroundColor: '#ffffff', alignItems: 'center', justifyContent: 'center', alignSelf: 'flex-start', marginTop: 16 },
 });
 
@@ -88,6 +108,7 @@ export default function GrowthTab() {
   // state instead of fabricated content.
   const pp = realPp || null;
   const { attachment, love, conflict, window: win, need } = state.profile;
+  const completed = state.completedFullAssessments || [];
   // Use whatever the user has actually saved. Empty arrays render
   // empty state instead of seeded "Alex"/"Sam" placeholders.
   const partnerObservations = state.learnings.partnerObservations || [];
@@ -189,6 +210,7 @@ export default function GrowthTab() {
                 assessmentType="attachment"
                 assessmentValue={attachment}
                 isIncomplete={!attachment}
+                isFullAssessment={completed.includes('attachment')}
               />
               <PatternCard
                 label="Love language"
@@ -198,6 +220,7 @@ export default function GrowthTab() {
                 assessmentType="love"
                 assessmentValue={love}
                 isIncomplete={!love}
+                isFullAssessment={completed.includes('love')}
               />
               <PatternCard
                 label="Conflict style"
@@ -207,6 +230,7 @@ export default function GrowthTab() {
                 assessmentType="conflict"
                 assessmentValue={conflict}
                 isIncomplete={!conflict}
+                isFullAssessment={completed.includes('conflict')}
               />
               <PatternCard
                 label="Body in conflict"
@@ -216,6 +240,7 @@ export default function GrowthTab() {
                 assessmentType="window"
                 assessmentValue={win}
                 isIncomplete={!win}
+                isFullAssessment={completed.includes('window')}
               />
 
               <PatternCard
@@ -226,6 +251,7 @@ export default function GrowthTab() {
                 assessmentType="need"
                 assessmentValue={need}
                 isIncomplete={!need}
+                isFullAssessment={completed.includes('need')}
               />
             </View>
 
