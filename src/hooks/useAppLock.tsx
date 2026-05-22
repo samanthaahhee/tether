@@ -79,10 +79,28 @@ export function AppLockProvider({ children }: { children: React.ReactNode }) {
         enrolled = await LocalAuthentication.isEnrolledAsync().catch(() => false);
       }
       setAvailable(Boolean(hardware && enrolled));
-      const stored = storedRaw === 'true';
-      // If the native module disappeared (e.g. user downgraded the dev
-      // build), don't force-lock them out — fail open. Re-enabling
-      // requires another auth pass anyway.
+
+      // Default-on behaviour for a privacy-focused app.
+      //
+      // - storedRaw is null only for first-time users. Default to true,
+      //   but ONLY if the device actually has biometrics or a passcode
+      //   enrolled — otherwise we'd permanently lock the user out of
+      //   their own app.
+      // - storedRaw === 'true' / 'false' respects the user's explicit
+      //   toggle from Settings (so anyone who flipped it off in a
+      //   previous session stays off).
+      // - LocalAuthentication null (native module missing) always falls
+      //   back to unlocked, no matter the preference.
+      let stored: boolean;
+      if (storedRaw === null) {
+        stored = Boolean(hardware && enrolled);
+        // Persist the default so subsequent loads are explicit and the
+        // user can flip it off without confusion.
+        if (stored) await AsyncStorage.setItem(PREF_KEY, 'true').catch(() => {});
+      } else {
+        stored = storedRaw === 'true';
+      }
+
       const canLock = stored && LocalAuthentication !== null;
       setEnabledState(canLock);
       enabledRef.current = canLock;
