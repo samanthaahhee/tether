@@ -23,6 +23,15 @@ const ACCENT_PALE: Record<string, string> = {
   '#92a6f4': '#dce3fd', // blue/periwinkle
 };
 
+/** Return the first sentence of a longer body of copy. Used for the
+ *  onboarding-only teaser so we get a real summary specific to the
+ *  user's result instead of a generic placeholder. */
+function firstSentence(text: string): string {
+  if (!text) return '';
+  const match = text.match(/^.*?[.!?](?:\s|$)/);
+  return (match ? match[0] : text).trim();
+}
+
 function PatternCard({ label, value, note, accentColor, assessmentType, assessmentValue, isIncomplete, isFullAssessment }: {
   label: string; value: string; note: string; accentColor: string;
   assessmentType?: string; assessmentValue?: string; isIncomplete?: boolean;
@@ -58,9 +67,11 @@ function PatternCard({ label, value, note, accentColor, assessmentType, assessme
         <Text style={pc.value}>{value}</Text>
         {onboardingOnly ? (
           <>
-            <Text style={pc.teaser}>Quick read from your onboarding.</Text>
+            {/* First sentence of the full REVEAL body is short + result-
+                specific — better summary than a generic placeholder. */}
+            <Text style={pc.teaser}>{firstSentence(note)}</Text>
             <View style={[pc.cta, { borderColor: accentColor }]}>
-              <Text style={[pc.ctaText, { color: accentColor }]}>Take the full assessment for a deeper read  →</Text>
+              <Text style={[pc.ctaText, { color: accentColor }]}>Take full assessment  →</Text>
             </View>
           </>
         ) : (
