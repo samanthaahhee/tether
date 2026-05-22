@@ -144,8 +144,14 @@ export default function SettingsTab() {
                     style={styles.inviteShareBtn}
                     activeOpacity={0.8}
                     onPress={() => {
+                      // Universal https link instead of a raw tether:// scheme —
+                      // most messaging apps render the latter as plain text and
+                      // can't preview / aren't tappable for partners who don't
+                      // have the app installed yet. heyotis.app/invite/<code>
+                      // renders a branded landing page with deep-link + install
+                      // fallback.
                       Share.share({
-                        message: `Join me on Hey Otis\n\nDownload the app and use invite code: ${inviteCode}\n\nor tap: tether://invite/${inviteCode}`,
+                        message: `Join me on Hey Otis\n\nTap to accept: https://heyotis.app/invite/${inviteCode}\n\nOr enter code: ${inviteCode}`,
                         title: 'Join me on Hey Otis',
                       });
                     }}
