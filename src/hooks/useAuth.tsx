@@ -300,18 +300,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setProfile(null);
     setPartnerProfile(null);
     setCouple(null);
-    // Clear locally-cached app state so the next person to sign in on
-    // this device does NOT see the previous user's sessions, learnings,
-    // partner observations, or profile name.
-    try {
-      await AsyncStorage.multiRemove(['tether_state', 'tether_app_state']);
-    } catch (e) {
-      // Don't block sign-out on a cache-clear failure — the auth wipe is
-      // the security-critical part. Log so we know if it's failing in the wild.
+    // Fire-and-forget the slow cleanups — DON'T await them. The chunked
+    // SecureStore adapter has to delete N+1 keychain items for a session
+    // wipe, which can take seconds; if the caller awaits signOut it
+    // appears to hang. Local React state is already cleared, so the user
+    // is effectively signed out from the app's perspective; the actual
+    // server-side session revocation + cache wipe complete in the
+    // background. Errors logged, never re-thrown.
+    AsyncStorage.multiRemove(['tether_state', 'tether_app_state']).catch((e) => {
       console.warn('signOut: failed to clear local cache', e);
-    }
-    // Then sign out from Supabase
-    await supabase.auth.signOut();
+    });
+    supabase.auth.signOut().catch((e) => {
+      console.warn('signOut: supabase signOut failed', e);
+    });
   };
 
   const signInWithGoogle = async (): Promise<{ error: string | null }> => {
