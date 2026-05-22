@@ -101,14 +101,19 @@ export function AppLockProvider({ children }: { children: React.ReactNode }) {
 
       if (!enabledRef.current) return;
 
-      // Backgrounded → arm the lock for next foreground.
-      if (next.match(/inactive|background/) && prev === 'active') {
+      // Only arm on REAL backgrounding ('background'). iOS also fires
+      // 'inactive' during transient system sheets — Face ID prompt,
+      // Control Center pull-down, incoming call — and treating those
+      // as backgrounding caused an infinite loop: Face ID succeeded,
+      // sheet dismissed (inactive→active), AppState fired 'active',
+      // armed re-locked, prompt re-fired, forever.
+      if (next === 'background') {
         armed.current = true;
         return;
       }
 
-      // Foregrounded → if armed, lock the UI.
-      if (next === 'active' && armed.current) {
+      // Foregrounded from a real background → if armed, lock the UI.
+      if (next === 'active' && prev === 'background' && armed.current) {
         setLocked(true);
       }
     });
