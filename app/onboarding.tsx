@@ -195,6 +195,7 @@ export default function Onboarding() {
   const ACQUISITION_OPTIONS = ['App Store', 'Friend', 'Instagram', 'TikTok', 'Reddit', 'Podcast', 'Other'];
   const [picks, setPicks] = useState<Record<string, string>>({});
   const scrollRef = useRef<ScrollView>(null);
+  const viewportHeight = useRef(0);
 
   // Track whether the user has scrolled to (or near) the bottom of the
   // current step's content. The anchored footer (Continue + Back) only
@@ -501,14 +502,14 @@ export default function Onboarding() {
             else if (distanceFromBottom > 80 && scrolledToBottom) setScrolledToBottom(false);
           }}
           scrollEventThrottle={32}
-          // If the content fits without scrolling at all (e.g. last
-          // summary screen on a tall phone), we'd never fire onScroll —
-          // show the footer immediately by checking content vs viewport
-          // height on layout.
+          // Track viewport + content size so we can detect the "fits
+          // without scrolling" case (e.g. summary on a tall phone) and
+          // show the footer immediately — onScroll never fires there.
+          onLayout={(e) => { viewportHeight.current = e.nativeEvent.layout.height; }}
           onContentSizeChange={(_, contentH) => {
-            scrollRef.current?.measure?.((_x, _y, _w, layoutH) => {
-              if (contentH <= layoutH + 24) setScrolledToBottom(true);
-            });
+            if (viewportHeight.current && contentH <= viewportHeight.current + 24) {
+              setScrolledToBottom(true);
+            }
           }}
         >
 
