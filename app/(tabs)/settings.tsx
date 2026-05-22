@@ -478,19 +478,24 @@ export default function SettingsTab() {
               { text: 'Cancel', style: 'cancel' },
               {
                 text: 'Sign out', style: 'destructive', onPress: async () => {
-                  console.log('[signOut] step 1: handler entered');
-                  // Navigate FIRST. Removes the user from the tabs UI
-                  // instantly, before any async work can hang. RouteGuard
-                  // will also see user=null shortly after.
-                  router.replace('/');
-                  console.log('[signOut] step 2: router.replace called');
+                  // Clear auth state first so RouteGuard knows we're out.
                   try {
                     await signOut();
-                    console.log('[signOut] step 3: signOut resolved');
                   } catch (e) {
                     console.warn('[signOut] threw:', e);
                   }
-                  console.log('[signOut] step 4: done');
+                  // Use dismissTo to pop the nested tab navigator off the
+                  // stack, then navigate to the root. router.replace('/')
+                  // alone doesn't escape a Tabs navigator in expo-router 6.
+                  // Fallback to /auth/sign-in if dismissTo isn't available
+                  // (some expo-router versions).
+                  try {
+                    // @ts-expect-error dismissTo may not be in typedef
+                    if (typeof router.dismissTo === 'function') router.dismissTo('/');
+                    else router.replace('/auth/sign-in');
+                  } catch {
+                    router.replace('/auth/sign-in');
+                  }
                 },
               },
             ]);
