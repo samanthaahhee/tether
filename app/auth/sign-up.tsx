@@ -78,6 +78,14 @@ export default function SignUp() {
 
   const handleGoogle = async () => {
     setError('');
+    // Stash invite BEFORE OAuth — the inline acceptInvite call below
+    // can race with session setup (Google's exchange resolves but
+    // React state may not have the new user yet, so the RPC hits RLS
+    // as anonymous and fails silently). useAuth's auth listener will
+    // pick this up the moment the session lands, reliably.
+    if (invite) {
+      try { await AsyncStorage.setItem('pending_invite', invite); } catch {}
+    }
     setGoogleLoading(true);
     const { error: gError } = await signInWithGoogle();
     if (gError) setError(gError);
@@ -87,6 +95,10 @@ export default function SignUp() {
 
   const handleApple = async () => {
     setError('');
+    // Same fix as Google — stash before OAuth, listener handles it.
+    if (invite) {
+      try { await AsyncStorage.setItem('pending_invite', invite); } catch {}
+    }
     setAppleLoading(true);
     const { error: aError } = await signInWithApple();
     if (aError && aError !== 'Apple sign-in was cancelled.') setError(aError);
