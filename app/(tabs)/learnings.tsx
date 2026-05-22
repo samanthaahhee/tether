@@ -23,13 +23,15 @@ const ACCENT_PALE: Record<string, string> = {
   '#92a6f4': '#dce3fd', // blue/periwinkle
 };
 
-/** Return the first sentence of a longer body of copy. Used for the
- *  onboarding-only teaser so we get a real summary specific to the
- *  user's result instead of a generic placeholder. */
-function firstSentence(text: string): string {
+/** Return the first N sentences of a body of copy. Used for the
+ *  onboarding-only teaser so we show a real paragraph-length summary
+ *  specific to the user's result, leaving the full deep dive as the
+ *  reward for taking the full assessment. */
+function firstSentences(text: string, n: number): string {
   if (!text) return '';
-  const match = text.match(/^.*?[.!?](?:\s|$)/);
-  return (match ? match[0] : text).trim();
+  const sentences = text.match(/[^.!?]+[.!?]+(\s|$)/g);
+  if (!sentences) return text;
+  return sentences.slice(0, n).join('').trim();
 }
 
 function PatternCard({ label, value, note, accentColor, assessmentType, assessmentValue, isIncomplete, isFullAssessment }: {
@@ -67,9 +69,11 @@ function PatternCard({ label, value, note, accentColor, assessmentType, assessme
         <Text style={pc.value}>{value}</Text>
         {onboardingOnly ? (
           <>
-            {/* First sentence of the full REVEAL body is short + result-
-                specific — better summary than a generic placeholder. */}
-            <Text style={pc.teaser}>{firstSentence(note)}</Text>
+            {/* First few sentences of the full REVEAL body — a paragraph-
+                length, result-specific summary. The remaining sentences
+                stay locked behind the full assessment so taking it still
+                has a reward. */}
+            <Text style={pc.teaser}>{firstSentences(note, 3)}</Text>
             <View style={[pc.cta, { borderColor: accentColor }]}>
               <Text style={[pc.ctaText, { color: accentColor }]}>Take full assessment  →</Text>
             </View>

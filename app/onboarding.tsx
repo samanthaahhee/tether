@@ -339,10 +339,10 @@ export default function Onboarding() {
     // Need uses a coral / warm-orange palette to stay distinct from the
     // other four dimensions.
     need: { bg: Colors.pastelPeach, border: '#ffa6a8', label: '#a90005' },
-    // Context uses a calming mint-on-deep-green like the attach card —
-    // this is the 'we hear you' moment, not a pattern result, so the
-    // tone matches the inviting palette of the first dimension.
-    context: { bg: '#E4F1E6', border: '#408770', label: '#408770' },
+    // Context uses sage-on-pale-green — warm, inviting palette for the
+    // 'we hear you' acknowledgement after the user shares why they're
+    // here. Per design feedback 2026-05-22.
+    context: { bg: '#F0F8E9', border: '#81B756', label: '#81B756' },
   };
 
   // ── Consent gate ──────────────────────────────────────────────────
