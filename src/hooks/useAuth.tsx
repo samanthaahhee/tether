@@ -102,6 +102,31 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (session?.user) {
         identify(session.user.id, { email: session.user.email });
         fetchUserData(session.user.id);
+        // If sign-up stashed a pending invite code (because email
+        // verification interrupted the natural acceptInvite flow), pick
+        // it up now that we have a real session. Best-effort — failure
+        // just leaves the code in storage to be retried on next launch.
+        AsyncStorage.getItem('pending_invite').then(async (code) => {
+          if (!code) return;
+          const trimmed = code.trim().toUpperCase();
+          const { error } = await supabase.rpc('accept_invite', { invite_code: trimmed });
+          if (!error) {
+            // Successful — clear it and refresh couple state so the UI
+            // updates without requiring a manual reload.
+            await AsyncStorage.removeItem('pending_invite').catch(() => {});
+            if (session.user) await fetchUserData(session.user.id);
+          } else {
+            // 'already_in_couple' / 'expired' / 'self_invite' etc. are
+            // permanent failures — clear so we don't keep retrying.
+            // Other errors (network) keep the code stashed for retry
+            // on next session.
+            const msg = (error.message || '').toLowerCase();
+            if (msg.includes('already') || msg.includes('expired') || msg.includes('self') || msg.includes('used') || msg.includes('invalid')) {
+              await AsyncStorage.removeItem('pending_invite').catch(() => {});
+            }
+            console.warn('[acceptInvite via pending] failed:', error.message);
+          }
+        }).catch(() => {});
       } else {
         setProfile(null);
         setPartnerProfile(null);

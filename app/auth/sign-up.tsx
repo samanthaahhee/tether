@@ -4,6 +4,7 @@ import {
   StyleSheet, KeyboardAvoidingView, Platform, ScrollView, ActivityIndicator,
 } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Colors, Fonts, Radius, Shadows } from '../../src/constants/theme';
 import { useAuth } from '../../src/hooks/useAuth';
@@ -36,6 +37,13 @@ export default function SignUp() {
     if (!check.ok) return setError(check.error || 'Password is not strong enough.');
 
     const cleanEmail = email.trim().toLowerCase();
+    // Stash invite code BEFORE signUp so it's available after the email-
+    // verification round trip, which lands the user back without any
+    // query params. useAuth's auth listener will pick it up the moment
+    // the session arrives and call acceptInvite for us.
+    if (invite) {
+      try { await AsyncStorage.setItem('pending_invite', invite); } catch {}
+    }
     setLoading(true);
     const { error: signUpError, needsVerification } = await signUp(cleanEmail, password);
     if (signUpError) {
