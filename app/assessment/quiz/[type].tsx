@@ -44,7 +44,7 @@ const LIKERT_LABELS = ['Not at all like me', 'Not really', 'Sometimes', 'Mostly 
 export default function AssessmentQuiz() {
   const { type } = useLocalSearchParams<{ type: string }>();
   const { syncProfile, profile } = useAuth();
-  const { dispatch } = useAppState();
+  const { state, dispatch } = useAppState();
 
   const questions: Question[] = ASSESSMENT_QUESTIONS[type] ?? [];
   const meta = QUIZ_META[type];
@@ -107,12 +107,20 @@ export default function AssessmentQuiz() {
     if (currentIndex > 0) {
       animateTransition(() => setCurrentIndex(i => i - 1));
     } else {
-      // From question 1, "Back" returns to the assessment summary page
-      // (the detail/landing screen for this assessment type) rather than
-      // wherever the user came from. This gives a predictable mental model:
-      // the quiz is a sub-flow of a specific assessment, and back means
-      // "out of the quiz, into the overview."
-      router.replace({ pathname: '/assessment/[type]', params: { type } });
+      // From question 1, "Back" leaves the quiz. We have two cases:
+      //   - User has a previous value (onboarding pick or earlier full
+      //     assessment) → route to the detail page so they see their
+      //     current standing. /assessment/[type] requires a `value` to
+      //     render; without it the page shows "Assessment not found".
+      //   - No prior value at all → straight back to Learnings, no
+      //     intermediate not-found screen.
+      const profileKey = PROFILE_KEY_MAP[type];
+      const currentValue = profileKey ? (state.profile as Record<string, string>)[profileKey] : '';
+      if (currentValue) {
+        router.replace({ pathname: '/assessment/[type]', params: { type, value: currentValue } });
+      } else {
+        router.replace('/(tabs)/learnings');
+      }
     }
   };
 
