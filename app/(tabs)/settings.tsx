@@ -340,35 +340,35 @@ export default function SettingsTab() {
                           {
                             text: 'Delete',
                             style: 'destructive',
-                            onPress: async () => {
-                              try {
-                                // Server-side first: hits the SECURITY DEFINER RPC
-                                // which deletes auth.users and cascades through
-                                // profiles, couples, invites.
-                                const { error: rpcError } = await supabase.rpc('delete_account');
-                                if (rpcError) {
-                                  Alert.alert('Delete failed', 'We couldn\'t delete your account right now. Please try again, or email privacy@heyotis.app if the problem persists.');
-                                  return;
+                            onPress: () => {
+                              // Defer to next tick so the Alert's modal layer
+                              // fully dismisses before we mutate state +
+                              // navigate. Without this, iOS leaves a
+                              // transparent touch-barrier under the dismissed
+                              // alert and the screen freezes — same bug we
+                              // fixed in the sign-out flow.
+                              setTimeout(async () => {
+                                try {
+                                  // Server-side first: SECURITY DEFINER RPC
+                                  // deletes auth.users, cascades to profiles
+                                  // + couples + invites.
+                                  const { error: rpcError } = await supabase.rpc('delete_account');
+                                  if (rpcError) {
+                                    Alert.alert('Delete failed', 'We couldn\'t delete your account right now. Please try again, or email privacy@heyotis.app if the problem persists.');
+                                    return;
+                                  }
+                                  // Local cleanup: cache, app state, auth.
+                                  AsyncStorage.multiRemove(['tether_state', 'tether_app_state']).catch(() => {});
+                                  dispatch({ type: 'SET_PROFILE', payload: { onboarded: false, name: '', attachment: '', conflict: '', love: '', window: '', need: '', context: '' } });
+                                  signOut().catch(() => {});
+                                  // Explicit nav out of (tabs) — same path
+                                  // as sign-out for the same modal-layer
+                                  // escape reason.
+                                  router.replace('/auth/sign-in');
+                                } catch {
+                                  Alert.alert('Error', 'Something went wrong. Please try again.');
                                 }
-                                // Order matters here.
-                                // 1) signOut FIRST so useAuth clears `user`
-                                //    + `profile`. Without this, RouteGuard
-                                //    sees the (now-deleted) user as still
-                                //    signed in + onboarded and immediately
-                                //    bounces any navigation back to /(tabs).
-                                // 2) Wipe local cache + reset app state to
-                                //    clear anything still hydrated.
-                                // 3) Navigate to root explicitly. RouteGuard
-                                //    would also send us here (because user
-                                //    is null), but doing it explicitly avoids
-                                //    a one-frame flash of the tab UI.
-                                await signOut();
-                                await AsyncStorage.multiRemove(['tether_state', 'tether_app_state']);
-                                dispatch({ type: 'SET_PROFILE', payload: { onboarded: false, name: '', attachment: '', conflict: '', love: '', window: '', need: '', context: '' } });
-                                router.replace('/');
-                              } catch {
-                                Alert.alert('Error', 'Something went wrong. Please try again.');
-                              }
+                              }, 0);
                             },
                           },
                         ],
