@@ -15,14 +15,13 @@ import { useAppLock } from '../hooks/useAppLock';
 export function AppLockGate({ children }: { children: React.ReactNode }) {
   const { locked, attemptUnlock } = useAppLock();
 
-  // Auto-prompt shortly after the lock screen renders. Small delay so
-  // the user actually sees the 'Hey Otis is locked' affordance + logo
-  // before the Face ID sheet covers it — without the delay the screen
-  // flashed for a frame and looked like a glitch. 600ms is enough to
-  // register but not feel slow.
+  // Auto-prompt after the lock screen renders. 1200ms lets the user
+  // comfortably read 'Hey Otis is locked' + 'Use Face ID, Touch ID,
+  // or your passcode to unlock' before the system sheet covers it —
+  // shorter delays felt like a flicker.
   useEffect(() => {
     if (!locked) return;
-    const t = setTimeout(() => attemptUnlock(), 600);
+    const t = setTimeout(() => attemptUnlock(), 1200);
     return () => clearTimeout(t);
   }, [locked, attemptUnlock]);
 
