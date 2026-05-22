@@ -59,7 +59,7 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 
 export default function SettingsTab() {
   const { state, dispatch } = useAppState();
-  const { couple, partnerProfile: supabasePartner, signOut, generateInvite, syncProfile } = useAuth();
+  const { couple, partnerProfile: supabasePartner, signOut, generateInvite, syncProfile, refreshCouple } = useAuth();
   const p = state.profile;
   const pp: PartnerProfile = state.partnerProfile;
   const partnerSet = !!pp.attachment;
@@ -109,14 +109,46 @@ export default function SettingsTab() {
                   Connected{supabasePartner?.name ? ` with ${supabasePartner.name}` : ''}
                 </Text>
               </View>
-              {/* Hey Otis only supports one partner per account. When already
-                  connected we deliberately hide the invite-generation flow —
-                  re-issuing an invite here would let a third user accept and
-                  create a second couple (the server now blocks this too, but
-                  we keep the UI honest as the first line of defence). */}
+              {/* Hey Otis only supports one partner at a time. Switching
+                  to a new partner means disconnecting from the current
+                  one first. */}
               <Text style={styles.singlePartnerHint}>
-                Hey Otis is built for one partner at a time. If you ever need to connect with someone else, please contact support.
+                Hey Otis is built for one partner at a time. To connect with someone new, disconnect first.
               </Text>
+              <SettingsRow
+                icon={<IconX size={18} color="#A32D2D" />}
+                label="Disconnect from partner"
+                sub="Remove the link with your current partner"
+                onPress={() => {
+                  const partnerName = supabasePartner?.name || 'your partner';
+                  Alert.alert(
+                    'Disconnect from ' + partnerName + '?',
+                    'This removes the link between your two accounts. Both of you keep your own profiles, sessions, and learnings. Either of you can connect with a new partner afterwards.',
+                    [
+                      { text: 'Cancel', style: 'cancel' },
+                      {
+                        text: 'Disconnect',
+                        style: 'destructive',
+                        onPress: () => {
+                          // setTimeout so the Alert's modal layer fully
+                          // dismisses before we mutate state — same
+                          // fix-pattern as sign-out + delete-account.
+                          setTimeout(async () => {
+                            const { error } = await supabase.rpc('disconnect_couple');
+                            if (error) {
+                              Alert.alert('Could not disconnect', 'Something went wrong. Please try again.');
+                              return;
+                            }
+                            // Refresh local couple state so the UI flips
+                            // back to the 'No partner connected' view.
+                            await refreshCouple();
+                          }, 0);
+                        },
+                      },
+                    ],
+                  );
+                }}
+              />
             </View>
           ) : (
             <View>
