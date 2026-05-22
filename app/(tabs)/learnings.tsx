@@ -10,7 +10,7 @@ import { useAuth } from '../../src/hooks/useAuth';
 import { router } from 'expo-router';
 import {
   ATTACHMENT_LABELS, LOVE_LABELS, CONFLICT_LABELS, WINDOW_LABELS, NEED_LABELS,
-  ATTACH_REVEALS, CONFLICT_REVEALS, LOVE_REVEALS, WINDOW_REVEALS,
+  ATTACH_REVEALS, CONFLICT_REVEALS, LOVE_REVEALS, WINDOW_REVEALS, NEED_REVEALS,
 } from '../../src/constants/data';
 
 // Pale tints for subtle bottom gradient (matching Figma's very faint card tints)
@@ -34,15 +34,23 @@ function firstSentences(text: string, n: number): string {
   return sentences.slice(0, n).join('').trim();
 }
 
-function PatternCard({ label, value, note, accentColor, assessmentType, assessmentValue, isIncomplete, isFullAssessment }: {
+function PatternCard({ label, value, note, accentColor, assessmentType, assessmentValue, isIncomplete, isFullAssessment, isPartner, partnerName }: {
   label: string; value: string; note: string; accentColor: string;
   assessmentType?: string; assessmentValue?: string; isIncomplete?: boolean;
   /** True when the user has taken the full assessment quiz for this
    *  dimension (vs. just the one-question onboarding pick). Drives
    *  whether we show the deep-dive note or a teaser + nudge. */
   isFullAssessment?: boolean;
+  /** True when the card is showing the PARTNER'S profile data. Disables
+   *  any tap-to-take-quiz behaviour (the user can't take their partner's
+   *  assessment) and shows the partner-flavoured copy. */
+  isPartner?: boolean;
+  partnerName?: string;
 }) {
   const handlePress = () => {
+    // Partner cards are read-only — never navigate into the user's own
+    // assessment flow from them.
+    if (isPartner) return;
     if ((isIncomplete || !isFullAssessment) && assessmentType) {
       router.push({ pathname: '/assessment/quiz/[type]', params: { type: assessmentType } });
       return;
@@ -57,7 +65,7 @@ function PatternCard({ label, value, note, accentColor, assessmentType, assessme
   // assessment for the deep-dive insights.
   const onboardingOnly = !isIncomplete && !isFullAssessment;
   return (
-    <TouchableOpacity onPress={handlePress} activeOpacity={(assessmentType || isIncomplete) ? 0.75 : 1}>
+    <TouchableOpacity onPress={handlePress} activeOpacity={(assessmentType || isIncomplete) && !isPartner ? 0.75 : 1}>
       <LinearGradient
         colors={['#ffffff', '#ffffff', pale]}
         locations={[0, 0.6, 1]}
@@ -67,7 +75,23 @@ function PatternCard({ label, value, note, accentColor, assessmentType, assessme
       >
         <Text style={[pc.label, { color: accentColor }]}>{label}</Text>
         <Text style={pc.value}>{value}</Text>
-        {onboardingOnly ? (
+        {isPartner ? (
+          <>
+            {/* Partner cards always show the full deep-dive note (or a
+                gentle empty state if they haven't picked yet). No CTA —
+                the user can't take their partner's assessment. */}
+            {note ? (
+              <Text style={pc.note}>{note}</Text>
+            ) : (
+              <Text style={pc.teaser}>{partnerName || 'They'} hasn&apos;t shared this yet. Once they answer, you&apos;ll see their profile here.</Text>
+            )}
+            {note && !isFullAssessment && (
+              <Text style={pc.partnerHint}>
+                This is a quick read from {partnerName || 'their'} onboarding. Suggest they take the full assessment in their app for a deeper picture.
+              </Text>
+            )}
+          </>
+        ) : onboardingOnly ? (
           <>
             {/* First few sentences of the full REVEAL body — a paragraph-
                 length, result-specific summary. The remaining sentences
@@ -81,7 +105,7 @@ function PatternCard({ label, value, note, accentColor, assessmentType, assessme
         ) : (
           <Text style={pc.note}>{note}</Text>
         )}
-        {(isIncomplete || (isFullAssessment && assessmentType)) && !onboardingOnly && (
+        {!isPartner && (isIncomplete || (isFullAssessment && assessmentType)) && !onboardingOnly && (
           <View style={pc.arrowBtn}>
             <Text style={{ fontSize: 18, color: '#211e28', marginLeft: 1 }}>→</Text>
           </View>
@@ -97,6 +121,7 @@ const pc = StyleSheet.create({
   value: { fontFamily: Fonts.displayMedium, fontSize: 18, color: Colors.charcoal, marginBottom: 6 },
   note: { fontFamily: Fonts.body, fontSize: 14, color: '#80798c', lineHeight: 21 },
   teaser: { fontFamily: Fonts.body, fontSize: 13, color: '#80798c', lineHeight: 19, marginBottom: 14 },
+  partnerHint: { fontFamily: Fonts.body, fontSize: 12, color: '#a09bac', lineHeight: 18, marginTop: 12, fontStyle: 'italic' },
   cta: { borderWidth: 1.5, borderRadius: 999, paddingVertical: 10, paddingHorizontal: 16, alignSelf: 'flex-start', backgroundColor: '#ffffff' },
   ctaText: { fontFamily: Fonts.bodyMedium, fontSize: 13, letterSpacing: 0.1 },
   arrowBtn: { width: 44, height: 44, borderRadius: 22, borderWidth: 1.5, borderColor: '#dedde8', backgroundColor: '#ffffff', alignItems: 'center', justifyContent: 'center', alignSelf: 'flex-start', marginTop: 16 },
@@ -374,11 +399,11 @@ export default function GrowthTab() {
             <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 40 }}>
               {pp && (
                 <>
-                  <PatternCard label="Attachment style" value={ATTACHMENT_LABELS[pp.attachment] || 'Not set'} note={ATTACH_REVEALS[pp.attachment]?.body || ''} accentColor="#f67700" />
-                  <PatternCard label="Love language" value={LOVE_LABELS[pp.love] || 'Not set'} note={LOVE_REVEALS[pp.love]?.body || ''} accentColor="#d2b100" />
-                  <PatternCard label="Conflict style" value={CONFLICT_LABELS[pp.conflict] || 'Not set'} note={CONFLICT_REVEALS[pp.conflict]?.body || ''} accentColor="#bd57f2" />
-                  <PatternCard label="Body in conflict" value={WINDOW_LABELS[pp.window] || 'Not set'} note={WINDOW_REVEALS[pp.window]?.body || ''} accentColor="#4ea989" />
-                  {pp.need && <PatternCard label="Core need" value={NEED_LABELS[pp.need] || 'Not set'} note="The unspoken thing they most need you to understand." accentColor="#92a6f4" />}
+                  <PatternCard isPartner partnerName={partnerName} label="Attachment style" value={ATTACHMENT_LABELS[pp.attachment] || 'Not set'} note={ATTACH_REVEALS[pp.attachment]?.body || ''} accentColor="#f67700" />
+                  <PatternCard isPartner partnerName={partnerName} label="Love language" value={LOVE_LABELS[pp.love] || 'Not set'} note={LOVE_REVEALS[pp.love]?.body || ''} accentColor="#d2b100" />
+                  <PatternCard isPartner partnerName={partnerName} label="Conflict style" value={CONFLICT_LABELS[pp.conflict] || 'Not set'} note={CONFLICT_REVEALS[pp.conflict]?.body || ''} accentColor="#bd57f2" />
+                  <PatternCard isPartner partnerName={partnerName} label="Body in conflict" value={WINDOW_LABELS[pp.window] || 'Not set'} note={WINDOW_REVEALS[pp.window]?.body || ''} accentColor="#4ea989" />
+                  {pp.need && <PatternCard isPartner partnerName={partnerName} label="Core need" value={NEED_LABELS[pp.need] || 'Not set'} note={NEED_REVEALS[pp.need]?.body || ''} accentColor="#92a6f4" />}
                 </>
               )}
             </ScrollView>
