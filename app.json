@@ -20,6 +20,7 @@
       "infoPlist": {
         "NSSpeechRecognitionUsageDescription": "Allow $(PRODUCT_NAME) to use speech recognition.",
         "NSMicrophoneUsageDescription": "Allow $(PRODUCT_NAME) to use the microphone.",
+        "NSFaceIDUsageDescription": "Hey Otis uses Face ID to keep your private session content locked when you step away from the app.",
         "ITSAppUsesNonExemptEncryption": false
       }
     },
@@ -39,7 +40,13 @@
       "expo-font",
       "expo-speech-recognition",
       "expo-web-browser",
-      "expo-apple-authentication"
+      "expo-apple-authentication",
+      [
+        "expo-local-authentication",
+        {
+          "faceIDPermission": "Hey Otis uses Face ID to keep your private session content locked when you step away from the app."
+        }
+      ]
     ],
     "scheme": "tether",
     "extra": {
