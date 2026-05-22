@@ -196,6 +196,18 @@ export default function Onboarding() {
   const [picks, setPicks] = useState<Record<string, string>>({});
   const scrollRef = useRef<ScrollView>(null);
 
+  // Track whether the user has scrolled to (or near) the bottom of the
+  // current step's content. The anchored footer (Continue + Back) only
+  // shows when this is true, so the user can't tap Continue before
+  // they've seen everything on the page.
+  const [scrolledToBottom, setScrolledToBottom] = useState(false);
+
+  // Reset to false whenever the step changes — new content, user starts
+  // at the top, button should hide again until they reach the bottom.
+  useEffect(() => {
+    setScrolledToBottom(false);
+  }, [step]);
+
   // Consent gate. Three required confirmations before the user can
   // proceed to step 1 (name + age). Acceptance is timestamped and
   // synced to profiles.terms_accepted_at + .terms_version so we have
@@ -473,7 +485,32 @@ export default function Onboarding() {
             <Text style={styles.skipText}>Skip</Text>
           </TouchableOpacity>
         </View>
-        <ScrollView ref={scrollRef} style={{ flex: 1 }} contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
+        <ScrollView
+          ref={scrollRef}
+          style={{ flex: 1 }}
+          contentContainerStyle={styles.scroll}
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+          // 24px slack — counts user as "at bottom" if they're within a
+          // button's-worth of the end, so micro-scroll-position drift
+          // doesn't hide the footer they're trying to tap.
+          onScroll={(e) => {
+            const { contentOffset, contentSize, layoutMeasurement } = e.nativeEvent;
+            const distanceFromBottom = contentSize.height - (contentOffset.y + layoutMeasurement.height);
+            if (distanceFromBottom <= 24 && !scrolledToBottom) setScrolledToBottom(true);
+            else if (distanceFromBottom > 80 && scrolledToBottom) setScrolledToBottom(false);
+          }}
+          scrollEventThrottle={32}
+          // If the content fits without scrolling at all (e.g. last
+          // summary screen on a tall phone), we'd never fire onScroll —
+          // show the footer immediately by checking content vs viewport
+          // height on layout.
+          onContentSizeChange={(_, contentH) => {
+            scrollRef.current?.measure?.((_x, _y, _w, layoutH) => {
+              if (contentH <= layoutH + 24) setScrolledToBottom(true);
+            });
+          }}
+        >
 
           {step === 1 && (
             <View style={styles.stepWrap}>
@@ -708,27 +745,30 @@ export default function Onboarding() {
 
         </ScrollView>
 
-        {/* Footer is anchored to the bottom of the screen, outside the
-            ScrollView, so Continue + Back stay visible regardless of how
-            long the question content is. Background matches the page so
-            there's no visible seam. */}
-        <View style={styles.footer}>
-          <Button label={step === 9 ? 'Enter Hey Otis' : 'Continue'} onPress={next} disabled={!canProceed()} />
-          {step > 1 && (
-            <TouchableOpacity
-              onPress={() => {
-                setStep((s) => Math.max(1, s - 1));
-                setTimeout(() => scrollRef.current?.scrollTo({ y: 0, animated: true }), 50);
-              }}
-              style={styles.backLink}
-              hitSlop={8}
-              accessibilityRole="button"
-              accessibilityLabel="Go back"
-            >
-              <Text style={styles.backLinkText}>Back</Text>
-            </TouchableOpacity>
-          )}
-        </View>
+        {/* Footer is anchored to the bottom of the screen but only
+            rendered once the user has scrolled to the end of the
+            current step's content. Prevents people tapping Continue
+            before they've seen everything on the page (e.g. if there's
+            a dropdown below the fold). */}
+        {scrolledToBottom && (
+          <View style={styles.footer}>
+            <Button label={step === 9 ? 'Enter Hey Otis' : 'Continue'} onPress={next} disabled={!canProceed()} />
+            {step > 1 && (
+              <TouchableOpacity
+                onPress={() => {
+                  setStep((s) => Math.max(1, s - 1));
+                  setTimeout(() => scrollRef.current?.scrollTo({ y: 0, animated: true }), 50);
+                }}
+                style={styles.backLink}
+                hitSlop={8}
+                accessibilityRole="button"
+                accessibilityLabel="Go back"
+              >
+                <Text style={styles.backLinkText}>Back</Text>
+              </TouchableOpacity>
+            )}
+          </View>
+        )}
       </KeyboardAvoidingView>
 
       {/* Country picker modal. Full-screen searchable list — lighter
