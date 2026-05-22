@@ -66,7 +66,7 @@ These unlock €200–400k+ of non-dilutive money. Each takes a few hours of foc
 
 ## 🐛 Pre-build bugs (fix before first eas build)
 
-- [ ] **Sign in with Apple doesn't complete** — code is wired (expo-apple-authentication + signInWithIdToken), Apple Dev capability enabled, Supabase Apple provider configured with `com.heyotis.app` as Client ID, but the flow fails to land a session. Untested paths: native sheet may not open in Expo Go (requires dev build), `signInWithIdToken` may need additional config. Test in a `eas build --profile development` build before assuming the prod build will work. Required by Apple Guideline 4.8 — blocking submission.
+- [x] **Sign in with Apple doesn't complete** — verified working in development build on 2026-05-22. Native ASAuthorization sheet renders correctly, identity token round-trips through Supabase, session lands. The earlier "broken in Expo Go" failure was Expo Go's lack of the native Apple Sign-In module — never a real code issue.
 
 ---
 
