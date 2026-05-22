@@ -10,7 +10,7 @@ import { useAppState } from '../src/hooks/useAppState';
 import { useAuth } from '../src/hooks/useAuth';
 import { Colors, Fonts, Radius } from '../src/constants/theme';
 import {
-  ATTACH_REVEALS, CONFLICT_REVEALS, WINDOW_REVEALS, LOVE_REVEALS,
+  ATTACH_REVEALS, CONFLICT_REVEALS, WINDOW_REVEALS, LOVE_REVEALS, NEED_REVEALS,
   ATTACH_INSIGHTS, ATTACHMENT_LABELS, CONFLICT_LABELS, LOVE_LABELS,
   WINDOW_LABELS, NEED_LABELS,
 } from '../src/constants/data';
@@ -335,6 +335,9 @@ export default function Onboarding() {
     conflict: { bg: Colors.bluePale, border: Colors.blueLight, label: Colors.blue },
     window: { bg: Colors.amberPale, border: Colors.amberLight, label: Colors.amber },
     love: { bg: Colors.mauvePale, border: Colors.mauveLight, label: Colors.mauve },
+    // Need uses a coral / warm-orange palette to stay distinct from the
+    // other four dimensions.
+    need: { bg: Colors.pastelPeach, border: '#ffa6a8', label: '#a90005' },
   };
 
   // ── Consent gate ──────────────────────────────────────────────────
@@ -496,10 +499,15 @@ export default function Onboarding() {
           // button's-worth of the end, so micro-scroll-position drift
           // doesn't hide the footer they're trying to tap.
           onScroll={(e) => {
+            // Latch true on first reach. Don't toggle back to false on
+            // scroll-up — that caused flicker when the appearing footer
+            // changed the scrollview's layout height, which kicked the
+            // scroll position back across the threshold. The latch resets
+            // on step change (see the useEffect on [step] above).
+            if (scrolledToBottom) return;
             const { contentOffset, contentSize, layoutMeasurement } = e.nativeEvent;
             const distanceFromBottom = contentSize.height - (contentOffset.y + layoutMeasurement.height);
-            if (distanceFromBottom <= 24 && !scrolledToBottom) setScrolledToBottom(true);
-            else if (distanceFromBottom > 80 && scrolledToBottom) setScrolledToBottom(false);
+            if (distanceFromBottom <= 24) setScrolledToBottom(true);
           }}
           scrollEventThrottle={32}
           // Track viewport + content size so we can detect the "fits
@@ -705,6 +713,9 @@ export default function Onboarding() {
               <Text style={styles.stepTag}>Step 5/5  |  What you most need</Text>
               <Text style={styles.stepH}>When you are hurting in a relationship, which feels most true?</Text>
               {NEED_OPTIONS.map((o) => <OptionCard key={o.value} option={o} selected={picks.need === o.value} onPress={() => pick('need', o.value)} />)}
+              {picks.need && NEED_REVEALS[picks.need] && (
+                <InsightReveal label="What this means for you" title={NEED_REVEALS[picks.need].title} body={NEED_REVEALS[picks.need].body} bg={rc.need.bg} borderColor={rc.need.border} labelColor={rc.need.label} />
+              )}
             </View>
           )}
 

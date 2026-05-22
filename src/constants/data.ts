@@ -114,6 +114,25 @@ export const LOVE_REVEALS: Record<string, { title: string; body: string }> = {
   },
 };
 
+export const NEED_REVEALS: Record<string, { title: string; body: string }> = {
+  seen: {
+    title: 'Your deepest need is to feel seen and understood',
+    body: 'When conflict happens, fixing is not what you are after. You need someone to genuinely receive your experience. Naming this out loud changes how your partner shows up.',
+  },
+  safe: {
+    title: 'Your deepest need is to feel safe and secure',
+    body: 'Under conflict, your nervous system is asking, "are we still okay?" Reassurance about the relationship itself matters more than resolving the surface issue.',
+  },
+  respected: {
+    title: 'Your deepest need is to feel respected and valued',
+    body: 'You need your perspective and your efforts to be acknowledged. When that is missing, even small slights can land as a much bigger rupture.',
+  },
+  space: {
+    title: 'Your deepest need is space to process without pressure',
+    body: 'You think and feel best when you are not being pushed for an answer. Asking for time is not avoidance, it is the path to a real response.',
+  },
+};
+
 export const ATTACH_INSIGHTS: Record<string, string> = {
   secure: 'Your secure base means you have more capacity than most to stay present during conflict. The work for you is staying curious rather than comfortable.',
   anxious: "Your pattern is to reach out more when scared, which makes sense, but can push partners away. Naming the fear directly works far better than intensifying.",
