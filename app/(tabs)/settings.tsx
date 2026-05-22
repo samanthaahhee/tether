@@ -480,17 +480,14 @@ export default function SettingsTab() {
                 text: 'Sign out', style: 'destructive', onPress: async () => {
                   try {
                     await signOut();
+                    // RouteGuard fires the moment `user` becomes null and
+                    // navigates to '/'. No manual router calls here —
+                    // adding them on top of RouteGuard's navigation
+                    // produces a 'POP_TO_TOP was not handled' error
+                    // because two navigators try to act at the same time.
                   } catch (e) {
                     console.warn('signOut threw:', e);
                   }
-                  // dismissAll() throws on platforms where there is no
-                  // dismissable stack (a fresh tabs view, for example).
-                  // Wrap it so a throw doesn't block the subsequent
-                  // navigate. RouteGuard will also kick in once user
-                  // becomes null, but explicit replace is the primary
-                  // path.
-                  try { router.dismissAll(); } catch {}
-                  router.replace('/');
                 },
               },
             ]);
