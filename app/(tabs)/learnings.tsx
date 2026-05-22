@@ -177,7 +177,7 @@ export default function GrowthTab() {
       // WhatsApp / email, and the /invite/[code] page handles the deep-
       // link into the app + 'Get the app' fallback for partners who
       // don't have Hey Otis yet.
-      const link = `https://heyotis.app/invite/${code}`;
+      const link = `https://heyotis.app/invite?code=${code}`;
       await Share.share({
         message: `Join me on Hey Otis, a relationship wellness app. Use my invite link to create your account:\n\n${link}\n\nOr enter code: ${code}`,
         title: 'Join me on Hey Otis',

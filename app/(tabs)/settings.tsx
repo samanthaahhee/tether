@@ -151,7 +151,7 @@ export default function SettingsTab() {
                       // renders a branded landing page with deep-link + install
                       // fallback.
                       Share.share({
-                        message: `Join me on Hey Otis\n\nTap to accept: https://heyotis.app/invite/${inviteCode}\n\nOr enter code: ${inviteCode}`,
+                        message: `Join me on Hey Otis\n\nTap to accept: https://heyotis.app/invite?code=${inviteCode}\n\nOr enter code: ${inviteCode}`,
                         title: 'Join me on Hey Otis',
                       });
                     }}

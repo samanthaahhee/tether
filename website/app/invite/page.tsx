@@ -1,28 +1,29 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { useParams } from 'next/navigation';
+import { Suspense, useEffect, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 
 /**
  * Public landing page for partner-invite share links.
  *
+ * Receives the code as a query param (?code=ABC) rather than a route
+ * param ([code]) — query params work with Next's static-export mode
+ * (output: 'export') where route params require generateStaticParams()
+ * which doesn't make sense for arbitrary dynamic invite codes.
+ *
  * Flow:
  *   - Inviting partner taps "Share invite link" inside Hey Otis →
- *     generates a Share with `https://heyotis.app/invite/<code>`
+ *     generates `https://heyotis.app/invite?code=<CODE>`
  *   - Receiving partner taps the link in iMessage / WhatsApp / email
  *   - Lands here, sees a branded "You've been invited" page
- *   - Tap "Open Hey Otis" → deep-links to `tether://invite/<code>`
- *     which (in production) opens the app, runs acceptInvite, pairs
- *     the couple. If the app isn't installed yet → App Store fallback.
- *
- * The previous share format was a raw `tether://invite/<code>` scheme
- * URL, which most messaging apps don't render as a tappable link and
- * which goes nowhere if the recipient doesn't have the app installed.
+ *   - Auto-attempts `tether://invite/<code>` deep link → app takes
+ *     over, runs acceptInvite, pairs the couple. If no app installed
+ *     → manual "Open Hey Otis" / "Get the app" fallback.
  */
-export default function InvitePage() {
-  const params = useParams();
-  const code = String(params?.code || '').toUpperCase();
+function InviteInner() {
+  const params = useSearchParams();
+  const code = String(params.get('code') || '').toUpperCase();
   const [autoTried, setAutoTried] = useState(false);
 
   const deepLink = `tether://invite/${encodeURIComponent(code)}`;
@@ -30,18 +31,13 @@ export default function InvitePage() {
   const appStoreUrl = 'https://heyotis.app';
 
   useEffect(() => {
-    if (autoTried) return;
+    if (autoTried || !code) return;
     setAutoTried(true);
-    // Brief render of the celebratory state, then attempt the deep link.
-    // If the app is installed, iOS takes over here and the user never
-    // sees the rest of the page. If not, nothing happens visibly and
-    // they fall back to the manual "Open Hey Otis" + "Get the app"
-    // buttons.
     const t = setTimeout(() => {
       window.location.href = deepLink;
     }, 600);
     return () => clearTimeout(t);
-  }, [autoTried, deepLink]);
+  }, [autoTried, deepLink, code]);
 
   if (!code) {
     return (
@@ -74,5 +70,13 @@ export default function InvitePage() {
         <p style={{ fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace', fontSize: 22, fontWeight: 600, color: '#211e28', margin: '8px 0', letterSpacing: 2 }}>{code}</p>
       </div>
     </main>
+  );
+}
+
+export default function InvitePage() {
+  return (
+    <Suspense fallback={null}>
+      <InviteInner />
+    </Suspense>
   );
 }
