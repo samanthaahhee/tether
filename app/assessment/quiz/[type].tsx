@@ -115,7 +115,7 @@ export default function AssessmentQuiz() {
       //   - No prior value at all → straight back to Learnings, no
       //     intermediate not-found screen.
       const profileKey = PROFILE_KEY_MAP[type];
-      const currentValue = profileKey ? (state.profile as Record<string, string>)[profileKey] : '';
+      const currentValue = profileKey ? (state.profile as unknown as Record<string, string>)[profileKey] : '';
       if (currentValue) {
         router.replace({ pathname: '/assessment/[type]', params: { type, value: currentValue } });
       } else {
