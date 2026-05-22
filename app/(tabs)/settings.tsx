@@ -474,28 +474,27 @@ export default function SettingsTab() {
         <TouchableOpacity
           style={styles.signOut}
           onPress={() => {
+            // Wrap everything in a Promise + setTimeout so the touch
+            // event handler returns immediately and React can re-render
+            // any state changes before navigation. Inside the Alert
+            // callback we used to await signOut directly, which left the
+            // touch-blocking modal layer stuck on iOS even after the
+            // visible alert dismissed.
             Alert.alert('Sign out', 'Are you sure you want to sign out?', [
               { text: 'Cancel', style: 'cancel' },
               {
-                text: 'Sign out', style: 'destructive', onPress: async () => {
-                  // Clear auth state first so RouteGuard knows we're out.
-                  try {
-                    await signOut();
-                  } catch (e) {
-                    console.warn('[signOut] threw:', e);
-                  }
-                  // Use dismissTo to pop the nested tab navigator off the
-                  // stack, then navigate to the root. router.replace('/')
-                  // alone doesn't escape a Tabs navigator in expo-router 6.
-                  // Fallback to /auth/sign-in if dismissTo isn't available
-                  // (some expo-router versions).
-                  try {
-                    // @ts-expect-error dismissTo may not be in typedef
-                    if (typeof router.dismissTo === 'function') router.dismissTo('/');
-                    else router.replace('/auth/sign-in');
-                  } catch {
+                text: 'Sign out',
+                style: 'destructive',
+                onPress: () => {
+                  // Defer to next tick so Alert can fully dismiss its
+                  // modal layer before we mutate state + navigate.
+                  setTimeout(() => {
+                    signOut().catch((e) => console.warn('[signOut] threw:', e));
+                    // Navigate to an explicit out-of-tabs route. Use
+                    // sign-in directly — bypasses the index.tsx auto-
+                    // redirect logic and definitively escapes (tabs).
                     router.replace('/auth/sign-in');
-                  }
+                  }, 0);
                 },
               },
             ]);
